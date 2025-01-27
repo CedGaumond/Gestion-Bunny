@@ -24,27 +24,27 @@ Téléchargez Visual Studio Code depuis https://code.visualstudio.com/
 Suivez l'assistant d'installation
 Lancez VS Code après l'installation
 
-# 3. Extension .NET MAUI ⚙️
+### 3. Extension .NET MAUI ⚙️
 
 Lancez Visual Studio Code
 Appuyez sur Ctrl + Shift + X pour ouvrir les Extensions
 Recherchez ".NET MAUI"
 Cliquez sur "Installer"
 
-# 4. Installation du SDK .NET 🔧
+### 4. Installation du SDK .NET 🔧
 
 Visitez https://dotnet.microsoft.com/en-us/download/dotnet/9.0
 Téléchargez le SDK
 Exécutez l'installateur
 
 ## Configuration du Projet 📝
-# 5. Restauration des Dépendances
+### 5. Restauration des Dépendances
 ```powershell
 # Dans le même CMD que précédemment
 # Assurez-vous d'être dans le dossier BunnyCO
 dotnet workload restore
 ```
-## 6. Compiler et Exécuter ▶️
+### 6. Compiler et Exécuter ▶️
 
 Ouvrez App.xaml.cs dans Visual Studio Code
 
