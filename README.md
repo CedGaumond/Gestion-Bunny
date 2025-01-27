@@ -47,5 +47,7 @@ dotnet workload restore
 ## 6. Compiler et Exécuter ▶️
 
 Ouvrez App.xaml.cs dans Visual Studio Code
+
 Cherchez le bouton d'exécution (▶️) en haut à droite
+
 Cliquez pour compiler et exécuter votre application
