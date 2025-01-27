@@ -14,7 +14,7 @@ git clone https://github.com/CedGaumond/Gestion-Bunny.git
 
 # Naviguez vers le dossier du projet
 cd Gestion-Bunny
-cd BunnyCO
+cd BunnyCO/BunnyCO
 ```
 ## Installation des Logiciels Requis 💻
 
