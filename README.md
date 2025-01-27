@@ -1,66 +1,60 @@
-# Guide d'Installation et Configuration de BunnyCO
+Guide d'Installation et de Configuration - Projet Gestion-Bunny
+Prérequis
+1. Installation de Git
+Vérifiez d'abord si Git est déjà installé sur votre système :
+bashCopygit --version
+Si Git n'est pas installé, téléchargez-le depuis le site officiel : https://git-scm.com/download/win
+2. Installation des Outils de Développement
+Installez les outils suivants dans l'ordre indiqué :
 
-## Table des Matières
+Visual Studio Code
 
-1. [Prérequis](#prérequis)
-2. [Installation des Logiciels](#installation-des-logiciels)
-3. [Configuration du Projet](#configuration-du-projet)
-4. [Résolution des Problèmes](#résolution-des-problèmes)
+Rendez-vous sur https://code.visualstudio.com/
+Téléchargez et exécutez l'installateur
 
-## Prérequis
 
-Avant de commencer, assurez-vous d'avoir :
-* Un ordinateur sous Windows
-* Une connexion Internet stable
-* Les droits administrateur sur votre machine
+Extension .NET MAUI pour Visual Studio Code
 
-## Installation des Logiciels
+Ouvrez Visual Studio Code
+Utilisez le raccourci Ctrl + Shift + X
+Recherchez ".NET MAUI"
+Procédez à l'installation de l'extension
 
-### 1. Git
-```bash
-# Vérifiez si Git est installé
-git --version
 
-# Si la commande n'est pas reconnue, téléchargez et installez Git :
-# Visitez https://git-scm.com/download/win
-2. Visual Studio Code
-bashCopy# Téléchargez et installez Visual Studio Code
-# Visitez https://code.visualstudio.com/
-3. Extension .NET MAUI
-bashCopy# Dans Visual Studio Code :
-# 1. Appuyez sur Ctrl + Shift + X
-# 2. Recherchez ".NET MAUI"
-# 3. Cliquez sur Installer
-4. SDK .NET
-bashCopy# Téléchargez et installez le SDK .NET 9.0
-# Visitez https://dotnet.microsoft.com/en-us/download/dotnet/9.0
+SDK .NET 9.0
+
+Téléchargez le SDK depuis https://dotnet.microsoft.com/en-us/download/dotnet/9.0
+Suivez les instructions d'installation
+
+
+
 Configuration du Projet
-1. Ouvrir l'Invite de Commandes
-bashCopy# Appuyez sur Windows + R
-# Tapez 'cmd'
-# Appuyez sur Enter
-2. Cloner le Projet
-bashCopy# Naviguez vers le dossier où vous voulez cloner le projet
+1. Préparation de l'Environnement
+Ouvrez l'invite de commandes :
+bashCopy# Utilisez Windows + R
+# Saisissez 'cmd'
+# Appuyez sur Entrée
+2. Installation du Projet
+bashCopy# Naviguez vers votre répertoire de travail
 cd C:\Users\VotreNom\Documents
 
 # Clonez le dépôt
 git clone https://github.com/CedGaumond/Gestion-Bunny.git
 
-# Accédez au dossier du projet
+# Accédez au projet
 cd Gestion-Bunny
 cd BunnyCO
-3. Restaurer les Dépendances
-bashCopy# Dans le même CMD, exécutez :
+
+# Restaurez les dépendances
 dotnet workload restore
+3. Lancement du Projet
 
-# Gardez le CMD ouvert pour la suite
-4. Ouvrir dans Visual Studio Code
-bashCopy# Dans le même CMD, exécutez :
-code .
-5. Compiler et Exécuter
+Ouvrez le projet dans Visual Studio Code :
 
-Dans Visual Studio Code :
-bashCopy# Naviguez vers App.xaml.cs dans l'explorateur de fichiers
+bashCopycode .
 
-Cherchez le bouton d'exécution (flèche) en haut à droite
-Cliquez pour compiler et exécuter
+Pour exécuter l'application :
+
+Localisez le fichier App.xaml.cs dans l'explorateur de fichiers
+Repérez le bouton d'exécution (symbolisé par une flèche) dans la barre d'outils supérieure
+Cliquez pour lancer la compilation et l'exécution
