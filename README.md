@@ -1,51 +1,43 @@
-Guide d'Installation et de Configuration - Projet Gestion-Bunny
-Prérequis
-1. Installation de Git
-Vérifiez d'abord si Git est déjà installé sur votre système :
-bashCopygit --version
-Si Git n'est pas installé, téléchargez-le depuis le site officiel.
-2. Installation des Outils de Développement
-Visual Studio Code
+Comment Configurer et Exécuter le Projet 🚀
+Première Étape : Cloner le Projet 📂
+1. Cloner le Dépôt Git
+powershellCopy# Ouvrez l'Invite de Commandes (CMD)
+# ⚠️ IMPORTANT : Gardez le CMD ouvert, il sera nécessaire pour les étapes suivantes!
 
-Rendez-vous sur code.visualstudio.com
-Téléchargez et exécutez l'installateur
-
-Extension .NET MAUI pour Visual Studio Code
-
-Ouvrez Visual Studio Code
-Utilisez le raccourci Ctrl + Shift + X
-Recherchez ".NET MAUI"
-Procédez à l'installation de l'extension
-
-SDK .NET 9.0
-
-Téléchargez le SDK depuis dotnet.microsoft.com
-Suivez les instructions d'installation
-
-Configuration du Projet
-1. Préparation de l'Environnement
-Ouvrez l'invite de commandes :
-bashCopy# Utilisez Windows + R
-# Saisissez 'cmd'
-# Appuyez sur Entrée
-2. Installation du Projet
-bashCopy# Naviguez vers votre répertoire de travail
-cd C:\Users\VotreNom\Documents
-
+# Choisissez un dossier où vous voulez cloner le projet
 # Clonez le dépôt
 git clone https://github.com/CedGaumond/Gestion-Bunny.git
 
-# Accédez au projet
+# Naviguez vers le dossier du projet
 cd Gestion-Bunny
 cd BunnyCO
+Installation des Logiciels Requis 💻
+2. Visual Studio Code
 
-# Restaurez les dépendances
+Téléchargez Visual Studio Code depuis https://code.visualstudio.com/
+Suivez l'assistant d'installation
+Lancez VS Code après l'installation
+
+3. Extension .NET MAUI ⚙️
+
+Lancez Visual Studio Code
+Appuyez sur Ctrl + Shift + X pour ouvrir les Extensions
+Recherchez ".NET MAUI"
+Cliquez sur "Installer"
+
+4. Installation du SDK .NET 🔧
+
+Visitez https://dotnet.microsoft.com/en-us/download/dotnet/9.0
+Téléchargez le SDK
+Exécutez l'installateur
+
+Configuration du Projet 📝
+5. Restauration des Dépendances
+powershellCopy# Dans le même CMD que précédemment
+# Assurez-vous d'être dans le dossier BunnyCO
 dotnet workload restore
-3. Lancement du Projet
-Ouvrir dans Visual Studio Code
-bashCopycode .
-Exécuter l'application
+6. Compiler et Exécuter ▶️
 
-Localisez le fichier App.xaml.cs dans l'explorateur de fichiers
-Repérez le bouton d'exécution (symbolisé par une flèche) dans la barre d'outils supérieure
-Cliquez pour lancer la compilation et l'exécution
+Ouvrez App.xaml.cs dans Visual Studio Code
+Cherchez le bouton d'exécution (▶️) en haut à droite
+Cliquez pour compiler et exécuter votre application
