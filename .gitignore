@@ -1,0 +1,47 @@
+# .NET build results
+bin/
+obj/
+
+# User-specific files
+.vs/
+.idea/
+.vscode/
+
+# User-specific configuration files
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Windows installer and package files
+package.lock.json
+
+# Ignore log files and database files
+*.log
+*.sql
+*.sqlite
+*.db
+
+# Ignore macOS files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+Thumbs.db
+
+# Ignore build directories for Android/iOS
+*/bin/
+*/obj/
+*/out/
+
+# Ignore Android specific files
+/android/.gradle/
+android/.idea/
+android/app/build/
