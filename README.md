@@ -1,4 +1,4 @@
-# Comment Configurer et Exécuter le Projet 🚀
+# Comment Configurer et Exécuter le Projet 🚀 (Windows)
 
 ## Première Étape : Cloner le Projet 📂
 
