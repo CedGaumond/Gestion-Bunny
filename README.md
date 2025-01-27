@@ -16,7 +16,8 @@ git clone https://github.com/CedGaumond/Gestion-Bunny.git
 cd Gestion-Bunny
 cd BunnyCO
 ```
-Installation des Logiciels Requis 💻
+##Installation des Logiciels Requis 💻
+
 2. Visual Studio Code
 
 Téléchargez Visual Studio Code depuis https://code.visualstudio.com/
