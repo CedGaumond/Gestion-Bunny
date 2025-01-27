@@ -1,72 +1,43 @@
-#################################################################
-#                                                               #
-#           Comment Configurer et Exécuter le Projet 🚀          #
-#                                                               #
-#################################################################
+Comment Configurer et Exécuter le Projet 🚀
+Première Étape : Cloner le Projet 📂
+1. Cloner le Dépôt Git
+powershellCopy# Ouvrez l'Invite de Commandes (CMD)
+# ⚠️ IMPORTANT : Gardez le CMD ouvert, il sera nécessaire pour les étapes suivantes!
+# Choisissez un dossier où vous voulez cloner le projet
 
-#------------------------#
-# 1. Cloner le Projet 📂 #
-#------------------------#
-
-# Ouvrez l'Invite de Commandes (CMD)
-# ⚠️ IMPORTANT : Gardez le CMD ouvert pour les étapes suivantes!
-
-# Cloner le dépôt
+# Clonez le dépôt
 git clone https://github.com/CedGaumond/Gestion-Bunny.git
 
-# Navigation
+# Naviguez vers le dossier du projet
 cd Gestion-Bunny
 cd BunnyCO
+Installation des Logiciels Requis 💻
+2. Visual Studio Code
 
-#----------------------------------------#
-# 2. Installation de Visual Studio Code 💻 #
-#----------------------------------------#
+Téléchargez Visual Studio Code depuis https://code.visualstudio.com/
+Suivez l'assistant d'installation
+Lancez VS Code après l'installation
 
-# Télécharger VS Code
-Start-Process "https://code.visualstudio.com/"
+3. Extension .NET MAUI ⚙️
 
-# Lancer VS Code après installation
-code
+Lancez Visual Studio Code
+Appuyez sur Ctrl + Shift + X pour ouvrir les Extensions
+Recherchez ".NET MAUI"
+Cliquez sur "Installer"
 
-#----------------------------------------#
-# 3. Installation Extension .NET MAUI ⚙️   #
-#----------------------------------------#
+4. Installation du SDK .NET 🔧
 
-# Ouvrir VS Code et installer l'extension
-code --install-extension "ms-dotnettools.dotnet-maui"
+Visitez https://dotnet.microsoft.com/en-us/download/dotnet/9.0
+Téléchargez le SDK
+Exécutez l'installateur
 
-#-----------------------------------#
-# 4. Installation du SDK .NET 🔧     #
-#-----------------------------------#
-
-# Télécharger le SDK
-Start-Process "https://dotnet.microsoft.com/en-us/download/dotnet/9.0"
-
-# Vérifier l'installation
-dotnet --version
-
-#----------------------------------------#
-# 5. Restauration des Dépendances 📝     #
-#----------------------------------------#
-
-# S'assurer d'être dans le bon dossier
-cd BunnyCO
+Configuration du Projet 📝
+5. Restauration des Dépendances
+powershellCopy# Dans le même CMD que précédemment
+# Assurez-vous d'être dans le dossier BunnyCO
 dotnet workload restore
+6. Compiler et Exécuter ▶️
 
-#--------------------------------#
-# 6. Compiler et Exécuter ▶️      #
-#--------------------------------#
-
-# Ouvrir le projet
-code .
-
-# Lancer la compilation et l'exécution
-dotnet build
-dotnet run
-
-#################################################################
-#                                                               #
-# Note: Suivez ces étapes dans l'ordre pour réussir            #
-#       l'installation du projet.                              #
-#                                                               #
-#################################################################
+Ouvrez App.xaml.cs dans Visual Studio Code
+Cherchez le bouton d'exécution (▶️) en haut à droite
+Cliquez pour compiler et exécuter votre application
