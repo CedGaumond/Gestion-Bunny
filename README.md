@@ -18,7 +18,7 @@ cd BunnyCO/BunnyCO
 ```
 ## Installation des Logiciels Requis 💻
 
-# 2. Visual Studio Code
+### 2. Visual Studio Code
 
 Téléchargez Visual Studio Code depuis https://code.visualstudio.com/
 Suivez l'assistant d'installation
