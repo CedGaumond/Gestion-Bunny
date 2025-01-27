@@ -36,3 +36,16 @@ Cliquez sur "Installer"
 Visitez https://dotnet.microsoft.com/en-us/download/dotnet/9.0
 Téléchargez le SDK
 Exécutez l'installateur
+
+## Configuration du Projet 📝
+# 5. Restauration des Dépendances
+```powershell
+# Dans le même CMD que précédemment
+# Assurez-vous d'être dans le dossier BunnyCO
+dotnet workload restore
+```
+## 6. Compiler et Exécuter ▶️
+
+Ouvrez App.xaml.cs dans Visual Studio Code
+Cherchez le bouton d'exécution (▶️) en haut à droite
+Cliquez pour compiler et exécuter votre application
