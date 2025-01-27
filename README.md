@@ -1,7 +1,10 @@
-Comment Configurer et Exécuter le Projet 🚀
-Première Étape : Cloner le Projet 📂
-1. Cloner le Dépôt Git
-powershellCopy# Ouvrez l'Invite de Commandes (CMD)
+# Comment Configurer et Exécuter le Projet 🚀
+
+## Première Étape : Cloner le Projet 📂
+
+### 1. Cloner le Dépôt Git
+```powershell
+# Ouvrez l'Invite de Commandes (CMD)
 # ⚠️ IMPORTANT : Gardez le CMD ouvert, il sera nécessaire pour les étapes suivantes!
 
 # Choisissez un dossier où vous voulez cloner le projet
