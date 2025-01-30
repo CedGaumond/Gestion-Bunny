@@ -44,8 +44,9 @@ Exécutez l'installateur
 # Assurez-vous d'être dans le dossier BunnyCO
 dotnet workload restore
 ```
-##Configuration de la Base de Données PostgreSQL 🗄️
-###6. Configuration de l'Environnement
+## Configuration de la Base de Données PostgreSQL 🗄️
+
+### 6. Configuration de l'Environnement
 ```powershell
 # Naviguez vers le dossier de la base de données
 cd ~/SchoolWork/BD-2
