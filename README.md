@@ -44,7 +44,25 @@ Exécutez l'installateur
 # Assurez-vous d'être dans le dossier BunnyCO
 dotnet workload restore
 ```
-### 6. Compiler et Exécuter ▶️
+##Configuration de la Base de Données PostgreSQL 🗄️
+###6. Configuration de l'Environnement
+```powershell
+# Naviguez vers le dossier de la base de données
+cd ~/SchoolWork/BD-2
+
+# Création du dossier pour la base de données
+read -p "Entrez le nom du nouveau dossier : " nom_dossier
+mkdir "$nom_dossier"
+cd "$nom_dossier"
+
+# Configuration de la connexion PostgreSQL
+export PGPASSWORD='UlGBqeXlkG'
+psql -U postgres -e -L "log${nom_dossier}.log"
+\c "$nom_dossier"
+unset PGPASSWORD
+```
+
+### 7. Compiler et Exécuter ▶️
 
 Ouvrez App.xaml.cs dans Visual Studio Code
 
