@@ -1,47 +1,127 @@
-# .NET build results
-bin/
-obj/
+# Ignore build and output directories
+[Bb]in/
+[Oo]bj/
 
-# User-specific files
-.vs/
-.idea/
-.vscode/
-
-# User-specific configuration files
+# Ignore user-specific files
 *.user
-*.userosscache
 *.suo
 *.userprefs
+*.userosscache
+*.sln.docstates
 
-# Windows Installer files
-*.cab
-*.msi
-*.msm
-*.msp
+# Ignore IDE-specific files
+.vs/
+.idea/
+*.swp
+*.swo
 
-# Windows installer and package files
-package.lock.json
+# Ignore NuGet packages and restore files
+[Nn]u[Gg]et/
+*.nupkg
+packages/
+.nuget/
+nuget.exe
 
-# Ignore log files and database files
-*.log
-*.sql
-*.sqlite
-*.db
+# Ignore local development files
+*.local
+*.local.*
+
+# Ignore debug and release build artifacts
+[Dd]ebug/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]inaries/
+
+# Ignore .NET MAUI specific files
+.maui/
+*.appx
+*.ipa
+*.apk
+*.aab
+
+# Ignore Azure Functions local settings
+local.settings.json
+
+# Ignore Rider-specific files
+.idea/
+*.iml
+
+# Ignore Visual Studio Code files
+.vscode/
 
 # Ignore macOS files
 .DS_Store
-.AppleDouble
-.LSOverride
 
-# Thumbnails
-Thumbs.db
+# Ignore Node.js files (if applicable)
+node_modules/
+npm-debug.log
 
-# Ignore build directories for Android/iOS
-*/bin/
-*/obj/
-*/out/
+# Ignore logs and diagnostics
+[Ll]ogs/
+[Tt]emp/
+*.log
+*.log.*
+*.tmp
+*.tmp.*
 
-# Ignore Android specific files
-/android/.gradle/
-android/.idea/
-android/app/build/
+# Ignore test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# Ignore coverage reports
+[Cc]overage/
+[Cc]overage.*
+*.coverage
+*.coverage.*
+
+# Ignore local development environment files
+.env
+.env.local
+.env.development
+.env.production
+
+# Ignore Azure Functions local settings
+local.settings.json
+
+# Ignore JetBrains Rider files
+.idea/
+*.iml
+
+# Ignore Visual Studio Code files
+.vscode/
+
+# Ignore macOS files
+.DS_Store
+
+# Ignore Node.js files (if applicable)
+node_modules/
+npm-debug.log
+
+# Ignore logs and diagnostics
+[Ll]ogs/
+[Tt]emp/
+*.log
+*.log.*
+*.tmp
+*.tmp.*
+
+# Ignore test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# Ignore coverage reports
+[Cc]overage/
+[Cc]overage.*
+*.coverage
+*.coverage.*
+
+# Ignore local development environment files
+.env
+.env.local
+.env.development
+.env.production
