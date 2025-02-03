@@ -1,0 +1,57 @@
+@page "/login"
+@using Gestion_Bunny.Modeles
+@using Gestion_Bunny.Services
+@inject IAuthenticationService AuthenticationService
+@inject NavigationManager Navigation
+
+<PageTitle>Login</PageTitle>
+
+<h3>Login</h3>
+
+<EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="Email">Email</label>
+        <InputText id="Email" class="form-control" @bind-Value="loginModel.Email" />
+    </div>
+
+    <div class="form-group">
+        <label for="Password">Password</label>
+        <InputText id="Password" class="form-control" type="password" @bind-Value="loginModel.Password" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Login</button>
+
+    @if (loginError)
+    {
+        <div class="alert alert-danger mt-2">
+            Invalid email or password.
+        </div>
+    }
+</EditForm>
+
+@code {
+    private LoginModel loginModel = new LoginModel();
+    private bool loginError = false;
+
+    private async Task HandleLogin()
+    {
+        loginError = false;
+
+        // Attempt login
+        var result = await AuthenticationService.LoginAsync(loginModel.Email, loginModel.Password);
+
+        if (result)
+        {
+            // Redirect to home page after successful login
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            // Display error if login fails
+            loginError = true;
+        }
+    }
+}

@@ -70,3 +70,6 @@ Ouvrez App.xaml.cs dans Visual Studio Code
 Cherchez le bouton d'exécution (▶️) en haut à droite
 
 Cliquez pour compiler et exécuter votre application
+
+
+dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL
