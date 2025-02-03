@@ -1,0 +1,107 @@
+﻿@page "/employee-list"
+@using Gestion_Bunny.Services
+@inject PageTitleService TitleService
+
+@if (employees == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Actions</th>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Date de naissance</th>
+                    <th>Actif/Inactif</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var employee in employees)
+                {
+                    <tr>
+                        <td>
+                            <!-- Redirect icon -->
+                            <div class="icon-container" @onclick="() => HandleRedirectAction(employee.Id)">
+                                <img src="images/box-arrow-right.svg" alt="Redirection" />
+                            </div>
+
+                            <!-- Edit icon -->
+                            <div class="icon-container" @onclick="() => HandleEditAction(employee.Id)">
+                                <img src="images/pencil-square.svg" alt="Modifier" />
+                            </div>
+
+                            <!-- Delete icon -->
+                            <div class="icon-container" @onclick="() => HandleDeleteAction(employee.Id)">
+                                <img src="images/trash.svg" alt="Supprimer" />
+                            </div>
+                        </td>
+
+
+                        <td>@employee.Date.ToShortDateString()</td>
+                        <td>@employee.TemperatureC</td>
+                        <td>@employee.TemperatureF</td>
+                        <td>@employee.Summary</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        TitleService.Title = "Liste d'employés";
+    }
+
+
+    private WeatherForecast[]? employees;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Simulate asynchronous loading to demonstrate a loading indicator
+        await Task.Delay(500);
+
+        var startDate = DateOnly.FromDateTime(DateTime.Now);
+        var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
+        employees = Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            {
+                Id = index,
+                Date = startDate.AddDays(index),
+                TemperatureC = Random.Shared.Next(-20, 55),
+                Summary = summaries[Random.Shared.Next(summaries.Length)]
+            }).ToArray();
+    }
+
+    private class WeatherForecast
+    {
+        public int Id { get; set; }
+        public DateOnly Date { get; set; }
+        public int TemperatureC { get; set; }
+        public string? Summary { get; set; }
+        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    }
+
+    // Méthode pour gérer l'action de redirection
+    private void HandleRedirectAction(int employeeId)
+    {
+        Console.WriteLine($"Redirection vers le détail de l'employé avec ID : {employeeId}");
+    }
+
+    // Méthode pour gérer l'action de modification
+    private void HandleEditAction(int employeeId)
+    {
+        Console.WriteLine($"Modification de l'ingrédient avec ID : {employeeId}");
+    }
+
+    // Méthode pour gérer l'action de suppression
+    private void HandleDeleteAction(int employeeId)
+    {
+        Console.WriteLine($"Suppression de l'ingrédient avec ID : {employeeId}");
+    }
+}

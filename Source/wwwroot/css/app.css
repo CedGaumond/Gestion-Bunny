@@ -9,12 +9,12 @@ a, .btn-link {
 
 .btn-primary {
     color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    background-color: #DB816E; 
+    border-color: #DB816E; 
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #DB816E;
 }
 
 .content {
@@ -25,6 +25,71 @@ a, .btn-link {
 h1:focus {
     outline: none;
 }
+
+.table-container {
+    max-height: 400px; 
+    overflow-y: auto; 
+    display: block; 
+}
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    color: white; 
+}
+
+th {
+    font-weight: bold;
+    background-color: #2C3E50 !important;
+    padding: 10px;
+    text-align: left;
+    color: white;
+}
+
+td {
+    padding: 8px;
+    border-bottom: 1px solid #495057;
+    color: white;
+}
+
+tr:nth-child(odd) {
+    background-color: #2a2f36;
+}
+
+tr:nth-child(even) {
+    background-color: #1e2227;
+}
+
+.icon-container {
+    display: inline-block;
+    background-color: #DB816E; 
+    padding: 3px 8px;
+    border-radius: 8px; 
+    cursor: pointer; 
+    transition: background-color 0.3s ease; 
+}
+
+    .icon-container:hover {
+        background-color: #e2957a; 
+    }
+
+    .icon-container img {
+        width: 15px; 
+        height: 15px; 
+        filter: invert(1);
+    }
+
+.plus-container {
+    padding: 5px 5px !important;
+}
+
+.plus {
+    width: 25px !important;
+    height: 25px !important;
+}
+
+
 
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;

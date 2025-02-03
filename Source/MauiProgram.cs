@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Gestion_Bunny.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Gestion_Bunny;
 
@@ -18,7 +19,8 @@ public static class MauiProgram
 
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();
-		builder.Logging.AddDebug();
+        builder.Services.AddSingleton<PageTitleService>();
+        builder.Logging.AddDebug();
 #endif
 
 		return builder.Build();
