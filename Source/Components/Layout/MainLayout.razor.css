@@ -6,15 +6,15 @@
 
 main {
     flex: 1;
+    background-color: #212529;
 }
 
 .sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    background-color: #1C1C1C;
 }
 
 .top-row {
-    background-color: #f7f7f7;
-    border-bottom: 1px solid #d6d5d5;
+    background-color: #212529;
     justify-content: flex-end;
     height: 3.5rem;
     display: flex;
@@ -36,6 +36,48 @@ main {
             text-overflow: ellipsis;
         }
 
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-family: Arial, sans-serif; /* Ou une autre police de votre choix */
+}
+
+.user-circle {
+    width: 45px;
+    height: 45px;
+    background-color: #E4DF96;
+    border-radius: 50%; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.user-initials {
+    font-size: 20px;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-size: 16px;
+    font-weight: bold; 
+    color: #ffffff;
+}
+
+.user-position {
+    font-size: 12px;
+    color: #ffffff;
+}
+
+
 @media (max-width: 640.98px) {
     .top-row {
         justify-content: space-between;
@@ -52,7 +94,7 @@ main {
     }
 
     .sidebar {
-        width: 250px;
+        width: 200px;
         height: 100vh;
         position: sticky;
         top: 0;
