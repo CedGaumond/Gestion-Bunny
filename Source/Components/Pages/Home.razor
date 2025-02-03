@@ -1,0 +1,26 @@
+﻿@page "/"
+@using Microsoft.Maui.Storage
+@using Microsoft.Maui.ApplicationModel
+
+<h1>Device Info Test</h1>
+
+@code {
+    private string deviceInfo = "";
+
+    protected override void OnInitialized()
+    {
+        try 
+        {
+            deviceInfo = $"Device Model: {DeviceInfo.Model}\n" +
+                         $"Platform: {DeviceInfo.Platform}\n" +
+                         $"Manufacturer: {DeviceInfo.Manufacturer}\n" +
+                         $"Version: {DeviceInfo.Version}";
+        }
+        catch (Exception ex)
+        {
+            deviceInfo = $"Error: {ex.Message}";
+        }
+    }
+}
+
+<p>@deviceInfo</p>
