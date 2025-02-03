@@ -10,4 +10,8 @@
     <ProjectReference Include="..\Gestion-Bunny.Shared\Gestion-Bunny.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="QuestPDF" Version="2025.1.0" />
+  </ItemGroup>
+
 </Project>
