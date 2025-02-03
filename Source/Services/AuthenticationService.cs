@@ -24,11 +24,11 @@ public class AuthenticationService : IAuthenticationService
 
         if (employee == null)
         {
-            // User not found
+
             return false;
         }
 
-        
+        //TODO : faire l,algo pour hasher les mots de passe 
         bool isPasswordValid = password == employee.PasswordHash;
         return isPasswordValid;
     }
