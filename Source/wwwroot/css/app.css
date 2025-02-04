@@ -26,6 +26,11 @@ h1:focus {
     outline: none;
 }
 
+h2 {
+    font-size: 20px;
+    font-weight: bold;
+}
+
 .table-container {
     max-height: 400px; 
     overflow-y: auto; 
@@ -89,6 +94,83 @@ tr:nth-child(even) {
     height: 25px !important;
 }
 
+.card {
+    max-width: 200px;
+    margin-bottom: 20px;
+    background-color: #1C1C1C;
+    border-radius: 10px;
+}
+
+.card-img-top {
+    height: 125px;
+    object-fit: cover;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.card-body {
+    text-align: center;
+}
+
+.card-title {
+    font-size: 1rem;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-text {
+    font-size: 0.75rem;
+    margin-bottom: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.icon-container-card {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    border-radius: 5px;
+    transition: background-color 0.2s ease-in-out;
+}
+
+    .icon-container-card:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+.action-icon {
+    width: 20px; 
+    height: 20px;
+}
+
+.category-item {
+    text-align: center;
+    padding: 10px;
+    font-weight: bold;
+    position: relative;
+}
+
+    .category-item:hover {
+        color: #DB816E;
+    }
+
+.category-underline {
+    height: 3px;
+    width: 100%;
+    background-color: transparent;
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    transition: background-color 0.3s ease-in-out;
+}
+
+    .category-underline.active {
+        background-color: #DB816E;
+    }
 
 
 .valid.modified:not([type=checkbox]) {
