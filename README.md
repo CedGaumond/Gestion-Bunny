@@ -44,6 +44,12 @@ Exécutez l'installateur
 # Assurez-vous d'être dans le dossier BunnyCO
 dotnet workload restore
 ```
+
+### 6. Ajout des packets NuGet
+```powershell
+dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL
+dotnet add package QuestPDF
+```
 ## Configuration de la Base de Données PostgreSQL 🗄️
 
 ### 6. Configuration de l'Environnement
