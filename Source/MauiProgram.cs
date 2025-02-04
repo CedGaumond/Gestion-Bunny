@@ -25,19 +25,21 @@ public static class MauiProgram
         // Add the DbContext for PostgreSQL using Npgsql
         builder.Services.AddDbContext<EmployeeContext>(options =>
             options.UseNpgsql(connectionString)); // Make sure EmployeeContext is set up with PostgreSQL support
-        
+
         // Register the EmployeeService and AuthenticationService for Dependency Injection
         builder.Services.AddScoped<IEmployeeService, EmployeeService>();
         builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
         // If using Debug mode, add developer tools and logging
-#if DEBUG
+
         builder.Services.AddBlazorWebViewDeveloperTools();
         builder.Logging.AddDebug();
-#endif
+
 
         // Build and return the MAUI app instance
         var app = builder.Build();
         return app; // Return the built app
     }
+
+
 }

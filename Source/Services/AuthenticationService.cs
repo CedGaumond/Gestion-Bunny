@@ -1,10 +1,6 @@
-using Gestion_Bunny.Modeles;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
+
 
 public class AuthenticationService : IAuthenticationService
 {
@@ -32,4 +28,47 @@ public class AuthenticationService : IAuthenticationService
         bool isPasswordValid = password == employee.PasswordHash;
         return isPasswordValid;
     }
+
+
+    public string generateRandomPassword(){
+            
+        Random rand = new Random(); 
+    
+        int stringlen = rand.Next(6, 8); 
+        int randValue; 
+        string str = ""; 
+        char letter; 
+        for (int i = 0; i < stringlen; i++) 
+        { 
+    
+            randValue = rand.Next(0, 26); 
+             
+            letter = Convert.ToChar(randValue + 65); 
+    
+            str = str + letter; 
+        } 
+        
+        return str;
+
+    }
+
+    public byte[] GenerateSaltedHash(byte[] plainText, byte[] salt)
+    {
+    HashAlgorithm algorithm = new SHA256Managed();
+
+    byte[] plainTextWithSaltBytes = 
+        new byte[plainText.Length + salt.Length];
+
+    for (int i = 0; i < plainText.Length; i++)
+    {
+        plainTextWithSaltBytes[i] = plainText[i];
+    }
+    for (int i = 0; i < salt.Length; i++)
+    {
+        plainTextWithSaltBytes[plainText.Length + i] = salt[i];
+    }
+
+    return algorithm.ComputeHash(plainTextWithSaltBytes);            
+    }
+
 }
