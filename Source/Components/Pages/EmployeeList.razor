@@ -1,6 +1,13 @@
 ﻿@page "/employee-list"
 @using Gestion_Bunny.Services
 @inject PageTitleService TitleService
+@inject NavigationManager Navigation
+
+<div class="pb-2 d-flex justify-content-end align-items-end">
+    <div class="icon-container plus-container" @onclick="@(() => Navigation.NavigateTo("/employee"))">
+        <img class="plus" src="images/plus.svg" alt="Ajouter" />
+    </div>
+</div>
 
 @if (employees == null)
 {
@@ -25,12 +32,12 @@ else
                     <tr>
                         <td>
                             <!-- Redirect icon -->
-                            <div class="icon-container" @onclick="() => HandleRedirectAction(employee.Id)">
+                            <div class="icon-container" @onclick="@(() => Navigation.NavigateTo($"/employee-detail/{employee.Id}"))">
                                 <img src="images/box-arrow-right.svg" alt="Redirection" />
                             </div>
 
                             <!-- Edit icon -->
-                            <div class="icon-container" @onclick="() => HandleEditAction(employee.Id)">
+                            <div class="icon-container" @onclick="@(() => Navigation.NavigateTo($"/employee/{employee.Id}"))">
                                 <img src="images/pencil-square.svg" alt="Modifier" />
                             </div>
 

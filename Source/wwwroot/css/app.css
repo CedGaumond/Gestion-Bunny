@@ -13,9 +13,54 @@ a, .btn-link {
     border-color: #DB816E; 
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #DB816E;
+    .btn-primary:hover/*, .btn:hover*/ {
+        color: #fff;
+        background-color: #FF9D89;
+        border-color: #FF9D89;
+    }
+
+    .btn-primary:focus, .btn-primary:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+        box-shadow: 0 0 0 0.10rem #DB816E;
+        background-color: #FF9D89;
+        border-color: #FF9D89;
+    }
+
+.btn-secondary {
+    color: #fff;
+    background-color: #636364;
+    border-color: #636364;
 }
+
+.btn-secondary:hover {
+    color: #fff;
+    background-color: #929293;
+    border-color: #929293;
+}
+
+    .btn-secondary:focus, .btn-secondary:active:focus {
+        box-shadow: 0 0 0 0.10rem #636364;
+        background-color: #929293;
+        border-color: #929293;
+    }
+
+.btn-warning {
+    color: #fff;
+    background-color: #C5A64B;
+    border-color: #C5A64B;
+}
+
+    .btn-warning:hover {
+        color: #fff;
+        background-color: #C3AE6E;
+        border-color: #C3AE6E;
+    }
+
+    .btn-warning:focus, .btn-warning:active:focus {
+        box-shadow: 0 0 0 0.10rem #C5A64B;
+        background-color: #C3AE6E;
+        border-color: #C3AE6E;
+    }
+
 
 .content {
     padding-top: 1.1rem;
@@ -31,10 +76,16 @@ h2 {
     font-weight: bold;
 }
 
+h3 {
+    font-size: 18px;
+    font-weight: bold;
+}
+
 .table-container {
-    max-height: 400px; 
-    overflow-y: auto; 
-    display: block; 
+    max-height: 400px;
+    overflow-y: auto;
+    display: block;
+    border-radius: 10px;
 }
 
 
@@ -42,11 +93,11 @@ table {
     width: 100%;
     border-collapse: collapse;
     color: white; 
+    
 }
 
 th {
     font-weight: bold;
-    background-color: #2C3E50 !important;
     padding: 10px;
     text-align: left;
     color: white;
@@ -64,6 +115,26 @@ tr:nth-child(odd) {
 
 tr:nth-child(even) {
     background-color: #1e2227;
+}
+
+table thead tr:first-child th:first-child {
+    border-top-left-radius: 10px;
+}
+
+table thead tr:first-child th:last-child {
+    border-top-right-radius: 10px;
+}
+
+table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 10px;
+}
+
+table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 10px;
+}
+
+table tbody tr:last-child td {
+    border-bottom: none;
 }
 
 .icon-container {

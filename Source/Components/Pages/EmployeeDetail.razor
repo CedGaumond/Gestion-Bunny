@@ -1,0 +1,118 @@
+﻿@page "/employee-detail/{IdString}"
+@using Gestion_Bunny.Services
+@inject NavigationManager Navigation
+@inject PageTitleService TitleService
+
+<div class="container mt-4">
+    <div class="card shadow" style="max-width: 800px; margin: 0 auto;">
+        <div class="card-body">
+            @if (employee != null)
+            {
+                <!-- Affichage de la photo de l'employé -->
+                <div class="d-flex justify-content-center mb-4">
+                    <img src="@($"data:image/png;base64,{Convert.ToBase64String(employee.Pic)}")" class="rounded-circle" alt="Photo de l'employé" style="width: 150px; height: 150px; object-fit: cover;" />
+                </div>
+
+                <!-- Détails de l'employé, alignés à gauche -->
+                <div class="mb-3">
+                    <h4 class="text-left">@employee.FirstName @employee.LastName</h4>
+                </div>
+
+                <div class="mb-3">
+                    <strong class="text-left">Email : </strong>
+                    <span>@employee.Email</span>
+                </div>
+
+                <div class="mb-3">
+                    <strong class="text-left">Date de naissance : </strong>
+                    <span>@employee.BirthDate.ToString("dd MMM yyyy")</span>
+                </div>
+
+                <div class="mb-3">
+                    <strong class="text-left">Numéro d'assurance sociale : </strong>
+                    <span>@employee.SocialInsuranceNumber</span>
+                </div>
+
+                <!-- Boutons d'actions, centrés -->
+                <div class="d-flex justify-content-center mt-4">
+                    <button type="button" class="btn btn-secondary mx-2" @onclick="@(() => Navigation.NavigateTo("/employee-list"))">Retour à la liste</button>
+                    <button type="button" class="btn btn-warning mx-2" @onclick="ResetPassword">Réinitialiser le mot de passe</button>
+                </div>
+            }
+            else
+            {
+                <p>Chargement des informations de l'employé...</p>
+            }
+        </div>
+    </div>
+</div>
+
+
+
+@code {
+    [Parameter] public string? IdString { get; set; }
+    private int? Id => int.TryParse(IdString, out var id) ? id : null;
+
+    private Employee employee;
+
+    protected override async Task OnInitializedAsync()
+    {
+        TitleService.Title = "Détail de l'Employé";
+
+        if (Id.HasValue)
+        {
+            employee = new Employee
+                {
+                    Id = Id.Value,
+                    FirstName = "Test Prénom",  // Exemple, à remplacer par des données réelles
+                    LastName = "Test Nom",
+                    Email = "test@example.com",
+                    BirthDate = DateTime.Now.AddYears(-30),
+                    SocialInsuranceNumber = "123-45-6789",
+                    EmployeeRoleId = 1,  // Exemples, à remplacer par des données réelles
+                    Pic = new byte[] { },
+                    PasswordHash = "hashed_password",  // À remplacer par un mot de passe réel
+                    TempPassword = false
+                };
+            // Charge les informations de l'employé en fonction de l'ID
+           // employee = await EmployeeService.GetEmployeeByIdAsync(Id.Value);
+        }
+    }
+
+    private async Task ResetPassword()
+    {
+        if (employee != null)
+        {
+            /*// Appel à un service pour réinitialiser le mot de passe
+            //var result = await EmployeeService.ResetPasswordAsync(employee.Id);
+            if (result)
+            {
+                // Afficher un message ou rediriger l'utilisateur après la réinitialisation
+                Navigation.NavigateTo("/employee-list");
+            }
+            else
+            {
+                // Afficher une erreur si la réinitialisation échoue
+                // Exemple d'alerte
+                // AlertService.ShowError("Échec de la réinitialisation du mot de passe");
+            }*/
+        }
+    }
+
+    private class Employee
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public DateTime BirthDate { get; set; }
+        public string SocialInsuranceNumber { get; set; }
+        public int? EmployeeRoleId { get; set; }
+        public byte[] Pic { get; set; }
+        public string PasswordHash { get; set; }
+        public string PasswordSalt { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public bool IsDeleted { get; set; }
+        public bool TempPassword { get; set; }
+    }
+}

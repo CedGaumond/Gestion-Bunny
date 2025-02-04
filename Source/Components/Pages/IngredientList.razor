@@ -1,6 +1,15 @@
 ﻿@page "/ingredient-list"
 @using Gestion_Bunny.Services
 @inject PageTitleService TitleService
+@inject NavigationManager Navigation
+
+
+
+<div class="pb-2 d-flex justify-content-end align-items-end">
+    <div class="icon-container plus-container" @onclick="@(() => Navigation.NavigateTo("/ingredient"))">
+        <img class="plus" src="images/plus.svg" alt="Ajouter" />
+    </div>
+</div>
 
 @if (ingredients == null)
 {
@@ -25,7 +34,7 @@ else
                     <tr>
                         <td>
                             <!-- Edit icon -->
-                            <div id="editIcon" class="icon-container" @onclick="() => HandleEditAction(ingredient.Id)">
+                            <div id="editIcon" class="icon-container" @onclick="@(() => Navigation.NavigateTo($"/ingredient/{ingredient.Id}"))">
                                 <img src="images/pencil-square.svg" alt="Modifier" />
                             </div>
 

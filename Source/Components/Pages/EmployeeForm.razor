@@ -1,0 +1,129 @@
+﻿@page "/employee/{IdString?}"
+@using Gestion_Bunny.Services
+@inject NavigationManager Navigation
+@inject PageTitleService TitleService
+
+<div class="container d-flex justify-content-center mt-4">
+    <div class="card p-4 shadow" style="max-width: 500px; width: 100%;">
+        <h3 class="text-center">@(Id != null ? "Modifier un employé" : "Ajouter un employé")</h3>
+
+        <EditForm Model="employee" OnValidSubmit="Save">
+            <DataAnnotationsValidator />
+
+            <!-- First Name -->
+            <div class="mb-3">
+                <label for="firstName" class="form-label">Prénom</label>
+                <InputText id="firstName" class="form-control" @bind-Value="employee.FirstName" required />
+            </div>
+
+            <!-- Last Name -->
+            <div class="mb-3">
+                <label for="lastName" class="form-label">Nom</label>
+                <InputText id="lastName" class="form-control" @bind-Value="employee.LastName" required />
+            </div>
+
+            <!-- Email -->
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <InputText id="email" class="form-control" @bind-Value="employee.Email" required />
+            </div>
+
+            <!-- Birth Date -->
+            <div class="mb-3">
+                <label for="birthDate" class="form-label">Date de naissance</label>
+                <InputDate id="birthDate" class="form-control" @bind-Value="employee.BirthDate" required />
+            </div>
+
+            <!-- Social Insurance Number -->
+            <div class="mb-3">
+                <label for="socialInsuranceNumber" class="form-label">Numéro d'assurance sociale</label>
+                <InputText id="socialInsuranceNumber" class="form-control" @bind-Value="employee.SocialInsuranceNumber" required />
+            </div>
+
+            <!-- Picture -->
+            <div class="mb-3">
+                <label for="pic" class="form-label">Photo</label>
+                <InputFile id="pic" class="form-control" @bind-Value="employee.Pic" />
+            </div>
+
+            <!-- Buttons -->
+            <div class="d-flex justify-content-center">
+                <button type="submit" class="btn btn-primary">@(Id.HasValue ? "Mettre à jour" : "Ajouter")</button>
+                <button type="button" class="btn btn-secondary mx-2" @onclick="Cancel">Annuler</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Parameter, SupplyParameterFromQuery] public string? IdString { get; set; }
+
+    private int? Id => int.TryParse(IdString, out var id) ? id : null;
+
+    private Employee employee = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            employee = new Employee
+            {
+                Id = Id.Value,
+                FirstName = "Test Prénom",  // Exemple, à remplacer par des données réelles
+                LastName = "Test Nom",
+                Email = "test@example.com",
+                BirthDate = DateTime.Now.AddYears(-30),
+                SocialInsuranceNumber = "123-45-6789",
+                EmployeeRoleId = 1,  // Exemples, à remplacer par des données réelles
+                Pic = new byte[] { },
+                PasswordHash = "hashed_password",  // À remplacer par un mot de passe réel
+                TempPassword = false
+            };
+        }
+        else
+        {
+            employee = new Employee();
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        TitleService.Title = "Gestion des employés";
+    }
+
+    private async Task Save()
+    {
+        if (Id.HasValue)
+        {
+            // Logique de mise à jour de l'employé
+            // await EmployeeService.UpdateAsync(employee);
+        }
+        else
+        {
+            // Logique de création d'un nouvel employé
+            // await EmployeeService.CreateAsync(employee);
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/employee-list");
+    }
+
+    private class Employee
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public DateTime BirthDate { get; set; }
+        public string SocialInsuranceNumber { get; set; }
+        public int? EmployeeRoleId { get; set; }
+        public byte[] Pic { get; set; }
+        public string PasswordHash { get; set; }
+        public string PasswordSalt { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public bool IsDeleted { get; set; }
+        public bool TempPassword { get; set; }
+    }
+}
