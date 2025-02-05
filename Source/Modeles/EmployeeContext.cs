@@ -13,9 +13,9 @@ public class EmployeeContext : DbContext
     {
         modelBuilder.Entity<Employee>(entity =>
         {
-            entity.ToTable("employees", "public");  // Map to the correct table and schema
+            entity.ToTable("employees", "public");
 
-            // Explicitly map properties to columns (ensure case matches)
+
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.FirstName).HasColumnName("first_name");
             entity.Property(e => e.LastName).HasColumnName("last_name");
