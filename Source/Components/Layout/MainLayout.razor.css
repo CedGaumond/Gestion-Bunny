@@ -46,7 +46,7 @@ main {
 }
 
 .top-row {
-    background-color: #212529;
+    background-color: #212529 !important;
     height: 4.5rem;
     display: flex;
     align-items: center;
