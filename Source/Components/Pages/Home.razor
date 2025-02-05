@@ -1,47 +1,72 @@
 ﻿@page "/"
-@using Gestion_Bunny.Modeles;  
-@using Microsoft.EntityFrameworkCore;
+@using Gestion_Bunny.Modeles
+@using Gestion_Bunny.Services
+@using Microsoft.EntityFrameworkCore
 @inject Gestion_Bunny.Services.IEmployeeService EmployeeService
-
+@inject AuthenticationState AuthState
+@inject NavigationManager NavigationManager
 
 <PageTitle>Home</PageTitle>
 
 <h1>Bienvenue chez Bunny&Co.</h1>
 
-<p>Welcome to your new app running on <em>@platform</em>.</p>
 
-@if (randomEmployee != null)
+@if (AuthState.IsAuthenticated && AuthState.CurrentUser != null)
 {
-    <div>
-        <h3>Random Employee</h3>
-        <p><strong>Name:</strong> @randomEmployee.FirstName @randomEmployee.LastName</p>
-        <p><strong>Email:</strong> @randomEmployee.Email</p>
-        <p><strong>Birthdate:</strong> @randomEmployee.BirthDate.ToShortDateString()</p>
-        <p><strong>Social Insurance Number:</strong> @randomEmployee.SocialInsuranceNumber</p>
-    
+    <div class="user-profile p-4 border rounded shadow-sm">
+        <h3>Your Profile</h3>
+        <div class="d-flex align-items-start">
+            @if (AuthState.CurrentUser.Pic != null)
+            {
+                <img src="data:image/jpeg;base64,@Convert.ToBase64String(AuthState.CurrentUser.Pic)"
+                     alt="Profile Picture"
+                     class="rounded-circle me-3"
+                     style="width: 100px; height: 100px; object-fit: cover;" />
+            }
+            <div>
+                <p><strong>Nom:</strong> @AuthState.CurrentUser.FirstName @AuthState.CurrentUser.LastName</p>
+                <p><strong>Email:</strong> @AuthState.CurrentUser.Email</p>
+                <p><strong>Date Naissance:</strong> @AuthState.CurrentUser.BirthDate.ToShortDateString()</p>
+                @if (!string.IsNullOrEmpty(AuthState.CurrentUser.SocialInsuranceNumber))
+                {
+                    <p><strong>NAS:</strong> @AuthState.CurrentUser.SocialInsuranceNumber</p>
+                }
+                @if (AuthState.CurrentUser.EmployeeRole != null)
+                {
+                    <p><strong>Role:</strong> @AuthState.CurrentUser.EmployeeRole</p>
+                }
+                <p><strong>Employer le:</strong> @AuthState.CurrentUser.CreatedAt.ToShortDateString()</p>
+            </div>
+        </div>
+        
+        @if (AuthState.CurrentUser.TempPassword)
+        {
+            <div class="alert alert-warning mt-3">
+                <strong>Notice:</strong> Changer mot de passe temporaire.
+            </div>
+        }
     </div>
 }
 else
 {
-    <p>Loading random employee...</p>
+    <div class="text-center p-4">
+        <h3>Welcome to Bunny&Co.</h3>
+        <p>Please <a href="/login">Connectez vous</a> pour voir tes info.</p>
+    </div>
 }
 
 @code {
-    private string platform => DeviceInfo.Platform.ToString(); 
-    private Employee randomEmployee;
+    private string platform => DeviceInfo.Platform.ToString();
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        try
-        {
-            // Fetch a random employee when the page is initialized
-            randomEmployee = await EmployeeService.GetRandomEmployeeAsync();
-        }
-        catch (Exception ex)
-        {
-            // Handle error fetching employee
-            Console.WriteLine($"Error fetching random employee: {ex.Message}");
-        }
+        // Subscribe to authentication state changes
+        AuthState.OnAuthenticationStateChanged += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        // Unsubscribe when component is disposed
+        AuthState.OnAuthenticationStateChanged -= StateHasChanged;
     }
 }
-

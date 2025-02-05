@@ -1,7 +1,8 @@
 ﻿using Gestion_Bunny.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Gestion_Bunny.Modeles;  // Ensure you include the namespace where EmployeeContext is located
+using Gestion_Bunny.Modeles;
+
 
 namespace Gestion_Bunny;
 
@@ -30,6 +31,9 @@ public static class MauiProgram
         builder.Services.AddScoped<IEmployeeService, EmployeeService>();
         builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
+
+        builder.Services.AddSingleton<AuthenticationState>();
+        builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
         // If using Debug mode, add developer tools and logging
 
         builder.Services.AddBlazorWebViewDeveloperTools();
