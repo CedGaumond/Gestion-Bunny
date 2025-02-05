@@ -7,18 +7,52 @@
 main {
     flex: 1;
     background-color: #212529;
+    color: white;
 }
 
 .sidebar {
     background-color: #1C1C1C;
 }
 
-.top-row {
-    background-color: #212529;
-    justify-content: flex-end;
-    height: 3.5rem;
+.title-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; 
+    gap: 5px;
+    font-family: Arial, sans-serif;
+}
+
+    .title-container h1 {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0;
+    }
+
+.date {
+    font-size: 12px;
+    color: #ffffff;
+}
+
+.right-container {
     display: flex;
     align-items: center;
+    gap: 1rem;
+}
+
+.img-icon {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
+}
+
+.top-row {
+    background-color: #212529 !important;
+    height: 4.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    color: white;
 }
 
     .top-row ::deep a, .top-row ::deep .btn-link {
@@ -41,7 +75,7 @@ main {
     display: flex;
     align-items: center;
     gap: 15px;
-    font-family: Arial, sans-serif; /* Ou une autre police de votre choix */
+    font-family: Arial, sans-serif;
 }
 
 .user-circle {

@@ -1,0 +1,13 @@
+﻿@page "/schedule"
+@using Gestion_Bunny.Services
+@inject PageTitleService TitleService
+
+
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        TitleService.Title = "Horaire";
+    }
+}

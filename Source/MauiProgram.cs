@@ -17,7 +17,8 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
             });
 
-        builder.Services.AddMauiBlazorWebView();
+		builder.Services.AddMauiBlazorWebView();
+		builder.Services.AddBlazorBootstrap();
 
         // Get the connection string for PostgreSQL from DatabaseConfiguration (ensure it's configured correctly)
         string connectionString = DatabaseConfiguration.GetConnectionString();  // Or use builder.Configuration.GetConnectionString("DefaultConnection");
@@ -33,11 +34,18 @@ public static class MauiProgram
         // If using Debug mode, add developer tools and logging
 #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools();
+        builder.Services.AddSingleton<PageTitleService>();
         builder.Logging.AddDebug();
+        builder.Logging.SetMinimumLevel(LogLevel.Debug);
+
+        AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+        {
+            Console.WriteLine($"[ERREUR GLOBALE] {e.ExceptionObject}");
+            Debug.WriteLine($"[ERREUR GLOBALE] {e.ExceptionObject}");
+        };
+
 #endif
 
-        // Build and return the MAUI app instance
-        var app = builder.Build();
-        return app; // Return the built app
-    }
+        return builder.Build();
+	}
 }

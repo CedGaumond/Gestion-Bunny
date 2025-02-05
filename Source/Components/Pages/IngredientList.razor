@@ -1,0 +1,105 @@
+﻿@page "/ingredient-list"
+@using Gestion_Bunny.Services
+@inject PageTitleService TitleService
+@inject NavigationManager Navigation
+
+
+
+<div class="pb-2 d-flex justify-content-end align-items-end">
+    <div class="icon-container plus-container" @onclick="@(() => Navigation.NavigateTo("/ingredient"))">
+        <img class="plus" src="images/plus.svg" alt="Ajouter" />
+    </div>
+</div>
+
+@if (ingredients == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Actions</th>
+                    <th>Nom</th>
+                    <th>Quantité restante</th>
+                    <th>Qté/unité livraison</th>
+                    <th>Seuil minimum</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ingredient in ingredients)
+                {
+                    <tr>
+                        <td>
+                            <!-- Edit icon -->
+                            <div id="editIcon" class="icon-container" @onclick="@(() => Navigation.NavigateTo($"/ingredient/{ingredient.Id}"))">
+                                <img src="images/pencil-square.svg" alt="Modifier" />
+                            </div>
+
+                            <!-- Delete icon -->
+                            <div id="deleteIcon" class="icon-container" @onclick="() => HandleDeleteAction(ingredient.Id)">
+                                <img src="images/trash.svg" alt="Supprimer" />
+                            </div>
+                        </td>
+
+
+                        <td>@ingredient.Date.ToShortDateString()</td>
+                        <td>@ingredient.TemperatureC</td>
+                        <td>@ingredient.TemperatureF</td>
+                        <td>@ingredient.Summary</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        TitleService.Title = "Liste d'ingrédients";
+    }
+
+
+    private WeatherForecast[]? ingredients;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Simulate asynchronous loading to demonstrate a loading indicator
+        await Task.Delay(500);
+
+        var startDate = DateOnly.FromDateTime(DateTime.Now);
+        var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
+        ingredients = Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            {
+                Id = index,
+                Date = startDate.AddDays(index),
+                TemperatureC = Random.Shared.Next(-20, 55),
+                Summary = summaries[Random.Shared.Next(summaries.Length)]
+            }).ToArray();
+    }
+
+    private class WeatherForecast
+    {
+        public int Id { get; set; }
+        public DateOnly Date { get; set; }
+        public int TemperatureC { get; set; }
+        public string? Summary { get; set; }
+        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    }
+
+    // Méthode pour gérer l'action de modification
+    private void HandleEditAction(int ingredientId)
+    {
+        Console.WriteLine($"Modification de l'ingrédient avec ID : {ingredientId}");
+    }
+
+    // Méthode pour gérer l'action de suppression
+    private void HandleDeleteAction(int ingredientId)
+    {
+        Console.WriteLine($"Suppression de l'ingrédient avec ID : {ingredientId}");
+    }
+}
