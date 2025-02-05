@@ -30,21 +30,14 @@ public static class MauiProgram
         // Register the EmployeeService and AuthenticationService for Dependency Injection
         builder.Services.AddScoped<IEmployeeService, EmployeeService>();
         builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+        builder.Services.AddSingleton<PageTitleService>();
 
         // If using Debug mode, add developer tools and logging
-#if DEBUG
-        builder.Services.AddBlazorWebViewDeveloperTools();
-        builder.Services.AddSingleton<PageTitleService>();
+    #if DEBUG
+        builder.Services.AddBlazorWebViewDeveloperTools(); 
         builder.Logging.AddDebug();
         builder.Logging.SetMinimumLevel(LogLevel.Debug);
-
-        AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
-        {
-            Console.WriteLine($"[ERREUR GLOBALE] {e.ExceptionObject}");
-            Debug.WriteLine($"[ERREUR GLOBALE] {e.ExceptionObject}");
-        };
-
-#endif
+    #endif
 
         return builder.Build();
 	}
