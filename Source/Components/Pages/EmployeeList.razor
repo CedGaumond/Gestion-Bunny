@@ -2,6 +2,8 @@
 @using Gestion_Bunny.Services
 @inject PageTitleService TitleService
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
+
 
 <div class="pb-2 d-flex justify-content-end align-items-end">
     <div class="icon-container plus-container" @onclick="@(() => Navigation.NavigateTo("/employee"))">
@@ -31,58 +33,100 @@ else
                 {
                     <tr>
                         <td>
-                            <!-- Redirect icon -->
-                            <div class="icon-container" @onclick="@(() => Navigation.NavigateTo($"/employee-detail/{employee.Id}"))">
-                                <img src="images/box-arrow-right.svg" alt="Redirection" />
+                            <!-- Bouton Voir Détails -->
+                            <div class="icon-container" @onclick="() => ShowEmployeeDetail(employee.Id)">
+                                <img src="images/box-arrow-right.svg" alt="Voir détails" />
                             </div>
 
-                            <!-- Edit icon -->
+                            <!-- Bouton Modifier -->
                             <div class="icon-container" @onclick="@(() => Navigation.NavigateTo($"/employee/{employee.Id}"))">
                                 <img src="images/pencil-square.svg" alt="Modifier" />
                             </div>
 
-                            <!-- Delete icon -->
+                            <!-- Bouton Supprimer -->
                             <div class="icon-container" @onclick="() => HandleDeleteAction(employee.Id)">
                                 <img src="images/trash.svg" alt="Supprimer" />
                             </div>
                         </td>
 
-
-                        <td>@employee.Date.ToShortDateString()</td>
-                        <td>@employee.TemperatureC</td>
-                        <td>@employee.TemperatureF</td>
-                        <td>@employee.Summary</td>
+                        <td>@employee.BirthDate.ToShortDateString()</td>
+                        <td>@employee.FirstName</td>
+                        <td>@employee.LastName</td>
+                        <td>@employee.Email</td>
                     </tr>
                 }
             </tbody>
         </table>
     </div>
+
+    <Modal @ref="modal" IsVerticallyCentered="true" />
+    <Button Color="ButtonColor.Primary" @onclick="OnShowModalClick">Show Employee Component</Button>
+   
 }
 
 @code {
+   
+    private Employee[]? employees;
+    private Employee? selectedEmployee;
 
-    protected override void OnInitialized()
+    private Modal modal = default!;
+    private string? message;
+
+    private async Task OnShowModalClick()
     {
-        TitleService.Title = "Liste d'employés";
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("EmployeeId", 322);
+        parameters.Add("OnclickCallback", EventCallback.Factory.Create<MouseEventArgs>(this, CloseModal));
+        await modal.ShowAsync<EmployeeDetailComponent>(title: "Détail de l'employé", parameters: parameters);
     }
-
-
-    private WeatherForecast[]? employees;
 
     protected override async Task OnInitializedAsync()
     {
-        // Simulate asynchronous loading to demonstrate a loading indicator
+        TitleService.Title = "Liste d'employés";
+        await LoadEmployees();
+    }
+
+    private async Task LoadEmployees()
+    {
         await Task.Delay(500);
 
-        var startDate = DateOnly.FromDateTime(DateTime.Now);
-        var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
-        employees = Enumerable.Range(1, 5).Select(index => new WeatherForecast
+        employees = Enumerable.Range(1, 5).Select(index => new Employee
             {
                 Id = index,
-                Date = startDate.AddDays(index),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = summaries[Random.Shared.Next(summaries.Length)]
+                FirstName = $"Employé {index}",
+                LastName = "Doe",
+                Email = $"employee{index}@example.com",
+                BirthDate = DateTime.Now.AddYears(-30),
+                EmployeeRoleId = index % 3,
             }).ToArray();
+    }
+
+    private async Task ShowEmployeeDetail(int employeeId)
+    {
+        selectedEmployee = employees?.FirstOrDefault(e => e.Id == employeeId);
+      
+        Console.WriteLine("Le modal est instancié !");
+        selectedEmployee = new Employee
+            {
+                Id = employeeId,
+                FirstName = "Test Prénom",
+                LastName = "Test Nom",
+                Email = "test@example.com",
+                BirthDate = DateTime.Now.AddYears(-30),
+                SocialInsuranceNumber = "123-45-6789",
+                Pic = new byte[] { } // Remplace par une vraie image
+            };
+        await modal?.ShowAsync();
+    }
+
+    private async Task CloseModal()
+    {
+       await modal?.HideAsync();
+    }
+
+    private void HandleDeleteAction(int employeeId)
+    {
+        employees = employees?.Where(e => e.Id != employeeId).ToArray();
     }
 
     private class WeatherForecast
@@ -94,21 +138,20 @@ else
         public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
     }
 
-    // Méthode pour gérer l'action de redirection
-    private void HandleRedirectAction(int employeeId)
+    private class Employee
     {
-        Console.WriteLine($"Redirection vers le détail de l'employé avec ID : {employeeId}");
-    }
-
-    // Méthode pour gérer l'action de modification
-    private void HandleEditAction(int employeeId)
-    {
-        Console.WriteLine($"Modification de l'ingrédient avec ID : {employeeId}");
-    }
-
-    // Méthode pour gérer l'action de suppression
-    private void HandleDeleteAction(int employeeId)
-    {
-        Console.WriteLine($"Suppression de l'ingrédient avec ID : {employeeId}");
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public DateTime BirthDate { get; set; }
+        public string SocialInsuranceNumber { get; set; }
+        public int? EmployeeRoleId { get; set; }
+        public byte[] Pic { get; set; }
+        public string PasswordHash { get; set; }
+        public string PasswordSalt { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public bool IsDeleted { get; set; }
+        public bool TempPassword { get; set; }
     }
 }
