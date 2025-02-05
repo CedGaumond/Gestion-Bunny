@@ -44,9 +44,15 @@ Exécutez l'installateur
 # Assurez-vous d'être dans le dossier BunnyCO
 dotnet workload restore
 ```
+
+### 6. Ajout des packets NuGet
+```powershell
+dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL
+dotnet add package QuestPDF
+```
 ## Configuration de la Base de Données PostgreSQL 🗄️
 
-### 6. Configuration de l'Environnement
+### 7. Configuration de l'Environnement
 ```powershell
 # Naviguez vers le dossier de la base de données
 cd ~/SchoolWork/BD-2
@@ -63,7 +69,7 @@ psql -U postgres -e -L "log${nom_dossier}.log"
 unset PGPASSWORD
 ```
 
-### 7. Compiler et Exécuter ▶️
+### 8. Compiler et Exécuter ▶️
 
 Ouvrez App.xaml.cs dans Visual Studio Code
 
