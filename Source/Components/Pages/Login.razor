@@ -4,52 +4,45 @@
 @inject IAuthenticationService AuthenticationService
 @inject NavigationManager Navigation
 
-<PageTitle>Login</PageTitle>
+<PageTitle>connection</PageTitle>
+<div class="row g-0 h-100">
+    <!-- Image Column -->
+    <div class="col-6 h-100">
+        <img src="https://www.shutterstock.com/image-photo/flying-wok-ingredients-shrimp-vegetables-600w-2101129093.jpg"
+             alt="Login Illustration"
+             class="w-100 h-100"
+             style="object-fit: cover; object-position: center;">
+    </div>
+    <div class="col-6 d-flex flex-column justify-content-center align-items-center">
+        <img src="images/logo.png" alt="Logo" width="400" height="400" class="mb-4" />
 
-<div class="container-fluid vh-100 p-0" style="background-color:  #212529;">
-    <div class="row g-0 h-100">
-        <!-- Image Column -->
-        <div class="col-6 h-100">
-            <img src="https://www.shutterstock.com/image-photo/flying-wok-ingredients-shrimp-vegetables-600w-2101129093.jpg" 
-                 alt="Login Illustration" 
-                 class="w-100 h-100" 
-                 style="object-fit: cover; object-position: center;">
-        </div>
-
-        <!-- Login Form Column -->
-        <div class="col-6 d-flex align-items-center justify-content-center p-5">
-            <div class="w-100" style="max-width: 400px;">
-                <img src="images/logo.png" 
-                    alt="Logo" 
-                    width="300" 
-                    height="300" />
-                <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
-                    <DataAnnotationsValidator />
-                    <ValidationSummary />
-
-                    <div class="form-group mb-3">
-                        <label for="Email" class="form-label">Email</label>
-                        <InputText id="Email" class="form-control rounded-pill" @bind-Value="loginModel.Email" />
-                    </div>
-
-                    <div class="form-group mb-3">
-                        <label for="Password" class="form-label">Password</label>
-                        <InputText id="Password" class="form-control rounded-pill" type="password" @bind-Value="loginModel.Password" />
-                    </div>
-
-                   <div class="d-grid">
-                        <button type="submit" class="btn btn-outline-danger rounded-pill">Login</button>
-                    </div>
-
-                    @if (loginError)
-                    {
-                        <div class="alert alert-danger mt-3">
-                            Invalid email or password.
-                        </div>
-                    }
-                </EditForm>
+        <EditForm Model="@loginModel" OnValidSubmit="HandleLogin" class="w-75">
+            <div class="form-group mb-4">
+                <label for="Email" class="form-label fs-5">Email</label>
+                <InputText id="Email" 
+                           class="form-control form-control-lg rounded-pill" 
+                           style="font-size: 1.2rem; padding: 15px 20px; height: 60px;" 
+                           @bind-Value="loginModel.Email" />
             </div>
-        </div>
+            <div class="form-group mb-4">
+                <label for="Password" class="form-label fs-5">mot de passe</label>
+                <InputText id="Password" 
+                           type="password" 
+                           class="form-control form-control-lg rounded-pill" 
+                           style="font-size: 1.2rem; padding: 15px 20px; height: 60px;" 
+                           @bind-Value="loginModel.Password" />
+            </div>
+            <div class="d-grid">
+                <button type="submit" class="btn btn-outline-danger rounded-pill btn-lg">Connection</button>
+            </div>
+
+            @if (loginError)
+            {
+                                <div class="alert alert-danger mt-3">
+                                    Invalide email ou mot passe.
+                                </div>
+            }
+        </EditForm>
     </div>
 </div>
 
@@ -60,18 +53,13 @@
     private async Task HandleLogin()
     {
         loginError = false;
-
-        // Attempt login
         var result = await AuthenticationService.LoginAsync(loginModel.Email, loginModel.Password);
-
         if (result)
         {
-            // Redirect to home page after successful login
-            Navigation.NavigateTo("/"); 
+            Navigation.NavigateTo("/");
         }
         else
         {
-            // Display error if login fails
             loginError = true;
         }
     }
@@ -83,5 +71,9 @@
         margin: 0;
         padding: 0;
     }
-   
+    .form-control-lg {
+        font-size: 1.2rem;
+        padding: 15px 20px;
+        height: 60px;
+    }
 </style>

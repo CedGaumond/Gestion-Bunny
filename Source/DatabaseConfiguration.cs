@@ -1,15 +1,15 @@
 public static class DatabaseConfiguration
 {
-   public static string GetConnectionString()
-{
-    string databasePath = "" +
-        "Host=127.0.0.1;" + // Make sure the IP and port are correct
-        "Port=5432;" + 
-        "Username=postgres;" + // Use the correct username
-        "Password=UlGBqeXlkG;" + // Use the correct password
-        "Database=bunny_db;";  // Ensure the database exists and is accessible
+    public static string GetConnectionString()
+    {
+        string databasePath = "" +
+            "Host=127.0.0.1;" +
+            "Port=5432;" +
+            "Username=postgres;" +
+            "Password=UlGBqeXlkG;" +
+            "Database=bunny_db;";
 
-    return databasePath;
-}
+        return databasePath;
+    }
 
 }

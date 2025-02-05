@@ -1,7 +1,8 @@
 ﻿using Gestion_Bunny.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Gestion_Bunny.Modeles;  // Ensure you include the namespace where EmployeeContext is located
+using Gestion_Bunny.Modeles;
+
 
 namespace Gestion_Bunny;
 
@@ -26,12 +27,15 @@ public static class MauiProgram
         // Add the DbContext for PostgreSQL using Npgsql
         builder.Services.AddDbContext<EmployeeContext>(options =>
             options.UseNpgsql(connectionString)); // Make sure EmployeeContext is set up with PostgreSQL support
-        
+
         // Register the EmployeeService and AuthenticationService for Dependency Injection
         builder.Services.AddScoped<IEmployeeService, EmployeeService>();
         builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
         builder.Services.AddSingleton<PageTitleService>();
 
+
+        builder.Services.AddSingleton<AuthenticationState>();
+        builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
         // If using Debug mode, add developer tools and logging
     #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools(); 
