@@ -1,26 +1,47 @@
 ﻿@page "/"
-@using Microsoft.Maui.Storage
-@using Microsoft.Maui.ApplicationModel
+@using Gestion_Bunny.Modeles;  
+@using Microsoft.EntityFrameworkCore;
+@inject Gestion_Bunny.Services.IEmployeeService EmployeeService
 
-<h1>Device Info Test</h1>
+
+<PageTitle>Home</PageTitle>
+
+<h1>Bienvenue chez Bunny&Co.</h1>
+
+<p>Welcome to your new app running on <em>@platform</em>.</p>
+
+@if (randomEmployee != null)
+{
+    <div>
+        <h3>Random Employee</h3>
+        <p><strong>Name:</strong> @randomEmployee.FirstName @randomEmployee.LastName</p>
+        <p><strong>Email:</strong> @randomEmployee.Email</p>
+        <p><strong>Birthdate:</strong> @randomEmployee.BirthDate.ToShortDateString()</p>
+        <p><strong>Social Insurance Number:</strong> @randomEmployee.SocialInsuranceNumber</p>
+    
+    </div>
+}
+else
+{
+    <p>Loading random employee...</p>
+}
 
 @code {
-    private string deviceInfo = "";
+    private string platform => DeviceInfo.Platform.ToString(); 
+    private Employee randomEmployee;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        try 
+        try
         {
-            deviceInfo = $"Device Model: {DeviceInfo.Model}\n" +
-                         $"Platform: {DeviceInfo.Platform}\n" +
-                         $"Manufacturer: {DeviceInfo.Manufacturer}\n" +
-                         $"Version: {DeviceInfo.Version}";
+            // Fetch a random employee when the page is initialized
+            randomEmployee = await EmployeeService.GetRandomEmployeeAsync();
         }
         catch (Exception ex)
         {
-            deviceInfo = $"Error: {ex.Message}";
+            // Handle error fetching employee
+            Console.WriteLine($"Error fetching random employee: {ex.Message}");
         }
     }
 }
 
-<p>@deviceInfo</p>
