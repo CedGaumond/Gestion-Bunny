@@ -1,0 +1,54 @@
+@page "/"
+@using Gestion_Bunny.Modeles
+@using Gestion_Bunny.Services
+@inject IAuthenticationService AuthenticationService
+@inject NavigationManager Navigation
+
+<PageTitle>Connection</PageTitle>
+<div class="login-page">
+    <div class="login-overlay"></div>
+
+    <div class="login-container">
+        <img src="images/logo.png" alt="Logo" class="login-logo" />
+        <div class="login-form">
+            <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+                <div class="form-group mb-4">
+                    <label for="Email" class="form-label fs-5">Email</label>
+                    <InputText id="Email" class="form-control" @bind-Value="loginModel.Email" />
+                </div>
+                <div class="form-group mb-4">
+                    <label for="Password" class="form-label fs-5">Mot de passe</label>
+                    <InputText id="Password" type="password" class="form-control" @bind-Value="loginModel.Password" />
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">Connexion</button>
+                </div>
+
+                @if (loginError)
+                {
+                    <div class="alert alert-danger mt-3">Email ou mot de passe invalide.</div>
+                }
+            </EditForm>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    private LoginModel loginModel = new LoginModel();
+    private bool loginError = false;
+
+    private async Task HandleLogin()
+    {
+        loginError = false;
+        var result = await AuthenticationService.LoginAsync(loginModel.Email, loginModel.Password);
+        if (result)
+        {
+            Navigation.NavigateTo("/home");
+        }
+        else
+        {
+            loginError = true;
+        }
+    }
+}

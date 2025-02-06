@@ -1,26 +1,29 @@
-﻿@page "/"
-@using Microsoft.Maui.Storage
-@using Microsoft.Maui.ApplicationModel
+﻿@page "/home"
+@using Gestion_Bunny.Modeles
+@using Gestion_Bunny.Services
+@using Microsoft.EntityFrameworkCore
+@inject Gestion_Bunny.Services.IEmployeeService EmployeeService
+@inject AuthenticationState AuthState
+@inject NavigationManager NavigationManager
 
-<h1>Device Info Test</h1>
+<PageTitle>Home</PageTitle>
+
+<h1>Bienvenue chez Bunny&Co.</h1>
+
+
 
 @code {
-    private string deviceInfo = "";
+    private string platform => DeviceInfo.Platform.ToString();
 
     protected override void OnInitialized()
     {
-        try 
-        {
-            deviceInfo = $"Device Model: {DeviceInfo.Model}\n" +
-                         $"Platform: {DeviceInfo.Platform}\n" +
-                         $"Manufacturer: {DeviceInfo.Manufacturer}\n" +
-                         $"Version: {DeviceInfo.Version}";
-        }
-        catch (Exception ex)
-        {
-            deviceInfo = $"Error: {ex.Message}";
-        }
+        // Subscribe to authentication state changes
+        AuthState.OnAuthenticationStateChanged += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        // Unsubscribe when component is disposed
+        AuthState.OnAuthenticationStateChanged -= StateHasChanged;
     }
 }
-
-<p>@deviceInfo</p>
