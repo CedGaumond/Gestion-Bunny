@@ -30,12 +30,12 @@ public static class MauiProgram
 
         // Register the EmployeeService and AuthenticationService for Dependency Injection
         builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-        builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+        builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
         builder.Services.AddSingleton<PageTitleService>();
 
 
         builder.Services.AddSingleton<AuthenticationState>();
-        builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+
         // If using Debug mode, add developer tools and logging
     #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools(); 

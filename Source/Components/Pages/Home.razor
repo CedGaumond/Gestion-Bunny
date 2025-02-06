@@ -1,4 +1,4 @@
-﻿@page "/"
+﻿@page "/home"
 @using Gestion_Bunny.Modeles
 @using Gestion_Bunny.Services
 @using Microsoft.EntityFrameworkCore
@@ -11,49 +11,6 @@
 <h1>Bienvenue chez Bunny&Co.</h1>
 
 
-@if (AuthState.IsAuthenticated && AuthState.CurrentUser != null)
-{
-    <div class="user-profile p-4 border rounded shadow-sm">
-        <h3>Your Profile</h3>
-        <div class="d-flex align-items-start">
-            @if (AuthState.CurrentUser.Pic != null)
-            {
-                <img src="data:image/jpeg;base64,@Convert.ToBase64String(AuthState.CurrentUser.Pic)"
-                     alt="Profile Picture"
-                     class="rounded-circle me-3"
-                     style="width: 100px; height: 100px; object-fit: cover;" />
-            }
-            <div>
-                <p><strong>Nom:</strong> @AuthState.CurrentUser.FirstName @AuthState.CurrentUser.LastName</p>
-                <p><strong>Email:</strong> @AuthState.CurrentUser.Email</p>
-                <p><strong>Date Naissance:</strong> @AuthState.CurrentUser.BirthDate.ToShortDateString()</p>
-                @if (!string.IsNullOrEmpty(AuthState.CurrentUser.SocialInsuranceNumber))
-                {
-                    <p><strong>NAS:</strong> @AuthState.CurrentUser.SocialInsuranceNumber</p>
-                }
-                @if (AuthState.CurrentUser.EmployeeRole != null)
-                {
-                    <p><strong>Role:</strong> @AuthState.CurrentUser.EmployeeRole</p>
-                }
-                <p><strong>Employer le:</strong> @AuthState.CurrentUser.CreatedAt.ToShortDateString()</p>
-            </div>
-        </div>
-        
-        @if (AuthState.CurrentUser.TempPassword)
-        {
-            <div class="alert alert-warning mt-3">
-                <strong>Notice:</strong> Changer mot de passe temporaire.
-            </div>
-        }
-    </div>
-}
-else
-{
-    <div class="text-center p-4">
-        <h3>Welcome to Bunny&Co.</h3>
-        <p>Please <a href="/login">Connectez vous</a> pour voir tes info.</p>
-    </div>
-}
 
 @code {
     private string platform => DeviceInfo.Platform.ToString();

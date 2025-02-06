@@ -19,7 +19,7 @@ a, .btn-link {
         border-color: #FF9D89 !important;
     }
 
-    .btn-primary:focus, .btn-primary:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    .btn-primary:focus, .btn-primary:active:focus, .btn-link.nav-link:focus {
         box-shadow: 0 0 0 0.10rem #DB816E;
         background-color: #FF9D89 !important;
         border-color: #FF9D89 !important;
@@ -80,6 +80,7 @@ h2 {
 h3 {
     font-size: 18px !important;
     font-weight: bold;
+    color: white !important;
 }
 
 .modal-content {
@@ -122,14 +123,12 @@ h3 {
     border-radius: 10px;
 }
 
-
 table {
     width: 100%;
     border-collapse: collapse;
     color: white !important;
 }
 
-/* Styles pour l'entête */
 th {
     font-weight: bold;
     padding: 10px;
@@ -138,7 +137,6 @@ th {
     background-color: #2a2f36 !important;
 }
 
-/* Appliquer les couleurs sur les cellules au lieu de tr */
 tbody tr:nth-child(odd) td {
     background-color: #2a2f36 !important;
 }
@@ -147,13 +145,11 @@ tbody tr:nth-child(even) td {
     background-color: #1e2227 !important;
 }
 
-/* Styles pour les cellules */
 td {
     padding: 8px;
     border-bottom: 1px solid #495057;
     color: white !important;
 }
-
 
 table thead tr:first-child th:first-child {
     border-top-left-radius: 10px;
@@ -282,6 +278,74 @@ table tbody tr:last-child td {
     .category-underline.active {
         background-color: #DB816E;
     }
+
+
+.login-page {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url('/images/background_food.png') center/cover no-repeat;
+    position: relative;
+}
+
+.login-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    background: rgba(28, 28, 28, 0.8);
+    z-index: 1;
+}
+
+.login-container {
+    position: relative;
+    z-index: 2;
+    width: 40%;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    color: white;
+    margin-left: auto; 
+    margin-right: 2rem; 
+}
+
+.login-logo {
+    max-width: 50%;
+    margin-bottom: 20px;
+}
+
+.login-form {
+    background-color: rgba(33, 37, 41, 0.8);
+    padding: 30px;
+    border-radius: 10px;
+    width: 100%;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+.form-group {
+    text-align: left;
+}
+
+.form-control {
+    color: white;
+}
+
+form-label{
+    color: white !important;
+}
+
+label{
+    color: white !important;
+}
+
+.form-control:focus {
+    outline: none !important;
+    border: 2px solid #B5E6A8 !important;
+    box-shadow: 0 0 8px rgba(168, 230, 207, 0.6) !important;
+}
 
 
 .valid.modified:not([type=checkbox]) {
