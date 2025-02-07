@@ -27,7 +27,7 @@ namespace Gestion_Bunny.Services
 
         public async Task AddIngredient(string name, decimal quantityRemaining, decimal quantityPerDeliveryUnit, decimal minimumThresholdNotification)
         {
-            // Check if an ingredient with the same name already exists
+
             var existingIngredient = await _context.Ingredients
                 .FirstOrDefaultAsync(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && !i.IsDeleted);
 
@@ -55,7 +55,7 @@ namespace Gestion_Bunny.Services
 
             if (ingredient != null)
             {
-                // Check if the new name already exists (skip check if the name is not updated)
+
                 if (name != null && !name.Equals(ingredient.Name, StringComparison.OrdinalIgnoreCase))
                 {
                     var existingIngredient = await _context.Ingredients

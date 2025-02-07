@@ -8,13 +8,14 @@ public class EmployeeContext : DbContext
     }
 
     public DbSet<Employee> Employee { get; set; }
+    public DbSet<EmployeeRole> EmployeeRole { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Employee>(entity =>
         {
-            entity.ToTable("employees", "public");
-
+            // Update table name to singular
+            entity.ToTable("employees", "public");  // Singular 'employee'
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.FirstName).HasColumnName("first_name");
@@ -30,9 +31,23 @@ public class EmployeeContext : DbContext
             entity.Property(e => e.DeletedDate).HasColumnName("deleted_date");
             entity.Property(e => e.IsDeleted).HasColumnName("is_deleted");
             entity.Property(e => e.TempPassword).HasColumnName("temp_password");
+
+            // Configure the relationship with EmployeeRole
+            entity.HasOne(e => e.EmployeeRole)
+                  .WithMany()  // No collection in EmployeeRole, so no navigation property needed
+                  .HasForeignKey(e => e.EmployeeRoleId)
+                  .OnDelete(DeleteBehavior.SetNull);  // Adjust based on your deletion policy
+        });
+
+        modelBuilder.Entity<EmployeeRole>(entity =>
+        {
+            // Update table name to singular
+            entity.ToTable("employee_role", "public");  // Singular 'employee_role'
+
+            entity.Property(er => er.Id).HasColumnName("id");
+            entity.Property(er => er.RoleName).HasColumnName("role_name");
         });
 
         base.OnModelCreating(modelBuilder);
     }
 }
-

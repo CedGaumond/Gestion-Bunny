@@ -44,16 +44,16 @@ public class EmployeeService : IEmployeeService
         }
     }
 
-    // New method to get a random employee
+
     public async Task<Employee> GetRandomEmployeeAsync()
     {
-        // Get a count of all employees in the database
+
         var count = await _context.Employee.CountAsync();
-        
-        // Generate a random index based on the number of employees
+
+
         var randomIndex = new Random().Next(count);
-        
-        // Retrieve the employee at that index
+
+
         return await _context.Employee.Skip(randomIndex).Take(1).FirstOrDefaultAsync();
     }
 }
