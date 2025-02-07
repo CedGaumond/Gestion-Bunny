@@ -3,7 +3,7 @@
 @inject AuthenticationState AuthState
 @inject PageTitleService TitleService
 
-@if (true)
+@if (AuthState.IsAuthenticated)
 {
     <div class="page">
         <div class="sidebar">
