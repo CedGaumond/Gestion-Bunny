@@ -1,6 +1,6 @@
 ﻿@page "/ingredient-list"
 @using Gestion_Bunny.Services
-@using Gestion_Bunny.Modeles;
+@using Gestion_Bunny.Modeles
 @inject PageTitleService TitleService
 @inject NavigationManager Navigation
 @inject IIngredientService IngredientService
@@ -10,10 +10,45 @@
         <img class="plus" src="images/plus.svg" alt="Ajouter" />
     </div>
 </div>
+<div class="row mb-3 align-items-center">
+    <div class="col-md-6">
+        <label for="filter" class="form-label">Filtrer par nom</label>
+        <div class="input-group">
+            <input type="text" id="filter" class="form-control" 
+                   placeholder="Rechercher un ingrédient" 
+                   @bind-value="filterText" 
+                   @bind-value:event="oninput"
+                   @onkeyup="OnFilterChanged" />
+            @if (!string.IsNullOrEmpty(filterText))
+            {
+                <button class="btn btn-outline-secondary btn-sm" type="button" @onclick="ClearFilter">
+                    ✕
+                </button>
+            }
+        </div>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Trier par</label>
+        <select class="form-select form-select-sm" @onchange="OnSortColumnChanged">
+            <option value="Name">Nom</option>
+            <option value="QuantityRemaining">Quantité restante</option>
+            <option value="MinimumThresholdNotification">Seuil minimum</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-outline-secondary btn-sm mt-4" @onclick="ToggleSortDirection">
+            @(sortAscending ? "▲" : "▼")
+        </button>
+    </div>
+</div>
 
-@if (ingredients == null)
+@if (isLoading)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Chargement des ingrédients...</em></p>
+}
+else if (!filteredIngredients.Any())
+{
+    <p><em>Aucun ingrédient trouvé.</em></p>
 }
 else
 {
@@ -29,21 +64,17 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var ingredient in ingredients)
+                @foreach (var ingredient in filteredIngredients)
                 {
                     <tr>
                         <td>
-                            <!-- Edit icon -->
-                            <div id="editIcon" class="icon-container" @onclick="@(() => Navigation.NavigateTo($"/ingredient/{ingredient.Id}"))">
+                            <div class="icon-container" @onclick="@(() => Navigation.NavigateTo($"/ingredient/{ingredient.Id}"))">
                                 <img src="images/pencil-square.svg" alt="Modifier" />
                             </div>
-
-                            <!-- Delete icon -->
-                            <div id="deleteIcon" class="icon-container" @onclick="() => HandleDeleteAction(ingredient.Id)">
+                            <div class="icon-container" @onclick="() => HandleDeleteAction(ingredient.Id)">
                                 <img src="images/trash.svg" alt="Supprimer" />
                             </div>
                         </td>
-
                         <td>@ingredient.Name</td>
                         <td>@ingredient.QuantityRemaining</td>
                         <td>@ingredient.QuantityPerDeliveryUnit</td>
@@ -56,37 +87,118 @@ else
 }
 
 @code {
+    private List<Ingredient>? ingredients;
+    private List<Ingredient> filteredIngredients = new List<Ingredient>();
+    private string filterText = string.Empty;
+    private bool isLoading = true;
+    private string sortColumn = "Name";
+    private bool sortAscending = false;
+
     protected override void OnInitialized()
     {
         TitleService.Title = "Liste d'ingrédients";
     }
 
-    private List<Ingredient>? ingredients;
-
     protected override async Task OnInitializedAsync()
     {
-      
-        ingredients = await IngredientService.GetAllIngredients();
+        try 
+        {
+           
+            ingredients = await IngredientService.GetAllIngredients();
+
+           
+            filteredIngredients = ingredients ?? new List<Ingredient>();
+            
+           
+            SortIngredients();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Erreur de chargement des ingrédients: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+   
+    private void OnFilterChanged()
+    {
+        if (ingredients == null) return;
+
+        filteredIngredients = string.IsNullOrWhiteSpace(filterText)
+            ? ingredients
+            : ingredients.Where(i => 
+                i.Name.Contains(filterText, StringComparison.OrdinalIgnoreCase) ||
+                i.QuantityRemaining.ToString().Contains(filterText, StringComparison.OrdinalIgnoreCase) ||
+                i.QuantityPerDeliveryUnit.ToString().Contains(filterText, StringComparison.OrdinalIgnoreCase) ||
+                i.MinimumThresholdNotification.ToString().Contains(filterText, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+
+       
+        SortIngredients();
+
+        StateHasChanged();
+    }
+
+
+    private void OnSortColumnChanged(ChangeEventArgs e)
+    {
+        sortColumn = e.Value?.ToString() ?? "Name";
+        SortIngredients();
+        StateHasChanged();
+    }
+
+    
+    private void SortIngredients()
+    {
+        filteredIngredients = sortColumn switch
+        {
+            "Name" => sortAscending 
+                ? filteredIngredients.OrderBy(i => i.Name).ToList()
+                : filteredIngredients.OrderByDescending(i => i.Name).ToList(),
+            "QuantityRemaining" => sortAscending
+                ? filteredIngredients.OrderBy(i => i.QuantityRemaining).ToList()
+                : filteredIngredients.OrderByDescending(i => i.QuantityRemaining).ToList(),
+            "MinimumThresholdNotification" => sortAscending
+                ? filteredIngredients.OrderBy(i => i.MinimumThresholdNotification).ToList()
+                : filteredIngredients.OrderByDescending(i => i.MinimumThresholdNotification).ToList(),
+            _ => filteredIngredients
+        };
+    }
+
+   
+    private void ToggleSortDirection()
+    {
+        sortAscending = !sortAscending;
+        SortIngredients();
+        StateHasChanged();
+    }
+
+   
+    private void ClearFilter()
+    {
+        filterText = string.Empty;
+        OnFilterChanged();
     }
 
     private async Task HandleDeleteAction(int ingredientId)
     {
-        
-
         try
         {
-           
+            
             await IngredientService.DeleteIngredient(ingredientId);
 
-            
-            ingredients = ingredients.Where(i => i.Id != ingredientId).ToList();
-
            
-            StateHasChanged();
+            ingredients = ingredients?.Where(i => i.Id != ingredientId).ToList();
+
+          
+            OnFilterChanged();
         }
         catch (Exception ex)
         {
-          
             Console.Error.WriteLine($"Erreur lors de la suppression de l'ingrédient: {ex.Message}");
         }
     }
