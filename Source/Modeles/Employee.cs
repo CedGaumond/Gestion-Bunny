@@ -32,7 +32,7 @@ namespace Gestion_Bunny.Modeles
     [ForeignKey("EmployeeRoleId")]
     public EmployeeRole EmployeeRole { get; set; }
 
-    public byte[] Pic { get; set; }
+    public byte[]? Pic { get; set; }
 
     [Required]
     [StringLength(255)]
