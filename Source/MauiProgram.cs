@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Gestion_Bunny.Modeles;
+using Gestion_Bunny.Data;
 
 
 namespace Gestion_Bunny;
@@ -18,17 +19,25 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
             });
 
-		builder.Services.AddMauiBlazorWebView();
-		builder.Services.AddBlazorBootstrap();
+        builder.Services.AddMauiBlazorWebView();
+        builder.Services.AddBlazorBootstrap();
 
-        // Get the connection string for PostgreSQL from DatabaseConfiguration (ensure it's configured correctly)
-        string connectionString = DatabaseConfiguration.GetConnectionString();  // Or use builder.Configuration.GetConnectionString("DefaultConnection");
 
-        // Add the DbContext for PostgreSQL using Npgsql
+        string connectionString = DatabaseConfiguration.GetConnectionString();
+
+
         builder.Services.AddDbContext<EmployeeContext>(options =>
-            options.UseNpgsql(connectionString)); // Make sure EmployeeContext is set up with PostgreSQL support
+            options.UseNpgsql(connectionString));
 
-        // Register the EmployeeService and AuthenticationService for Dependency Injection
+
+        builder.Services.AddDbContext<IngredientContext>(options =>
+            options.UseNpgsql(connectionString));
+
+
+        builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+        builder.Services.AddScoped<IIngredientService, IngredientService>();
+
+
         builder.Services.AddScoped<IEmployeeService, EmployeeService>();
         builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
         builder.Services.AddSingleton<PageTitleService>();
@@ -36,13 +45,13 @@ public static class MauiProgram
 
         builder.Services.AddSingleton<AuthenticationState>();
 
-        // If using Debug mode, add developer tools and logging
-    #if DEBUG
-        builder.Services.AddBlazorWebViewDeveloperTools(); 
+
+#if DEBUG
+        builder.Services.AddBlazorWebViewDeveloperTools();
         builder.Logging.AddDebug();
         builder.Logging.SetMinimumLevel(LogLevel.Debug);
-    #endif
+#endif
 
         return builder.Build();
-	}
+    }
 }

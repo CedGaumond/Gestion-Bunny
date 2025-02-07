@@ -2,7 +2,7 @@
 @using Gestion_Bunny.Services
 @inject NavigationManager Navigation
 @inject PageTitleService TitleService
-
+@inject IIngredientService IngredientService
 
 <div class="container d-flex justify-content-center mt-4">
 
@@ -40,30 +40,27 @@
     </div>
 </div>
 
-
 @code {
     [Parameter, SupplyParameterFromQuery] public string? IdString { get; set; }
 
     private int? Id => int.TryParse(IdString, out var id) ? id : null;
 
-    private Ingredient ingredient = new();
+    private Gestion_Bunny.Modeles.Ingredient ingredient = new();
 
     protected override async Task OnInitializedAsync()
     {
         if (Id.HasValue)
         {
-            ingredient = new Ingredient
-                {
-                    Id = Id.Value,
-                    Name = "Test modification",
-                    QuantityRemaining = 50,
-                    MinimumThresholdNotification = 10,
-                    QuantityPerDeliveryUnit = 5
-                };
+            ingredient = await IngredientService.GetIngredientById(Id.Value);
+
+            if (ingredient == null)
+            {
+                ingredient = new Gestion_Bunny.Modeles.Ingredient(); 
+            }
         }
         else
         {
-            ingredient = new Ingredient();
+            ingredient = new Gestion_Bunny.Modeles.Ingredient();
         }
     }
 
@@ -76,27 +73,21 @@
     {
         if (Id.HasValue)
         {
-            // await IngredientService.UpdateAsync(Ingredient);
+        
+            await IngredientService.UpdateIngredient(ingredient.Id, ingredient.Name, ingredient.QuantityRemaining, ingredient.QuantityPerDeliveryUnit, ingredient.MinimumThresholdNotification);
         }
         else
         {
-            // await IngredientService.CreateAsync(Ingredient);
+          
+            await IngredientService.AddIngredient(ingredient.Name, ingredient.QuantityRemaining, ingredient.QuantityPerDeliveryUnit, ingredient.MinimumThresholdNotification);
         }
+
+       
+        Navigation.NavigateTo("/ingredient-list");
     }
 
     private void Cancel()
     {
         Navigation.NavigateTo("/ingredient-list");
     }
-
-    private class Ingredient
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public decimal QuantityRemaining { get; set; }
-        public decimal QuantityPerDeliveryUnit { get; set; }
-        public decimal MinimumThresholdNotification { get; set; }
-    }
-
 }
-

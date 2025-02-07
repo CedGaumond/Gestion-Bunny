@@ -1,9 +1,9 @@
 ﻿@page "/ingredient-list"
 @using Gestion_Bunny.Services
+@using Gestion_Bunny.Modeles;
 @inject PageTitleService TitleService
 @inject NavigationManager Navigation
-
-
+@inject IIngredientService IngredientService
 
 <div class="pt-4 pb-2 d-flex justify-content-end align-items-end">
     <div class="icon-container plus-container" @onclick="@(() => Navigation.NavigateTo("/ingredient"))">
@@ -44,11 +44,10 @@ else
                             </div>
                         </td>
 
-
-                        <td>@ingredient.Date.ToShortDateString()</td>
-                        <td>@ingredient.TemperatureC</td>
-                        <td>@ingredient.TemperatureF</td>
-                        <td>@ingredient.Summary</td>
+                        <td>@ingredient.Name</td>
+                        <td>@ingredient.QuantityRemaining</td>
+                        <td>@ingredient.QuantityPerDeliveryUnit</td>
+                        <td>@ingredient.MinimumThresholdNotification</td>
                     </tr>
                 }
             </tbody>
@@ -57,49 +56,38 @@ else
 }
 
 @code {
-
     protected override void OnInitialized()
     {
         TitleService.Title = "Liste d'ingrédients";
     }
 
-
-    private WeatherForecast[]? ingredients;
+    private List<Ingredient>? ingredients;
 
     protected override async Task OnInitializedAsync()
     {
-        // Simulate asynchronous loading to demonstrate a loading indicator
-        await Task.Delay(500);
-
-        var startDate = DateOnly.FromDateTime(DateTime.Now);
-        var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
-        ingredients = Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Id = index,
-                Date = startDate.AddDays(index),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = summaries[Random.Shared.Next(summaries.Length)]
-            }).ToArray();
+      
+        ingredients = await IngredientService.GetAllIngredients();
     }
 
-    private class WeatherForecast
+    private async Task HandleDeleteAction(int ingredientId)
     {
-        public int Id { get; set; }
-        public DateOnly Date { get; set; }
-        public int TemperatureC { get; set; }
-        public string? Summary { get; set; }
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-    }
+        
 
-    // Méthode pour gérer l'action de modification
-    private void HandleEditAction(int ingredientId)
-    {
-        Console.WriteLine($"Modification de l'ingrédient avec ID : {ingredientId}");
-    }
+        try
+        {
+           
+            await IngredientService.DeleteIngredient(ingredientId);
 
-    // Méthode pour gérer l'action de suppression
-    private void HandleDeleteAction(int ingredientId)
-    {
-        Console.WriteLine($"Suppression de l'ingrédient avec ID : {ingredientId}");
+            
+            ingredients = ingredients.Where(i => i.Id != ingredientId).ToList();
+
+           
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+          
+            Console.Error.WriteLine($"Erreur lors de la suppression de l'ingrédient: {ex.Message}");
+        }
     }
 }
