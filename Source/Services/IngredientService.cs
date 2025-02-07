@@ -1,8 +1,8 @@
 using Gestion_Bunny.Data;
 using Gestion_Bunny.Modeles;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+
+
 
 namespace Gestion_Bunny.Services
 {
@@ -27,6 +27,15 @@ namespace Gestion_Bunny.Services
 
         public async Task AddIngredient(string name, decimal quantityRemaining, decimal quantityPerDeliveryUnit, decimal minimumThresholdNotification)
         {
+            // Check if an ingredient with the same name already exists
+            var existingIngredient = await _context.Ingredients
+                .FirstOrDefaultAsync(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && !i.IsDeleted);
+
+            if (existingIngredient != null)
+            {
+                throw new InvalidOperationException($"An ingredient with the name '{name}' already exists.");
+            }
+
             var ingredient = new Ingredient
             {
                 Name = name,
@@ -46,7 +55,20 @@ namespace Gestion_Bunny.Services
 
             if (ingredient != null)
             {
-                if (name != null) ingredient.Name = name;
+                // Check if the new name already exists (skip check if the name is not updated)
+                if (name != null && !name.Equals(ingredient.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    var existingIngredient = await _context.Ingredients
+                        .FirstOrDefaultAsync(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && !i.IsDeleted);
+
+                    if (existingIngredient != null)
+                    {
+                        throw new InvalidOperationException($"An ingredient with the name '{name}' already exists.");
+                    }
+
+                    ingredient.Name = name;
+                }
+
                 if (quantityRemaining.HasValue) ingredient.QuantityRemaining = quantityRemaining.Value;
                 if (quantityPerDeliveryUnit.HasValue) ingredient.QuantityPerDeliveryUnit = quantityPerDeliveryUnit.Value;
                 if (minimumThresholdNotification.HasValue) ingredient.MinimumThresholdNotification = minimumThresholdNotification.Value;
@@ -68,4 +90,5 @@ namespace Gestion_Bunny.Services
             }
         }
     }
+
 }

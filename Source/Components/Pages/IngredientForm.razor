@@ -11,6 +11,7 @@
 
         <EditForm Model="ingredient" OnValidSubmit="Save">
             <DataAnnotationsValidator />
+            <ValidationSummary />
 
             <div class="mb-3">
                 <label for="name" class="form-label">Nom</label>
@@ -36,6 +37,13 @@
                 <button type="submit" class="btn btn-primary">@(Id.HasValue ? "Mettre à jour" : "Ajouter")</button>
                 <button type="button" class="btn btn-secondary  mx-2" @onclick="Cancel">Annuler</button>
             </div>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger mt-3">
+                    @errorMessage
+                </div>
+            }
         </EditForm>
     </div>
 </div>
@@ -46,6 +54,7 @@
     private int? Id => int.TryParse(IdString, out var id) ? id : null;
 
     private Gestion_Bunny.Modeles.Ingredient ingredient = new();
+    private string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -71,19 +80,30 @@
 
     private async Task Save()
     {
-        if (Id.HasValue)
+   
+        if (await IsIngredientNameUnique())
         {
-        
-            await IngredientService.UpdateIngredient(ingredient.Id, ingredient.Name, ingredient.QuantityRemaining, ingredient.QuantityPerDeliveryUnit, ingredient.MinimumThresholdNotification);
+            if (Id.HasValue)
+            {
+                await IngredientService.UpdateIngredient(ingredient.Id, ingredient.Name, ingredient.QuantityRemaining, ingredient.QuantityPerDeliveryUnit, ingredient.MinimumThresholdNotification);
+            }
+            else
+            {
+                await IngredientService.AddIngredient(ingredient.Name, ingredient.QuantityRemaining, ingredient.QuantityPerDeliveryUnit, ingredient.MinimumThresholdNotification);
+            }
+
+            Navigation.NavigateTo("/ingredient-list");
         }
         else
         {
-          
-            await IngredientService.AddIngredient(ingredient.Name, ingredient.QuantityRemaining, ingredient.QuantityPerDeliveryUnit, ingredient.MinimumThresholdNotification);
+            errorMessage = "Un ingrédient avec ce nom existe déjà!";
         }
+    }
 
-       
-        Navigation.NavigateTo("/ingredient-list");
+    private async Task<bool> IsIngredientNameUnique()
+    {
+        var ingredients = await IngredientService.GetAllIngredients();
+        return !ingredients.Any(i => i.Name.Equals(ingredient.Name, StringComparison.OrdinalIgnoreCase) && i.Id != ingredient.Id);
     }
 
     private void Cancel()
