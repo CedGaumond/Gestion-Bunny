@@ -20,9 +20,82 @@
     <div id="app">Loading...</div>
 
     <div id="blazor-error-ui">
-        An unhandled error has occurred.
-        <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
+        <div class="error-container">
+            <h2>Unhandled Error</h2>
+            <div id="error-details" class="error-details"></div>
+            <div class="error-actions">
+                <a href="" class="reload">Reload</a>
+                <a class="dismiss">Dismiss</a>
+            </div>
+        </div>
+    
+        <script>
+            // Override Blazor's default error handling
+            Blazor.start({
+                loadBootResource: function (type, name, defaultUri, integrity) {
+                    console.log(`Loading: ${type}, ${name}`);
+                    return defaultUri;
+                }
+            }).then(() => {
+                // Custom global error handler
+                window.addEventListener('error', function(event) {
+                    const errorDetails = document.getElementById('error-details');
+                    if (errorDetails) {
+                        errorDetails.innerHTML = `
+                            <p><strong>Message:</strong> ${event.message}</p>
+                            <p><strong>Filename:</strong> ${event.filename}</p>
+                            <p><strong>Line:</strong> ${event.lineno}</p>
+                            <p><strong>Column:</strong> ${event.colno}</p>
+                            <pre>${event.error ? event.error.stack : 'No stack trace'}</pre>
+                        `;
+                    }
+                    
+                    const errorUI = document.getElementById('blazor-error-ui');
+                    if (errorUI) {
+                        errorUI.style.display = 'block';
+                    }
+                    
+                    return false; // Prevent default error handling
+                });
+            });
+        </script>
+    
+        <style>
+            #blazor-error-ui {
+                background-color: #f8d7da;
+                color: #721c24;
+                border: 1px solid #f5c6cb;
+                padding: 15px;
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                z-index: 1000;
+                font-family: Arial, sans-serif;
+            }
+            .error-details {
+                margin: 10px 0;
+                max-height: 300px;
+                overflow-y: auto;
+                background-color: white;
+                padding: 10px;
+                border-radius: 5px;
+            }
+            .error-actions {
+                display: flex;
+                gap: 10px;
+                margin-top: 10px;
+            }
+            .reload, .dismiss {
+                text-decoration: none;
+                padding: 5px 10px;
+                background-color: #dc3545;
+                color: white;
+                border-radius: 3px;
+                cursor: pointer;
+            }
+        </style>
     </div>
 
     <script src="_framework/blazor.webview.js" autostart="false"></script>
@@ -34,7 +107,64 @@
     <!-- Add sortable.js reference if SortableList component is used in your application. -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="_content/Blazor.Bootstrap/blazor.bootstrap.js"></script>
-
+    <script>
+        // Override global error handling
+        window.addEventListener('error', function(event) {
+            const errorUI = document.getElementById('blazor-error-ui');
+            const errorDetails = document.getElementById('error-details');
+            
+            if (errorDetails) {
+                errorDetails.innerHTML = `
+                    <p><strong>Error Message:</strong> ${event.message}</p>
+                    <p><strong>Source:</strong> ${event.filename}:${event.lineno}</p>
+                    <pre>${event.error ? event.error.stack : 'No stack trace available'}</pre>
+                `;
+            }
+            
+            if (errorUI) {
+                errorUI.style.display = 'block';
+            }
+        });
+    
+        // Handle unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(event) {
+            const errorUI = document.getElementById('blazor-error-ui');
+            const errorDetails = document.getElementById('error-details');
+            
+            if (errorDetails) {
+                errorDetails.innerHTML = `
+                    <p><strong>Unhandled Promise Rejection:</strong></p>
+                    <pre>${event.reason ? (event.reason.message + '\n' + event.reason.stack) : 'Unknown rejection'}</pre>
+                `;
+            }
+            
+            if (errorUI) {
+                errorUI.style.display = 'block';
+            }
+        });
+    
+        // Optional: Override console.error to capture additional errors
+        const originalConsoleError = console.error;
+        console.error = function() {
+            const errorUI = document.getElementById('blazor-error-ui');
+            const errorDetails = document.getElementById('error-details');
+            
+            if (errorDetails) {
+                errorDetails.innerHTML = `
+                    <p><strong>Console Error:</strong></p>
+                    <pre>${Array.from(arguments).map(arg => 
+                        arg instanceof Error ? arg.message + '\n' + arg.stack : String(arg)
+                    ).join('\n')}</pre>
+                `;
+            }
+            
+            if (errorUI) {
+                errorUI.style.display = 'block';
+            }
+            
+            originalConsoleError.apply(console, arguments);
+        };
+    </script>
 </body>
 
 </html>
