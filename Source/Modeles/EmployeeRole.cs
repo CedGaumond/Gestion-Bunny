@@ -10,5 +10,7 @@ namespace Gestion_Bunny.Modeles
         [Required]
         [StringLength(255)]
         public string RoleName { get; set; }
+
+        public ICollection<Employee> Employees { get; set; }
     }
 }
