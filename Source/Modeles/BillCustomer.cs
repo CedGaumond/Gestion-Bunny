@@ -18,7 +18,7 @@ namespace Gestion_Bunny.Modeles
         public int EmployeeId { get; set; }
         public Employee Employee { get; set; }
 
-        public List<BillItem> BillItems { get; set; } = new List<BillItem>();
-        public List<BillIngredient> BillIngredients { get; set; } = new List<BillIngredient>();
+        public ICollection<BillItem> BillItems { get; set; } 
+        public ICollection<BillIngredient> BillIngredients { get; set; }
     }
 }

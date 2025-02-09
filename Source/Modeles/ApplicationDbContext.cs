@@ -76,7 +76,7 @@ public class ApplicationDbContext : DbContext
 
             // Configure the relationship with EmployeeRole
             entity.HasOne(e => e.EmployeeRole)
-                  .WithMany()  // No collection in EmployeeRole, so no navigation property needed
+                  .WithMany(er => er.Employees) 
                   .HasForeignKey(e => e.EmployeeRoleId)
                   .OnDelete(DeleteBehavior.SetNull);  // Adjust based on your deletion policy
         });

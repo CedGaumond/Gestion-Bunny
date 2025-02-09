@@ -15,6 +15,6 @@ namespace Gestion_Bunny.Modeles
         [Required]
         [StringLength(255)]
         public string Name { get; set; }
-        public List<Item> Items { get; set; } = new List<Item>();
+        public ICollection<Item> Items { get; set; }
     }
 }

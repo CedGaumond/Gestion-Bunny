@@ -52,7 +52,7 @@ namespace Gestion_Bunny.Modeles
 
         //public decimal NumberHoursDesired { get; set; }
 
-        public List<Schedule> Schedules { get; set; } = new List<Schedule>();
-        public List<BillCustomer> BillCustomers { get; set; } = new List<BillCustomer>();
+        public ICollection<Schedule> Schedules { get; set; } 
+        public ICollection<BillCustomer> BillCustomers { get; set; }
     }
 }

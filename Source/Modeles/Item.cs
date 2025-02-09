@@ -31,7 +31,7 @@ namespace Gestion_Bunny.Modeles
         public int ItemCategoryId { get; set; }
         public ItemCategory ItemCategory { get; set; }
 
-        public List<ItemRecipe> ItemRecipes { get; set; } = new List<ItemRecipe>();
-        public List<BillItem> BillItems { get; set; } = new List<BillItem>();
+        public ICollection<ItemRecipe> ItemRecipes { get; set; } 
+        public ICollection<BillItem> BillItems { get; set; } 
     }
 }
