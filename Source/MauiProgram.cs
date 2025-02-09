@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Gestion_Bunny.Modeles;
-using Gestion_Bunny.Data;
 
 
 namespace Gestion_Bunny;
@@ -19,25 +18,17 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
             });
 
-        builder.Services.AddMauiBlazorWebView();
-        builder.Services.AddBlazorBootstrap();
+		builder.Services.AddMauiBlazorWebView();
+		builder.Services.AddBlazorBootstrap();
 
+        
+        string connectionString = DatabaseConfiguration.GetConnectionString(); 
 
-        string connectionString = DatabaseConfiguration.GetConnectionString();
+        // Add the DbContext for PostgreSQL using Npgsql
+        builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseNpgsql(connectionString)); // Make sure ApplicationDbContext is set up with PostgreSQL support
 
-
-        builder.Services.AddDbContext<EmployeeContext>(options =>
-            options.UseNpgsql(connectionString));
-
-
-        builder.Services.AddDbContext<IngredientContext>(options =>
-            options.UseNpgsql(connectionString));
-
-
-        builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-        builder.Services.AddScoped<IIngredientService, IngredientService>();
-
-
+        // Register the EmployeeService and AuthenticationService for Dependency Injection
         builder.Services.AddScoped<IEmployeeService, EmployeeService>();
         builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
         builder.Services.AddSingleton<PageTitleService>();
@@ -45,13 +36,13 @@ public static class MauiProgram
 
         builder.Services.AddSingleton<AuthenticationState>();
 
-
-#if DEBUG
-        builder.Services.AddBlazorWebViewDeveloperTools();
+        // If using Debug mode, add developer tools and logging
+    #if DEBUG
+        builder.Services.AddBlazorWebViewDeveloperTools(); 
         builder.Logging.AddDebug();
         builder.Logging.SetMinimumLevel(LogLevel.Debug);
-#endif
+    #endif
 
         return builder.Build();
-    }
+	}
 }

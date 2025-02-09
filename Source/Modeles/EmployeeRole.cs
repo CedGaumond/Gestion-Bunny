@@ -10,5 +10,7 @@ namespace Gestion_Bunny.Modeles
         [Required]
         [StringLength(255)]
         public string RoleName { get; set; }
+
+        public List<Employee> Employees { get; set; } = new List<Employee>();
     }
 }

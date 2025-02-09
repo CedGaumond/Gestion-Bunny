@@ -1,5 +1,9 @@
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Gestion_Bunny.Modeles
 {
@@ -28,6 +32,9 @@ namespace Gestion_Bunny.Modeles
 
         [Required]
         public bool IsDeleted { get; set; }
+
+        public List<ItemRecipe> ItemRecipes { get; set; } = new List<ItemRecipe>();
+        public List<BillIngredient> BillIngredients { get; set; } = new List<BillIngredient>();
 
     }
 
