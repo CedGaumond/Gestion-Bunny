@@ -1,4 +1,4 @@
-using Gestion_Bunny.Data;
+
 using Gestion_Bunny.Modeles;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,9 +8,9 @@ namespace Gestion_Bunny.Services
 {
     public class IngredientService : IIngredientService
     {
-        private readonly IngredientContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public IngredientService(IngredientContext context)
+        public IngredientService(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -27,9 +27,9 @@ namespace Gestion_Bunny.Services
 
         public async Task AddIngredient(string name, decimal quantityRemaining, decimal quantityPerDeliveryUnit, decimal minimumThresholdNotification)
         {
-
+            // Use ToLower() to perform a case-insensitive comparison
             var existingIngredient = await _context.Ingredients
-                .FirstOrDefaultAsync(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && !i.IsDeleted);
+                .FirstOrDefaultAsync(i => i.Name.ToLower() == name.ToLower() && !i.IsDeleted);
 
             if (existingIngredient != null)
             {
@@ -48,6 +48,7 @@ namespace Gestion_Bunny.Services
             _context.Ingredients.Add(ingredient);
             await _context.SaveChangesAsync();
         }
+
 
         public async Task UpdateIngredient(int id, string name = null, decimal? quantityRemaining = null, decimal? quantityPerDeliveryUnit = null, decimal? minimumThresholdNotification = null)
         {
