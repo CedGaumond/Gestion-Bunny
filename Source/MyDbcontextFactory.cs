@@ -3,14 +3,14 @@ using Microsoft.EntityFrameworkCore.Design;
 using Npgsql;
 
 public class MyDbContextFactory : 
-IDesignTimeDbContextFactory<EmployeeContext>
+IDesignTimeDbContextFactory<ApplicationDbContext>
 {
-    public EmployeeContext CreateDbContext(string[] args)
+    public ApplicationDbContext CreateDbContext(string[] args)
     {
-        var optionsBuilder = new DbContextOptionsBuilder<EmployeeContext>();
+        var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
         string connectionString = DatabaseConfiguration.GetConnectionString();
         optionsBuilder.UseNpgsql(connectionString);
 
-        return new EmployeeContext(optionsBuilder.Options);
+        return new ApplicationDbContext(optionsBuilder.Options);
     }
 }
