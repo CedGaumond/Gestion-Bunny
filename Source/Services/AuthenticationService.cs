@@ -4,10 +4,10 @@ namespace Gestion_Bunny.Services;
 
 public class AuthenticationService : IAuthenticationService
 {
-    private readonly EmployeeContext _context;
+    private readonly ApplicationDbContext _context;
     private readonly AuthenticationState _authState;
 
-    public AuthenticationService(EmployeeContext context, AuthenticationState authState)
+    public AuthenticationService(ApplicationDbContext context, AuthenticationState authState)
     {
         _context = context;
         _authState = authState;
@@ -16,7 +16,7 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<bool> LoginAsync(string email, string password)
     {
-        var employee = await _context.Employee
+        var employee = await _context.Employees
             .Where(e => e.Email == email)
             .FirstOrDefaultAsync();
 

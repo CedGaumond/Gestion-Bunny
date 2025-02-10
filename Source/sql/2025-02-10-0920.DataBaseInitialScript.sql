@@ -1,7 +1,3 @@
-CREATE DATABASE bunny_db WITH ENCODING 'UTF8';
-
-\c bunny_db
-
 CREATE TABLE IF NOT EXISTS public.restaurant_profile (
     id SERIAL PRIMARY KEY,
     restaurant_name VARCHAR(255),
@@ -26,8 +22,8 @@ CREATE TABLE IF NOT EXISTS public.employees (
     password_hash VARCHAR(255),
     password_salt VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_date TIMESTAMP,
-    is_deleted BOOLEAN,
+    deleted_date TIMESTAMP DEFAULT NULL,
+    is_deleted BOOLEAN NOT NULL DEFAULT false,
     temp_password BOOLEAN,
     number_hours_desired NUMERIC
 );
@@ -43,6 +39,7 @@ CREATE TABLE IF NOT EXISTS public.bill_customer (
     id SERIAL PRIMARY KEY,
     order_date DATE,
     bill_file BYTEA,
+    total_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
     employee_id INT REFERENCES employees(id)
 );
 
@@ -50,7 +47,8 @@ CREATE TABLE IF NOT EXISTS public.bill_provider (
     id SERIAL PRIMARY KEY,
     order_date DATE,
     bill_file BYTEA,
-    is_delivered BOOLEAN
+    total_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
+    is_delivered BOOLEAN NOT NULL DEFAULT false
 );
 
 CREATE TABLE IF NOT EXISTS public.item_category (
@@ -75,7 +73,7 @@ CREATE TABLE IF NOT EXISTS public.ingredients (
     quantity_per_delivery_unit NUMERIC,
     minimum_threshold_notification NUMERIC,
     deleted_date TIMESTAMP,
-    is_deleted BOOLEAN
+    is_deleted BOOLEAN NOT NULL DEFAULT false
 );
 
 CREATE TABLE IF NOT EXISTS public.bill_items (
@@ -118,3 +116,12 @@ VALUES
     ('Plats principaux'),
     ('Boissons'), 
     ('Desserts');    
+
+INSERT INTO public.employees (
+    first_name, last_name, e_mail, birth_date, social_insurance_number,employee_role_id, pic, password_hash, password_salt, is_deleted, temp_password
+)
+VALUES
+('Carolande', 'Dupont', 'carolande.dupont@example.com', '1988-06-25', '123456788', 1, 'base64,alksfjdasfjaslfjdofawefjopqweorihjjass', '123', 'salthash1', FALSE, FALSE),
+('Cedrick', 'Lemoine', 'cedrick.lemoine@example.com', '1992-11-30', '987654322', 2, 'base64,alksfjdasfjaslfjdofawefjopqweorihjjass', '123', 'salthash2', FALSE, FALSE),
+('Jacob', 'Bertier', 'jacob.bertier@example.com', '1985-01-15', '111223343', 3, 'base64,alksfjdasfjaslfjdofawefjopqweorihjjass', '123', 'salthash3', FALSE, TRUE);
+

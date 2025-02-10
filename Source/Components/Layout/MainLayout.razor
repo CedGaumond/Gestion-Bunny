@@ -2,44 +2,75 @@
 @inherits LayoutComponentBase
 @inject AuthenticationState AuthState
 @inject PageTitleService TitleService
+@inject NavigationManager Navigation
 
 @if (AuthState.IsAuthenticated)
 {
     <div class="page">
-        <div class="sidebar">
-            <NavMenu />
-        </div>
+    <div class="sidebar">
+        <NavMenu />
+    </div>
 
-        <main>
+    <main>
+        <div class="pt-3 top-row px-4">
+            <div class="title-container">
+                <h1>@TitleService.Title</h1>
+                <span class="date">@GetFormattedDate()</span>
+            </div>
 
-            <div class="pt-3 top-row px-4">
+            <div class="right-container">
 
-                <div class="title-container">
-                    <h1>@TitleService.Title</h1>
-                    <span class="date">@GetFormattedDate()</span>
-                </div>
-
-
-                <div class="right-container">
-
-                    <!-- User infos -->
-                    <div class="user-info">
-                        <div class="user-details">
-                            <div class="user-name">John Doe</div>
-                            <div class="user-position">Développeur</div>
+                <!-- User info -->
+                <div class="user-info">
+                    <div class="user-details">
+                        @if (AuthState.CurrentUser != null)
+                            {
+                                <div class="user-name">
+                                    @if (!string.IsNullOrEmpty(AuthState.CurrentUser.FirstName))
+                                    {
+                                        @AuthState.CurrentUser.FirstName
+                                    }
+                                    else
+                                    {
+                                        @AuthState.CurrentUser.LastName
+                                    }
+                                </div>
+                                <div class="user-position">@AuthState.CurrentUser.EmployeeRole</div>
+                            }
+                            else
+                            {
+                                <div class="user-name">Guest</div>
+                                <div class="user-position">No role assigned</div>
+                            }
                         </div>
+
                         <div class="user-circle">
-                            <span class="user-initials">JD</span>
+                            @if (AuthState.CurrentUser != null &&
+                           !string.IsNullOrEmpty(AuthState.CurrentUser.FirstName) &&
+                           !string.IsNullOrEmpty(AuthState.CurrentUser.LastName))
+                            {
+                                <span class="user-initials">
+                                    @AuthState.CurrentUser.FirstName[0]@AuthState.CurrentUser.LastName[0]
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="user-initials">GU</span> <!-- Default initials for guest -->
+                            }
                         </div>
                     </div>
 
                     <!-- Icons -->
-                    <a href=""><img src="images/gear.svg" alt="Paramètre" class="img-icon" /></a>
-                    <a href=""><img src="images/bell.svg" alt="Notifications" class="img-icon" /></a>
-                    <a href=""><img src="images/box-arrow-right.svg" alt="Déconnexion" class="img-icon" /></a>
+                    <div class="icons">
+                        <a href="#"><img src="images/gear.svg" alt="Paramètre" class="img-icon" /></a>
+                        <a href="#"><img src="images/bell.svg" alt="Notifications" class="img-icon" /></a>
+                        <!-- Logout Button -->
+                        <a href="#" @onclick="Logout">
+                            <img src="images/box-arrow-right.svg" alt="Déconnexion" class="img-icon" />
+                        </a>
+                    </div>
 
                 </div>
-
             </div>
 
             <article class="content px-4">
@@ -47,18 +78,17 @@
             </article>
         </main>
     </div>
-
-} else
+}
+else
 {
     <div class="page">
-        <main>
-            <article class="content px-4">
-                @Body
-            </article>
-        </main>
-    </div>
+    <main>
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
 }
-
 
 @code {
     protected override void OnInitialized()
@@ -73,15 +103,22 @@
 
     private string GetFormattedDate()
     {
-
         var date = DateTime.Now;
         var formattedDate = date.ToString("dddd, d MMMM yyyy", new System.Globalization.CultureInfo("fr-FR"));
 
-        var dayOfWeek = formattedDate.Split(',')[0]; 
-        dayOfWeek = char.ToUpper(dayOfWeek[0]) + dayOfWeek.Substring(1).ToLower();  
+        var dayOfWeek = formattedDate.Split(',')[0];
+        dayOfWeek = char.ToUpper(dayOfWeek[0]) + dayOfWeek.Substring(1).ToLower();
 
         var result = formattedDate.Replace(formattedDate.Split(',')[0], dayOfWeek);
 
         return result;
+    }
+
+    // Logout handler
+    private void Logout()
+    {
+        AuthState.SetUnauthenticated();
+        Navigation.NavigateTo("/");
+
     }
 }

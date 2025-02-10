@@ -18,31 +18,34 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
             });
 
-		builder.Services.AddMauiBlazorWebView();
-		builder.Services.AddBlazorBootstrap();
+        builder.Services.AddMauiBlazorWebView();
+        builder.Services.AddBlazorBootstrap();
 
-        // Get the connection string for PostgreSQL from DatabaseConfiguration (ensure it's configured correctly)
-        string connectionString = DatabaseConfiguration.GetConnectionString();  // Or use builder.Configuration.GetConnectionString("DefaultConnection");
+
+        string connectionString = DatabaseConfiguration.GetConnectionString();
 
         // Add the DbContext for PostgreSQL using Npgsql
-        builder.Services.AddDbContext<EmployeeContext>(options =>
-            options.UseNpgsql(connectionString)); // Make sure EmployeeContext is set up with PostgreSQL support
+        builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseNpgsql(connectionString)); // Make sure ApplicationDbContext is set up with PostgreSQL support
 
         // Register the EmployeeService and AuthenticationService for Dependency Injection
         builder.Services.AddScoped<IEmployeeService, EmployeeService>();
         builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
         builder.Services.AddSingleton<PageTitleService>();
 
+        builder.Services.AddSingleton<IIngredientService, IngredientService>();
+
+
 
         builder.Services.AddSingleton<AuthenticationState>();
 
         // If using Debug mode, add developer tools and logging
-    #if DEBUG
-        builder.Services.AddBlazorWebViewDeveloperTools(); 
+#if DEBUG
+        builder.Services.AddBlazorWebViewDeveloperTools();
         builder.Logging.AddDebug();
         builder.Logging.SetMinimumLevel(LogLevel.Debug);
-    #endif
+#endif
 
         return builder.Build();
-	}
+    }
 }

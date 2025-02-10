@@ -7,6 +7,16 @@ a, .btn-link {
     color: #006bb7;
 }
 
+.btn-add-color {
+    background-color: #a6d189 !important;
+    color: white !important;
+}
+
+.btn-remove-color {
+    background-color: #de2540 !important;
+    color: white !important;
+}
+
 .btn-primary {
     color: #fff;
     background-color: #DB816E !important;
@@ -63,7 +73,7 @@ a, .btn-link {
 
 
 .content {
-    padding-top: 0.0rem; /* Padding top pour enlever*/
+    padding-top: 0.0rem;
     padding-right: 0cm;
     padding-left: 0cm;
 }
@@ -81,6 +91,11 @@ h3 {
     font-size: 18px !important;
     font-weight: bold;
     color: white !important;
+}
+
+h4 {
+    font-size: 16px !important;
+    font-weight: bold;
 }
 
 .modal-content {
@@ -190,6 +205,36 @@ table tbody tr:last-child td {
         filter: invert(1);
     }
 
+.add-card {
+    height: 100%;
+    aspect-ratio: 1/1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+}
+
+.plus-container-big {
+    width: 75px;
+    height: 75px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20%;
+    background-color: #DB816E;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+}
+
+    .plus-container-big:hover {
+        background-color: #FF9D89;
+    }
+
+.plus-big {
+    width: 35px !important;
+    height: 35px !important;
+}
+
 .plus-container {
     padding: 5px 5px !important;
 }
@@ -254,6 +299,10 @@ table tbody tr:last-child td {
     height: 20px;
 }
 
+.container-recipe {
+    background-color: #1C1C1C !important;
+}
+
 .category-item {
     text-align: center;
     padding: 10px;
@@ -278,6 +327,13 @@ table tbody tr:last-child td {
     .category-underline.active {
         background-color: #DB816E;
     }
+
+
+.bg-custom {
+    background-color: #1C1C1C !important;
+    color: #fff;
+}
+
 
 
 .login-page {

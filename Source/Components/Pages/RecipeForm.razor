@@ -1,0 +1,180 @@
+﻿@page "/recipe/{IdString?}"
+@using Gestion_Bunny.Services
+@inject NavigationManager Navigation
+@inject PageTitleService TitleService
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="p-4 shadow-lg rounded bg-custom">
+                <h3 class="text-center">@(Id.HasValue ? "Modifier une recette" : "Ajouter une recette")</h3>
+
+                <EditForm Model="recipe" OnValidSubmit="Save">
+                    <DataAnnotationsValidator />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Nom</label>
+                                <InputText id="name" class="form-control" @bind-Value="recipe.Name" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="price" class="form-label">Prix</label>
+                                <InputNumber id="price" class="form-control" @bind-Value="recipe.Price" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="image" class="form-label">Image</label>
+                                <input type="file" class="form-control" @onchange="OnImageUpload" />
+                                @if (!string.IsNullOrEmpty(recipe.ImageBase64))
+                                {
+                                    <img src="@recipe.ImageBase64" alt="Preview" class="img-fluid mt-2 rounded" style="max-height: 150px;" />
+                                }
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 shadow-sm rounded bg-custom">
+                                <h4 class="text-center">Ingrédients</h4>
+
+                                <div class="d-flex mb-3">
+                                    <InputSelect class="form-control me-2" @bind-Value="selectedIngredient">
+                                        <option value="">-- Sélectionner --</option>
+                                        @foreach (var ing in availableIngredients)
+                                        {
+                                            if (!recipe.Ingredients.Any(i => i.Name == ing.Name))
+                                            {
+                                                <option value="@ing.Name">@ing.Name</option>
+                                            }
+                                        }
+                                    </InputSelect>
+                                    <button type="button" class="icon-container btn btn-add-color" @onclick="AddIngredient" disabled="@string.IsNullOrEmpty(selectedIngredient)">
+                                        <img class="plus" src="images/plus.svg" alt="Ajouter" />
+                                    </button>
+                                </div>
+
+                                <div>
+                                    @foreach (var ingredient in recipe.Ingredients)
+                                    {
+                                        <div class="d-flex align-items-center mb-2">
+                                            <span class="form-control me-2">@ingredient.Name</span>
+                                            <InputNumber class="form-control me-2" placeholder="Quantité" @bind-Value="ingredient.Quantity" />
+                                            <button type="button" class="icon-container btn btn-remove-color" @onclick="() => RemoveIngredient(ingredient)">
+                                                <img class="plus" src="images/x.svg" alt="Retirer" />
+                                            </button>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-center mt-4">
+                        <button type="submit" class="btn btn-primary">@(Id.HasValue ? "Mettre à jour" : "Ajouter")</button>
+                        <button type="button" class="btn btn-secondary mx-2" @onclick="Cancel">Annuler</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, SupplyParameterFromQuery] public string? IdString { get; set; }
+    private int? Id => int.TryParse(IdString, out var id) ? id : null;
+
+    private Recipe recipe = new();
+    private string selectedIngredient = "";
+
+    // Liste des ingrédients prédéfinis
+    private List<Ingredient> availableIngredients = new()
+    {
+        new Ingredient { Name = "Farine" },
+        new Ingredient { Name = "Oeufs" },
+        new Ingredient { Name = "Sucre" },
+        new Ingredient { Name = "Lait" },
+        new Ingredient { Name = "Beurre" }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            recipe = new Recipe
+                {
+                    Id = Id.Value,
+                    Name = "Recette test",
+                    Price = 12.99m,
+                    Ingredients = new List<Ingredient>
+                {
+                    new Ingredient { Name = "Farine", Quantity = 500 },
+                    new Ingredient { Name = "Oeufs", Quantity = 2 }
+                }
+                };
+        }
+        else
+        {
+            recipe = new Recipe();
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        TitleService.Title = "Recette";
+    }
+
+    private async Task Save()
+    {
+        if (Id.HasValue)
+        {
+            // await RecipeService.UpdateAsync(recipe);
+        }
+        else
+        {
+            // await RecipeService.CreateAsync(recipe);
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/recipe-list");
+    }
+
+    private void AddIngredient()
+    {
+        if (!string.IsNullOrEmpty(selectedIngredient) && !recipe.Ingredients.Any(i => i.Name == selectedIngredient))
+        {
+            recipe.Ingredients.Add(new Ingredient { Name = selectedIngredient, Quantity = 1 });
+            selectedIngredient = ""; // Réinitialise le select
+        }
+    }
+
+    private void RemoveIngredient(Ingredient ingredient)
+    {
+        recipe.Ingredients.Remove(ingredient);
+    }
+
+    private async Task OnImageUpload(ChangeEventArgs e)
+    {
+        var files = ((Microsoft.AspNetCore.Components.Forms.IBrowserFile)e.Value).OpenReadStream();
+        var buffer = new byte[files.Length];
+        await files.ReadAsync(buffer, 0, (int)files.Length);
+        recipe.ImageBase64 = $"data:image/png;base64,{Convert.ToBase64String(buffer)}";
+    }
+
+    private class Recipe
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public string? ImageBase64 { get; set; }
+        public List<Ingredient> Ingredients { get; set; } = new();
+    }
+
+    private class Ingredient
+    {
+        public string Name { get; set; } = string.Empty;
+        public decimal Quantity { get; set; }
+    }
+}
