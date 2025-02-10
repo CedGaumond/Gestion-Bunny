@@ -2,12 +2,15 @@
 @using Gestion_Bunny.Services
 @inject NavigationManager Navigation
 @inject PageTitleService TitleService
-
+@inject IIngredientService IngredientService
 
 <div class="container d-flex justify-content-center mt-4">
 
     <div class="card p-4 shadow" style="max-width: 500px; width: 100%;">
         <h3 class="text-center">@(Id != null ? "Modifier un ingrédient" : "Ajouter un ingrédient")</h3>
+
+
+
 
         <EditForm Model="ingredient" OnValidSubmit="Save">
             <DataAnnotationsValidator />
@@ -19,51 +22,61 @@
 
             <div class="mb-3">
                 <label for="quantityRemaining" class="form-label">Quantité restante</label>
-                <InputNumber id="quantityRemaining" class="form-control" @bind-Value="ingredient.QuantityRemaining" required />
+                <InputNumber id="quantityRemaining" class="form-control" @bind-Value="ingredient.QuantityRemaining"
+                    required />
             </div>
 
             <div class="mb-3">
                 <label for="quantityPerDeliveryUnit" class="form-label">Quantité par unité de livraison</label>
-                <InputNumber id="quantityPerDeliveryUnit" class="form-control" @bind-Value="ingredient.QuantityPerDeliveryUnit" required />
+                <InputNumber id="quantityPerDeliveryUnit" class="form-control"
+                    @bind-Value="ingredient.QuantityPerDeliveryUnit" required />
             </div>
 
             <div class="mb-3">
                 <label for="minimumThresholdNotification" class="form-label">Seuil minimum de notification</label>
-                <InputNumber id="minimumThresholdNotification" class="form-control" @bind-Value="ingredient.MinimumThresholdNotification" required />
+                <InputNumber id="minimumThresholdNotification" class="form-control"
+                    @bind-Value="ingredient.MinimumThresholdNotification" required />
+            </div>
+
+            <div class="mb-3">
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger" role="alert">
+                        @errorMessage
+                    </div>
+                }
             </div>
 
             <div class="d-flex justify-content-center">
                 <button type="submit" class="btn btn-primary">@(Id.HasValue ? "Mettre à jour" : "Ajouter")</button>
-                <button type="button" class="btn btn-secondary  mx-2" @onclick="Cancel">Annuler</button>
+                <button type="button" class="btn btn-secondary mx-2" @onclick="Cancel">Annuler</button>
             </div>
         </EditForm>
     </div>
 </div>
-
 
 @code {
     [Parameter, SupplyParameterFromQuery] public string? IdString { get; set; }
 
     private int? Id => int.TryParse(IdString, out var id) ? id : null;
 
-    private Ingredient ingredient = new();
+    private Gestion_Bunny.Modeles.Ingredient ingredient = new();
+    private string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
         if (Id.HasValue)
         {
-            ingredient = new Ingredient
-                {
-                    Id = Id.Value,
-                    Name = "Test modification",
-                    QuantityRemaining = 50,
-                    MinimumThresholdNotification = 10,
-                    QuantityPerDeliveryUnit = 5
-                };
+            ingredient = await IngredientService.GetIngredientById(Id.Value);
+
+            if (ingredient == null)
+            {
+                ingredient = new Gestion_Bunny.Modeles.Ingredient();
+            }
         }
         else
         {
-            ingredient = new Ingredient();
+            ingredient = new Gestion_Bunny.Modeles.Ingredient();
         }
     }
 
@@ -74,13 +87,35 @@
 
     private async Task Save()
     {
-        if (Id.HasValue)
+        try
         {
-            // await IngredientService.UpdateAsync(Ingredient);
+            // Vérifier si l'ingrédient existe déjà
+            if (await IngredientService.IsIngredientNameExists(ingredient.Name))
+            {
+                // Définir un message d'erreur si l'ingrédient existe déjà
+                errorMessage = $"Un ingrédient avec le nom '{ingredient.Name}' existe déjà.";
+                return; // Ne pas poursuivre l'ajout de l'ingrédient
+            }
+
+            // Si l'ingrédient n'existe pas, procédez à l'ajout ou à la mise à jour
+            if (Id.HasValue)
+            {
+                await IngredientService.UpdateIngredient(ingredient.Id, ingredient.Name, ingredient.QuantityRemaining,
+                ingredient.QuantityPerDeliveryUnit, ingredient.MinimumThresholdNotification);
+            }
+            else
+            {
+                await IngredientService.AddIngredient(ingredient.Name, ingredient.QuantityRemaining, ingredient.QuantityPerDeliveryUnit,
+                ingredient.MinimumThresholdNotification);
+            }
+
+            // Rediriger vers la liste des ingrédients après une réussite
+            Navigation.NavigateTo("/ingredient-list");
         }
-        else
+        catch (Exception ex)
         {
-            // await IngredientService.CreateAsync(Ingredient);
+            // Si une erreur se produit (par exemple, lors de l'ajout ou de la mise à jour), définir le message d'erreur
+            errorMessage = ex.Message;
         }
     }
 
@@ -88,15 +123,4 @@
     {
         Navigation.NavigateTo("/ingredient-list");
     }
-
-    private class Ingredient
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public decimal QuantityRemaining { get; set; }
-        public decimal QuantityPerDeliveryUnit { get; set; }
-        public decimal MinimumThresholdNotification { get; set; }
-    }
-
 }
-
