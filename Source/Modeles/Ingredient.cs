@@ -30,7 +30,6 @@ namespace Gestion_Bunny.Modeles
 
         public DateTime? DeletedDate { get; set; }
 
-        [Required]
         public bool IsDeleted { get; set; }
 
         public ICollection<ItemRecipe> ItemRecipes { get; set; } 
