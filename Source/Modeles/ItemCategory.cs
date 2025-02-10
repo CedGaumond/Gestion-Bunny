@@ -5,16 +5,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gestion_Bunny.Modeles
-{
-    public class ItemCategory
-    {
-        [Key]
-        public int Id { get; set; }
+namespace Gestion_Bunny.Modeles{
 
-        [Required]
-        [StringLength(255)]
-        public string Name { get; set; }
-        public ICollection<Item> Items { get; set; }
-    }
+ public class ItemCategory
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public List<ItemRecipe> Recipes { get; set; } 
+
 }
+
+
+
+}
+   

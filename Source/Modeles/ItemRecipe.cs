@@ -10,14 +10,14 @@ namespace Gestion_Bunny.Modeles
 {
     public class ItemRecipe
     {
-        [Key]
+        public int Id { get; set; }
+        public int RecipeId { get; set; }
         public int ItemId { get; set; }
-        public Item Item { get; set; }
-
-        [Key]
-        public int IngredientId { get; set; }
-        public Ingredient Ingredient { get; set; }
-
         public decimal Quantity { get; set; }
+
+        // Add navigation properties if necessary
+        public Recipe Recipe { get; set; }
+        public Item Item { get; set; }
     }
+
 }

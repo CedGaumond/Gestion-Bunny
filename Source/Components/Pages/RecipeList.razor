@@ -1,10 +1,12 @@
 ﻿@page "/recipe-list"
 @using Gestion_Bunny.Services
+@using Gestion_Bunny.Modeles
+@inject ItemRecipeService RecipeService
 @inject PageTitleService TitleService
 @inject NavigationManager Navigation
 
 <div class="d-flex justify-content-center gap-4 mb-4">
-    @if (categories == null)
+    @if (categories == null || !categories.Any())
     {
         <p>Chargement des catégories...</p>
     }
@@ -22,7 +24,7 @@
     }
 </div>
 
-@if (recipes == null)
+@if (recipes == null || !recipes.Any())
 {
     <p><em>Loading...</em></p>
 }
@@ -41,47 +43,50 @@ else
 
         @foreach (var recipe in recipes_filter)
         {
-        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+            <div class="col-lg-3 col-md-4 col-sm-6 col-12">
                 <div class="card mx-auto h-100 d-flex flex-column">
-                <img src="@recipe.ImageUrl" class="card-img-top" alt="Image de la recette" />
-                <div class="card-body">
-                    <h5 class="card-title">@recipe.Name</h5>
-                    <p class="card-text">Prix : @recipe.Price.ToString()</p>
+                    <img src="@recipe.ImageUrl" class="card-img-top" alt="Image de la recette" />
+                    <div class="card-body">
+                        <h5 class="card-title">@recipe.Name</h5>
+                        <p class="card-text">Prix : @recipe.Price.ToString()</p>
 
-                    <div class="d-flex justify-content-center align-items-center gap-3">
-
+                        <div class="d-flex justify-content-center align-items-center gap-3">
                             <div class="icon-container" @onclick="@(() => Navigation.NavigateTo($"/recipe/{recipe.Id}"))">
-                            <img src="images/pencil-square.svg" alt="Modifier" class="action-icon" />
-                        </div>
+                                <img src="images/pencil-square.svg" alt="Modifier" class="action-icon" />
+                            </div>
 
-                        <div class="icon-container" @onclick="() => HandleDeleteAction(recipe.Id)">
-                            <img src="images/trash.svg" alt="Supprimer" class="action-icon" />
+                            <div class="icon-container" @onclick="() => HandleDeleteAction(recipe.Id)">
+                                <img src="images/trash.svg" alt="Supprimer" class="action-icon" />
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
         }
     </div>
 }
 
 @code {
 
-    private int selectedCategoryId = 0;
+    private int selectedCategoryId = 1;  // Default to the first category (typically "Entrées" or another category)
+    private List<Recipe> recipes = new List<Recipe>();
+    private List<Recipe> recipes_filter = new List<Recipe>();
+    private List<ItemCategory> categories = new List<ItemCategory>();
 
+    // This method will be called when a category is clicked
     private void SelectCategory(int categoryId)
     {
         selectedCategoryId = categoryId;
 
-        if(selectedCategoryId == 1)
+        // Filter recipes based on selected category
+        if (selectedCategoryId == 1)  // Assuming "Entrées" is category ID 1, show all recipes
         {
             recipes_filter = recipes.ToList();
         }
         else
         {
-            // Filtrer les recettes selon la catégorie sélectionnée
+            // Filter recipes based on selected category
             recipes_filter = recipes.Where(r => r.CategoryId == selectedCategoryId).ToList();
-
         }
     }
 
@@ -90,41 +95,16 @@ else
         TitleService.Title = "Liste de recettes";
     }
 
-
-    private Recipe[] recipes = Array.Empty<Recipe>();
-    private List<Recipe> recipes_filter = new();
-    private Category[] categories = Array.Empty<Category>();
-
-
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            // Simuler le chargement asynchrone pour afficher un indicateur de chargement
-            await Task.Delay(500);
+            // Load categories and recipes from the RecipeService
+            categories = await RecipeService.GetCategoriesAsync();
+            recipes = await RecipeService.GetRecipesAsync();
 
-            var startDate = DateOnly.FromDateTime(DateTime.Now);
-            var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
-            var urls = new[] { "/images/1.jpg", "/images/2.jpg", "/images/3.jpg", "/images/4.jpg", "/images/5.jpg" };
-            var categories_names = new[] { "Tous", "Entrées", "Plat pricipaux", "Boissons", "Desserts"};
-
-            recipes = Enumerable.Range(1, 15).Select(index => new Recipe
-                {
-                    Id = index,
-                    Price = Random.Shared.Next(0, 55),
-                    Name = summaries[Random.Shared.Next(summaries.Length)],
-                    ImageUrl = urls[index % urls.Length],
-                    CategoryId = index % 5
-
-                }).ToArray();
-
-            SelectCategory(1);
-            categories = Enumerable.Range(1, 5).Select(index => new Category
-                {
-                    Id = index,
-                    Name = categories_names[index % categories_names.Length] 
-                }).ToArray();
-
+            // Initially show all recipes for the default category (selectedCategoryId == 1)
+            SelectCategory(selectedCategoryId);
         }
         catch (Exception ex)
         {
@@ -132,31 +112,22 @@ else
         }
     }
 
-
-    private class Recipe
+    private async Task HandleDeleteAction(int recipeId)
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public float Price { get; set; }
-        public string ImageUrl { get; set; }   
-        public int CategoryId { get; set; }
-    }
+        try
+        {
+            // Handle recipe deletion logic
+            await RecipeService.DeleteRecipeAsync(recipeId);
 
-    private class Category
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-    }
+            // After deletion, refresh the list of recipes
+            recipes = await RecipeService.GetRecipesAsync();
+            SelectCategory(selectedCategoryId);  // Refresh the category-based filter
 
-    // Méthode pour gérer l'action de modification
-    private void HandleEditAction(int recipeId)
-    {
-        Console.WriteLine($"Modification de la recette avec ID : {recipeId}");
-    }
-
-    // Méthode pour gérer l'action de suppression
-    private void HandleDeleteAction(int recipeId)
-    {
-        Console.WriteLine($"Suppression de la recette avec ID : {recipeId}");
+            StateHasChanged();  // Trigger a re-render
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error while deleting the recipe: {ex.Message}");
+        }
     }
 }
