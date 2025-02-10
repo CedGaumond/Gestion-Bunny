@@ -5,17 +5,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gestion_Bunny.Modeles{
-
- public class ItemCategory
+namespace Gestion_Bunny.Modeles
 {
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public List<ItemRecipe> Recipes { get; set; } 
+
+    public class ItemCategory
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+
+        public ICollection<Item> Items { get; set; }
+
+    }
+
+
 
 }
 
-
-
-}
-   

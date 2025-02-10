@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 
 namespace Gestion_Bunny.Services
 {
-    public interface IItemRecipeService
+    public interface IItemService
     {
         Task<List<ItemCategory>> GetCategoriesAsync();
-        Task<List<Recipe>> GetRecipesAsync();
+        Task<List<Item>> GetRecipesAsync();
         Task DeleteRecipeAsync(int recipeId);
     }
 }
