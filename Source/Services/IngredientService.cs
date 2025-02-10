@@ -20,6 +20,13 @@ namespace Gestion_Bunny.Services
             return await _context.Ingredients.Where(i => !i.IsDeleted).ToListAsync();
         }
 
+        public async Task<bool> IsIngredientNameExists(string name)
+        {
+            return await _context.Ingredients
+                .AnyAsync(i => i.Name.ToLower() == name.ToLower() && !i.IsDeleted);
+        }
+
+
         public async Task<Ingredient> GetIngredientById(int id)
         {
             return await _context.Ingredients.FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
@@ -42,6 +49,7 @@ namespace Gestion_Bunny.Services
                 QuantityRemaining = quantityRemaining,
                 QuantityPerDeliveryUnit = quantityPerDeliveryUnit,
                 MinimumThresholdNotification = minimumThresholdNotification,
+                DeletedDate = null,
                 IsDeleted = false
             };
 
