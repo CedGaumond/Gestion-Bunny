@@ -14,5 +14,6 @@ namespace Gestion_Bunny.Services
         Task AddBillProviderAsync(BillProvider billProvider);
         Task UpdateBillProviderAsync(BillProvider billProvider);
         Task DeleteBillProviderAsync(int billProviderId);
-   }
+        Task UpdateOrderAsReceivedAsync(int orderId);
+    }
 }

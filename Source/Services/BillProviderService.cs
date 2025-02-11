@@ -1,10 +1,5 @@
 ﻿using Gestion_Bunny.Modeles;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Gestion_Bunny.Services
 {
@@ -45,6 +40,16 @@ namespace Gestion_Bunny.Services
             if (billProvider != null)
             {
                 _context.BillProviders.Remove(billProvider);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task UpdateOrderAsReceivedAsync(int orderId)
+        {
+            var billProvider = await _context.BillProviders.FindAsync(orderId);
+            if (billProvider != null)
+            {
+                billProvider.IsDelivered = true;
                 await _context.SaveChangesAsync();
             }
         }

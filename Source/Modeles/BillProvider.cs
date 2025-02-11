@@ -13,7 +13,9 @@ namespace Gestion_Bunny.Modeles
         public int Id { get; set; }
 
         public DateTime OrderDate { get; set; }
-        public byte[] BillFile { get; set; }
+        public byte[]? BillFile { get; set; }
         public bool IsDelivered { get; set; }
+        public float TotalAmount { get; set; }
+        public ICollection<BillIngredient> BillIngredients { get; set; }
     }
 }

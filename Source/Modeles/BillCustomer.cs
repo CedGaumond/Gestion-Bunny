@@ -13,12 +13,13 @@ namespace Gestion_Bunny.Modeles
         public int Id { get; set; }
 
         public DateTime OrderDate { get; set; }
-        public byte[] BillFile { get; set; }
+        public byte[]? BillFile { get; set; }
 
         public int EmployeeId { get; set; }
         public Employee Employee { get; set; }
 
+        public float TotalAmount { get; set; }
+
         public ICollection<BillItem> BillItems { get; set; } 
-        public ICollection<BillIngredient> BillIngredients { get; set; }
     }
 }
