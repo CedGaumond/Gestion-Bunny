@@ -122,6 +122,19 @@ public class ApplicationDbContext : DbContext
                   .WithOne()  // Add back-reference if applicable
                   .HasForeignKey(bi => bi.BillCustomerId)  // Assuming BillItem has BillCustomerId
                   .OnDelete(DeleteBehavior.Cascade);  // Adjust delete behavior
+        });
+        
+        modelBuilder.Entity<BillProvider>(entity =>
+        {
+            // Define table name
+            entity.ToTable("bill_provider", "public");
+
+            // Map columns
+            entity.Property(bp => bp.Id).HasColumnName("id");
+            entity.Property(bp => bp.OrderDate).HasColumnName("order_date");
+            entity.Property(bp => bp.BillFile).HasColumnName("bill_file");
+            entity.Property(bp => bp.TotalAmount).HasColumnName("total_amount");
+            entity.Property(bp => bp.IsDelivered).HasColumnName("is_delivered");
 
             // Configure the relationship with BillIngredient (if applicable)
             entity.HasMany(bc => bc.BillIngredients)
@@ -254,11 +267,6 @@ public class ApplicationDbContext : DbContext
                   .IsRequired()
                   .HasColumnType("NUMERIC")
                   .HasDefaultValue(0);
-
-            entity.HasOne(bi => bi.BillCustomer)
-                  .WithMany(bc => bc.BillIngredients)
-                  .HasForeignKey(bi => bi.BillCustomerId)
-                  .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(bi => bi.Ingredient)
                   .WithMany(i => i.BillIngredients)
