@@ -1,10 +1,12 @@
 ﻿@page "/recipe-list"
 @using Gestion_Bunny.Services
+@using Gestion_Bunny.Modeles
+@inject IItemService RecipeService
 @inject PageTitleService TitleService
 @inject NavigationManager Navigation
 
 <div class="d-flex justify-content-center gap-4 mb-4">
-    @if (categories == null)
+    @if (categories == null || !categories.Any())
     {
         <p>Chargement des catégories...</p>
     }
@@ -12,9 +14,7 @@
     {
         @foreach (var category in categories)
         {
-            <div class="category-item"
-                 @onclick="() => SelectCategory(category.Id)"
-                 style="cursor: pointer;">
+            <div class="category-item" @onclick="() => SelectCategory(category.Id)" style="cursor: pointer;">
                 <span>@category.Name</span>
                 <div class="category-underline @(selectedCategoryId == category.Id ? "active" : "")"></div>
             </div>
@@ -22,11 +22,7 @@
     }
 </div>
 
-@if (recipes == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
+@if (true)
 {
     <div class="row g-4">
         <div class="col-lg-3 col-md-4 col-sm-6 col-12">
@@ -39,50 +35,59 @@ else
             </div>
         </div>
 
-        @foreach (var recipe in recipes_filter)
-        {
-        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
-                <div class="card mx-auto h-100 d-flex flex-column">
-                <img src="@recipe.ImageUrl" class="card-img-top" alt="Image de la recette" />
-                <div class="card-body">
-                    <h5 class="card-title">@recipe.Name</h5>
-                    <p class="card-text">Prix : @recipe.Price.ToString()</p>
+       @foreach (var recipe in recipes_filter)
+{
+    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+        <div class="card mx-auto h-100 d-flex flex-column">
+            @if (recipe.Pic != null && recipe.Pic.Length > 0)
+            {
+                <!-- Convert byte[] to Base64 string -->
+                <img src="data:image/jpeg;base64,@Convert.ToBase64String(recipe.Pic)" class="card-img-top" alt="Image de la recette" />
+            }
+            else if (!string.IsNullOrEmpty(recipe.Pic?.ToString())) 
+            {
+                <!-- URL image rendering -->
+                <img src="@recipe.Pic" class="card-img-top" alt="Image de la recette" />
+            }
+            else
+            {
+                <!-- Fallback image rendering -->
+                <img src="images/default-recipe-image.jpg" class="card-img-top" alt="Image de la recette" />
+            }
 
-                    <div class="d-flex justify-content-center align-items-center gap-3">
+            <div class="card-body">
+                <h5 class="card-title">@recipe.Name</h5>
+                <p class="card-text">Prix : @recipe.Price.ToString()</p>
 
-                            <div class="icon-container" @onclick="@(() => Navigation.NavigateTo($"/recipe/{recipe.Id}"))">
-                            <img src="images/pencil-square.svg" alt="Modifier" class="action-icon" />
-                        </div>
+                <div class="d-flex justify-content-center align-items-center gap-3">
+                    <div class="icon-container" @onclick="@(() => Navigation.NavigateTo($"/recipe/{recipe.Id}"))">
+                        <img src="images/pencil-square.svg" alt="Modifier" class="action-icon" />
+                    </div>
 
-                        <div class="icon-container" @onclick="() => HandleDeleteAction(recipe.Id)">
-                            <img src="images/trash.svg" alt="Supprimer" class="action-icon" />
-                        </div>
+                    <div class="icon-container" @onclick="() => HandleDeleteAction(recipe.Id)">
+                        <img src="images/trash.svg" alt="Supprimer" class="action-icon" />
                     </div>
                 </div>
             </div>
         </div>
-        }
+    </div>
+}
+
+
+
     </div>
 }
 
 @code {
-
-    private int selectedCategoryId = 0;
+    private int selectedCategoryId = 1;
+    private List<Item> recipes = new List<Item>();
+    private List<Item> recipes_filter = new List<Item>();
+    private List<ItemCategory> categories = new List<ItemCategory>();
 
     private void SelectCategory(int categoryId)
     {
         selectedCategoryId = categoryId;
-
-        if(selectedCategoryId == 1)
-        {
-            recipes_filter = recipes.ToList();
-        }
-        else
-        {
-            // Filtrer les recettes selon la catégorie sélectionnée
-            recipes_filter = recipes.Where(r => r.CategoryId == selectedCategoryId).ToList();
-
-        }
+        recipes_filter = selectedCategoryId == 0 ? recipes.ToList() : recipes.Where(r => r.ItemCategoryId == selectedCategoryId).ToList();
     }
 
     protected override void OnInitialized()
@@ -90,73 +95,34 @@ else
         TitleService.Title = "Liste de recettes";
     }
 
-
-    private Recipe[] recipes = Array.Empty<Recipe>();
-    private List<Recipe> recipes_filter = new();
-    private Category[] categories = Array.Empty<Category>();
-
-
     protected override async Task OnInitializedAsync()
+{
+    try
+    {
+        categories = await RecipeService.GetCategoriesAsync();
+        recipes = await RecipeService.GetRecipesAsync();
+       
+        SelectCategory(1);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Erreur lors de l'initialisation: {ex.Message}");
+    }
+}
+
+
+    private async Task HandleDeleteAction(int recipeId)
     {
         try
         {
-            // Simuler le chargement asynchrone pour afficher un indicateur de chargement
-            await Task.Delay(500);
-
-            var startDate = DateOnly.FromDateTime(DateTime.Now);
-            var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
-            var urls = new[] { "/images/1.jpg", "/images/2.jpg", "/images/3.jpg", "/images/4.jpg", "/images/5.jpg" };
-            var categories_names = new[] { "Tous", "Entrées", "Plat pricipaux", "Boissons", "Desserts"};
-
-            recipes = Enumerable.Range(1, 15).Select(index => new Recipe
-                {
-                    Id = index,
-                    Price = Random.Shared.Next(0, 55),
-                    Name = summaries[Random.Shared.Next(summaries.Length)],
-                    ImageUrl = urls[index % urls.Length],
-                    CategoryId = index % 5
-
-                }).ToArray();
-
-            SelectCategory(1);
-            categories = Enumerable.Range(1, 5).Select(index => new Category
-                {
-                    Id = index,
-                    Name = categories_names[index % categories_names.Length] 
-                }).ToArray();
-
+            await RecipeService.DeleteRecipeAsync(recipeId);
+            recipes = await RecipeService.GetRecipesAsync();
+            SelectCategory(selectedCategoryId);
+            StateHasChanged();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Erreur lors de l'initialisation: {ex.Message}");
+            Console.WriteLine($"Error while deleting the recipe: {ex.Message}");
         }
-    }
-
-
-    private class Recipe
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public float Price { get; set; }
-        public string ImageUrl { get; set; }   
-        public int CategoryId { get; set; }
-    }
-
-    private class Category
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-    }
-
-    // Méthode pour gérer l'action de modification
-    private void HandleEditAction(int recipeId)
-    {
-        Console.WriteLine($"Modification de la recette avec ID : {recipeId}");
-    }
-
-    // Méthode pour gérer l'action de suppression
-    private void HandleDeleteAction(int recipeId)
-    {
-        Console.WriteLine($"Suppression de la recette avec ID : {recipeId}");
     }
 }

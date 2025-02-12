@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace Gestion_Bunny.Modeles
 {
+
     public class ItemCategory
     {
         [Key]
@@ -15,6 +16,9 @@ namespace Gestion_Bunny.Modeles
         [Required]
         [StringLength(255)]
         public string Name { get; set; }
+
+        // A collection of Items that belong to this ItemCategory
         public ICollection<Item> Items { get; set; }
     }
 }
+

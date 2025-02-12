@@ -1,20 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
+
 
 namespace Gestion_Bunny.Modeles
 {
     public class Ingredient
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         [Required]
         [StringLength(255)]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         [Required]
         [Range(0, double.MaxValue, ErrorMessage = "La quantité restante ne peut pas être négative.")]
@@ -32,9 +30,7 @@ namespace Gestion_Bunny.Modeles
 
         public bool IsDeleted { get; set; }
 
-        public ICollection<ItemRecipe> ItemRecipes { get; set; } 
-        public ICollection<BillIngredient> BillIngredients { get; set; }
-
+        public ICollection<ItemRecipe> ItemRecipes { get; set; } = new List<ItemRecipe>();
     }
 
 }
