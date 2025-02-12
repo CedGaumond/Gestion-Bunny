@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS public.items (
     price NUMERIC,
     pic BYTEA,
     deleted_date TIMESTAMP,
-    is_deleted BOOLEAN,
+    is_deleted BOOLEAN NOT NULL false,
     item_category_id INT REFERENCES item_category(id)
 );
 
