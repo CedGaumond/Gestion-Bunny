@@ -10,6 +10,15 @@
         <img class="plus" src="images/plus.svg" alt="Ajouter" />
     </div>
 </div>
+
+<!-- Display error message if any -->
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger mt-3">
+        @errorMessage
+    </div>
+}
+
 <div class="row mb-3 align-items-center">
     <div class="col-md-6">
         <label for="filter" class="form-label">Filtrer par nom</label>
@@ -103,13 +112,8 @@ else
     {
         try 
         {
-           
             ingredients = await IngredientService.GetAllIngredients();
-
-           
             filteredIngredients = ingredients ?? new List<Ingredient>();
-            
-           
             SortIngredients();
         }
         catch (Exception ex)
@@ -123,7 +127,6 @@ else
         }
     }
 
-   
     private void OnFilterChanged()
     {
         if (ingredients == null) return;
@@ -137,12 +140,9 @@ else
                 i.MinimumThresholdNotification.ToString().Contains(filterText, StringComparison.OrdinalIgnoreCase)
             ).ToList();
 
-       
         SortIngredients();
-
         StateHasChanged();
     }
-
 
     private void OnSortColumnChanged(ChangeEventArgs e)
     {
@@ -151,7 +151,6 @@ else
         StateHasChanged();
     }
 
-    
     private void SortIngredients()
     {
         filteredIngredients = sortColumn switch
@@ -169,7 +168,6 @@ else
         };
     }
 
-   
     private void ToggleSortDirection()
     {
         sortAscending = !sortAscending;
@@ -177,29 +175,40 @@ else
         StateHasChanged();
     }
 
-   
     private void ClearFilter()
     {
         filterText = string.Empty;
         OnFilterChanged();
     }
 
+    private string errorMessage = string.Empty;
+
     private async Task HandleDeleteAction(int ingredientId)
     {
         try
         {
-            
+            var isUsedInItemRecipe = await IngredientService.IsIngredientUsedInItemRecipe(ingredientId);
+
+            if (isUsedInItemRecipe)
+            {
+               
+                errorMessage = "L'ingrédient est utilisé dans une recette d'article et ne peut pas être supprimé.";
+                StateHasChanged();
+                return;
+            }
+
+      
             await IngredientService.DeleteIngredient(ingredientId);
 
-           
             ingredients = ingredients?.Where(i => i.Id != ingredientId).ToList();
 
-          
             OnFilterChanged();
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Erreur lors de la suppression de l'ingrédient: {ex.Message}");
+            
+            errorMessage = $"Erreur lors de la suppression de l'ingrédient: {ex.Message}";
+            StateHasChanged();
         }
     }
 }

@@ -57,7 +57,18 @@ namespace Gestion_Bunny.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task<string> GetIngredientNameById(int id)
+        {
+            var ingredient = await _context.Ingredients
+                .FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
 
+            if (ingredient == null)
+            {
+                throw new KeyNotFoundException($"Ingredient with ID {id} not found.");
+            }
+
+            return ingredient.Name;
+        }
         public async Task UpdateIngredient(int id, string name = null, decimal? quantityRemaining = null, decimal? quantityPerDeliveryUnit = null, decimal? minimumThresholdNotification = null)
         {
             var ingredient = await _context.Ingredients.FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
@@ -85,6 +96,12 @@ namespace Gestion_Bunny.Services
                 await _context.SaveChangesAsync();
             }
         }
+        public async Task<bool> IsIngredientUsedInItemRecipe(int ingredientId)
+        {
+            return await _context.ItemRecipes
+                .AnyAsync(ir => ir.IngredientId == ingredientId);
+        }
+
 
         public async Task DeleteIngredient(int id)
         {

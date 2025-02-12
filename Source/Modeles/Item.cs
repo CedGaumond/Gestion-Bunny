@@ -27,11 +27,16 @@ namespace Gestion_Bunny.Modeles
 
         public bool IsDeleted { get; set; }
 
-
+        // Foreign Key property
         public int ItemCategoryId { get; set; }
+
         public ItemCategory ItemCategory { get; set; }
 
-        public ICollection<ItemRecipe> ItemRecipes { get; set; } 
-        public ICollection<BillItem> BillItems { get; set; } 
+        public ICollection<ItemRecipe> ItemRecipes { get; set; }
+        public ICollection<BillItem> BillItems { get; set; }
     }
+
+
+
+
 }

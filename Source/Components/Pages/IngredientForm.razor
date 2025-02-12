@@ -60,7 +60,9 @@
 
     private int? Id => int.TryParse(IdString, out var id) ? id : null;
 
-    private Gestion_Bunny.Modeles.Ingredient ingredient = new();
+    private Gestion_Bunny.Modeles.Ingredient ingredient = new(){
+        Name = "Nom"
+    };
     private string? errorMessage;
 
     protected override async Task OnInitializedAsync()
@@ -71,12 +73,20 @@
 
             if (ingredient == null)
             {
-                ingredient = new Gestion_Bunny.Modeles.Ingredient();
+                ingredient = new Gestion_Bunny.Modeles.Ingredient
+                    {
+                        Name = "Nom" 
+                    };
+
             }
         }
         else
         {
-            ingredient = new Gestion_Bunny.Modeles.Ingredient();
+            ingredient = new Gestion_Bunny.Modeles.Ingredient
+                {
+                    Name = "Nom"
+                };
+
         }
     }
 
@@ -86,38 +96,37 @@
     }
 
     private async Task Save()
+{
+    try
     {
-        try
+       
+        if (await IngredientService.IsIngredientNameExists(ingredient.Name) && 
+            (Id == null || ingredient.Name != await IngredientService.GetIngredientNameById(Id.Value)))
         {
-            // Vérifier si l'ingrédient existe déjà
-            if (await IngredientService.IsIngredientNameExists(ingredient.Name))
-            {
-                // Définir un message d'erreur si l'ingrédient existe déjà
-                errorMessage = $"Un ingrédient avec le nom '{ingredient.Name}' existe déjà.";
-                return; // Ne pas poursuivre l'ajout de l'ingrédient
-            }
-
-            // Si l'ingrédient n'existe pas, procédez à l'ajout ou à la mise à jour
-            if (Id.HasValue)
-            {
-                await IngredientService.UpdateIngredient(ingredient.Id, ingredient.Name, ingredient.QuantityRemaining,
-                ingredient.QuantityPerDeliveryUnit, ingredient.MinimumThresholdNotification);
-            }
-            else
-            {
-                await IngredientService.AddIngredient(ingredient.Name, ingredient.QuantityRemaining, ingredient.QuantityPerDeliveryUnit,
-                ingredient.MinimumThresholdNotification);
-            }
-
-            // Rediriger vers la liste des ingrédients après une réussite
-            Navigation.NavigateTo("/ingredient-list");
+            errorMessage = $"Un ingrédient avec le nom '{ingredient.Name}' existe déjà.";
+            return;
         }
-        catch (Exception ex)
+
+        if (Id.HasValue)
         {
-            // Si une erreur se produit (par exemple, lors de l'ajout ou de la mise à jour), définir le message d'erreur
-            errorMessage = ex.Message;
+            await IngredientService.UpdateIngredient(ingredient.Id, ingredient.Name, ingredient.QuantityRemaining,
+                                                      ingredient.QuantityPerDeliveryUnit, ingredient.MinimumThresholdNotification);
         }
+        else 
+        {
+            await IngredientService.AddIngredient(ingredient.Name, ingredient.QuantityRemaining,
+                                                   ingredient.QuantityPerDeliveryUnit, ingredient.MinimumThresholdNotification);
+        }
+
+        Navigation.NavigateTo("/ingredient-list"); // Redirect to ingredient list
     }
+    catch (Exception ex)
+    {
+        errorMessage = ex.Message; // Set the error message to display in case of failure
+    }
+}
+
+
 
     private void Cancel()
     {

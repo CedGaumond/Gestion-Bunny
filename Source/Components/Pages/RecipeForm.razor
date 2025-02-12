@@ -1,6 +1,11 @@
 ﻿@page "/recipe/{IdString?}"
+@using Gestion_Bunny.Modeles
 @using Gestion_Bunny.Services
+@using Microsoft.AspNetCore.Components.Forms
 @inject NavigationManager Navigation
+@inject IItemService ItemService
+@inject IIngredientService ingredientService
+@inject IJSRuntime JSRuntime
 @inject PageTitleService TitleService
 
 <div class="container mt-4">
@@ -26,11 +31,23 @@
 
                             <div class="mb-3">
                                 <label for="image" class="form-label">Image</label>
-                                <input type="file" class="form-control" @onchange="OnImageUpload" />
-                                @if (!string.IsNullOrEmpty(recipe.ImageBase64))
+                                <InputFile class="form-control" OnChange="HandleFileSelected" accept="image/*" />
+                                @if (recipe.Pic != null)
                                 {
-                                    <img src="@recipe.ImageBase64" alt="Preview" class="img-fluid mt-2 rounded" style="max-height: 150px;" />
+                                    <img src="data:image/jpeg;base64,@Convert.ToBase64String(recipe.Pic)" 
+                                         alt="Preview" class="img-fluid mt-2 rounded" style="max-height: 150px;" />
                                 }
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Catégorie</label>
+                                <InputSelect id="category" class="form-control" @bind-Value="selectedCategorieId">
+                                    <option value="0">-- Sélectionner une catégorie --</option>
+                                    @foreach (var cat in availableCategorie)
+                                    {
+                                        <option value="@cat.Id">@cat.Name</option>
+                                    }
+                                </InputSelect>
                             </div>
                         </div>
 
@@ -39,31 +56,37 @@
                                 <h4 class="text-center">Ingrédients</h4>
 
                                 <div class="d-flex mb-3">
-                                    <InputSelect class="form-control me-2" @bind-Value="selectedIngredient">
-                                        <option value="">-- Sélectionner --</option>
-                                        @foreach (var ing in availableIngredients)
+                                    <InputSelect class="form-control me-2" @bind-Value="selectedIngredientId">
+                                        <option value="0">-- Sélectionner --</option>
+                                        @if (availableIngredients != null)
                                         {
-                                            if (!recipe.Ingredients.Any(i => i.Name == ing.Name))
+                                            @foreach (var ing in GetAvailableIngredients())
                                             {
-                                                <option value="@ing.Name">@ing.Name</option>
+                                                <option value="@ing.Id">@ing.Name</option>
                                             }
                                         }
                                     </InputSelect>
-                                    <button type="button" class="icon-container btn btn-add-color" @onclick="AddIngredient" disabled="@string.IsNullOrEmpty(selectedIngredient)">
+                                    <button type="button" class="icon-container btn btn-add-color" 
+                                            @onclick="AddIngredient" disabled="@(selectedIngredientId <= 0)">
                                         <img class="plus" src="images/plus.svg" alt="Ajouter" />
                                     </button>
                                 </div>
 
                                 <div>
-                                    @foreach (var ingredient in recipe.Ingredients)
+                                    @if (recipe.ItemRecipes != null)
                                     {
-                                        <div class="d-flex align-items-center mb-2">
-                                            <span class="form-control me-2">@ingredient.Name</span>
-                                            <InputNumber class="form-control me-2" placeholder="Quantité" @bind-Value="ingredient.Quantity" />
-                                            <button type="button" class="icon-container btn btn-remove-color" @onclick="() => RemoveIngredient(ingredient)">
-                                                <img class="plus" src="images/x.svg" alt="Retirer" />
-                                            </button>
-                                        </div>
+                                        @foreach (var itemRecipe in recipe.ItemRecipes)
+                                        {
+                                            <div class="d-flex align-items-center mb-2">
+                                                <span class="form-control me-2">@(itemRecipe.Ingredient?.Name ?? "Unknown")</span>
+                                                <InputNumber class="form-control me-2" placeholder="Quantité" 
+                                                           @bind-Value="itemRecipe.Quantity" />
+                                                <button type="button" class="icon-container btn btn-remove-color" 
+                                                        @onclick="() => RemoveIngredient(itemRecipe)">
+                                                    <img class="plus" src="images/x.svg" alt="Retirer" />
+                                                </button>
+                                            </div>
+                                        }
                                     }
                                 </div>
                             </div>
@@ -84,97 +107,189 @@
     [Parameter, SupplyParameterFromQuery] public string? IdString { get; set; }
     private int? Id => int.TryParse(IdString, out var id) ? id : null;
 
-    private Recipe recipe = new();
-    private string selectedIngredient = "";
-
-    // Liste des ingrédients prédéfinis
-    private List<Ingredient> availableIngredients = new()
-    {
-        new Ingredient { Name = "Farine" },
-        new Ingredient { Name = "Oeufs" },
-        new Ingredient { Name = "Sucre" },
-        new Ingredient { Name = "Lait" },
-        new Ingredient { Name = "Beurre" }
-    };
+    private Item recipe = new() { ItemRecipes = new List<ItemRecipe>() };
+    private int selectedIngredientId;
+    private int selectedCategorieId;
+    private List<Ingredient> availableIngredients = new();
+    private List<ItemCategory> availableCategorie = new();
 
     protected override async Task OnInitializedAsync()
     {
-        if (Id.HasValue)
+        try
         {
-            recipe = new Recipe
+            var dbCategories = await ItemService.GetCategoriesAsync();
+            availableCategorie = dbCategories?.ToList() ?? new List<ItemCategory>();
+
+            var dbIngredients = await ingredientService.GetAllIngredients();
+            availableIngredients = dbIngredients?.ToList() ?? new List<Ingredient>();
+
+            if (Id.HasValue)
+            {
+                var existingRecipe = await ItemService.GetRecipeByIdAsync(Id.Value);
+                if (existingRecipe != null)
                 {
-                    Id = Id.Value,
-                    Name = "Recette test",
-                    Price = 12.99m,
-                    Ingredients = new List<Ingredient>
-                {
-                    new Ingredient { Name = "Farine", Quantity = 500 },
-                    new Ingredient { Name = "Oeufs", Quantity = 2 }
+                    recipe = existingRecipe;
+                    recipe.ItemRecipes ??= new List<ItemRecipe>();
+                    selectedCategorieId = existingRecipe.ItemCategoryId;
                 }
-                };
+            }
         }
-        else
+        catch (Exception ex)
         {
-            recipe = new Recipe();
+            await JSRuntime.InvokeVoidAsync("alert", $"Error loading data: {ex.Message}");
         }
     }
 
-    protected override void OnInitialized()
+    private IEnumerable<Ingredient> GetAvailableIngredients()
     {
-        TitleService.Title = "Recette";
+        if (availableIngredients == null || recipe?.ItemRecipes == null)
+            return new List<Ingredient>();
+
+        return availableIngredients.Where(ing => 
+            !recipe.ItemRecipes.Any(ir => ir.IngredientId == ing.Id));
     }
 
-    private async Task Save()
+private async Task HandleFileSelected(InputFileChangeEventArgs e)
+{
+    try
     {
+        var file = e.File;
+        if (file != null)
+        {
+            var maxFileSize = 1024 * 1024 * 5;
+            if (file.Size > maxFileSize)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "La taille du fichier doit être inférieure à 5 Mo.");
+                await ClearFileInput();
+                recipe.Pic = null; 
+                return;
+            }
+
+        
+            var allowedImageTypes = new[] { "image/jpeg", "image/png", "image/gif" };
+            if (!allowedImageTypes.Contains(file.ContentType))
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Veuillez télécharger une image valide (PNG, JPG, GIF).");
+                await ClearFileInput(); 
+                recipe.Pic = null; 
+                return;
+            }
+
+            using var stream = file.OpenReadStream(maxFileSize);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            recipe.Pic = ms.ToArray(); 
+        }
+    }
+    catch (Exception ex)
+    {
+        await JSRuntime.InvokeVoidAsync("alert", $"Erreur lors du téléchargement du fichier : {ex.Message}");
+        recipe.Pic = null; 
+    }
+}
+
+private async Task ClearFileInput()
+{
+    await JSRuntime.InvokeVoidAsync("eval", "document.querySelector('input[type=file]').value = '';"); 
+}
+
+    private void AddIngredient()
+    {
+        if (selectedIngredientId <= 0) return;
+
+        var ingredient = availableIngredients.FirstOrDefault(i => i.Id == selectedIngredientId);
+        if (ingredient != null && !recipe.ItemRecipes.Any(i => i.IngredientId == selectedIngredientId))
+        {
+            recipe.ItemRecipes.Add(new ItemRecipe 
+            { 
+                ItemId = recipe.Id,
+                IngredientId = selectedIngredientId,
+                Ingredient = ingredient,
+                Quantity = 1
+            });
+            selectedIngredientId = 0;
+        }
+    }
+
+    private void RemoveIngredient(ItemRecipe itemRecipe)
+    {
+        if (recipe.ItemRecipes != null)
+        {
+            recipe.ItemRecipes.Remove(itemRecipe);
+        }
+    }
+
+   private async Task Save()
+{
+    try
+    {
+        if (!ValidateForm())
+        {
+            return;
+        }
+
+        recipe.ItemCategoryId = selectedCategorieId;
+
+        var recipeTosave = new Item
+        {
+            Id = recipe.Id,
+            Name = recipe.Name,
+            Price = recipe.Price,
+            Pic = recipe.Pic,
+            ItemCategoryId = recipe.ItemCategoryId,
+            IsDeleted = false,
+            DeletedDate = null,
+            ItemRecipes = recipe.ItemRecipes.Select(ir => new ItemRecipe
+            {
+                IngredientId = ir.IngredientId,
+                Quantity = ir.Quantity
+            }).ToList()
+        };
+
         if (Id.HasValue)
         {
-            // await RecipeService.UpdateAsync(recipe);
+            recipeTosave.Id = Id.Value;
+            await ItemService.UpdateRecipeAsync(recipeTosave);
         }
         else
         {
-            // await RecipeService.CreateAsync(recipe);
+            await ItemService.AddRecipeAsync(recipeTosave);
         }
+
+        Navigation.NavigateTo("/recipe-list");
+    }
+    catch (Exception ex)
+    {
+        var errorMessage = ex.InnerException?.Message ?? ex.Message;
+        await JSRuntime.InvokeVoidAsync("alert", $"Error saving recipe: {errorMessage}");
+    }
+}
+
+    private bool ValidateForm()
+    {
+        if (string.IsNullOrWhiteSpace(recipe.Name))
+        {
+            JSRuntime.InvokeVoidAsync("alert", "Le nom de la recette est requis.");
+            return false;
+        }
+
+        if (recipe.Price <= 0)
+        {
+            JSRuntime.InvokeVoidAsync("alert", "Le prix doit être supérieur à 0.");
+            return false;
+        }
+
+        if (selectedCategorieId <= 0)
+        {
+            JSRuntime.InvokeVoidAsync("alert", "Veuillez sélectionner une catégorie.");
+            return false;
+        }
+
+        return true;
     }
 
     private void Cancel()
     {
         Navigation.NavigateTo("/recipe-list");
-    }
-
-    private void AddIngredient()
-    {
-        if (!string.IsNullOrEmpty(selectedIngredient) && !recipe.Ingredients.Any(i => i.Name == selectedIngredient))
-        {
-            recipe.Ingredients.Add(new Ingredient { Name = selectedIngredient, Quantity = 1 });
-            selectedIngredient = ""; // Réinitialise le select
-        }
-    }
-
-    private void RemoveIngredient(Ingredient ingredient)
-    {
-        recipe.Ingredients.Remove(ingredient);
-    }
-
-    private async Task OnImageUpload(ChangeEventArgs e)
-    {
-        var files = ((Microsoft.AspNetCore.Components.Forms.IBrowserFile)e.Value).OpenReadStream();
-        var buffer = new byte[files.Length];
-        await files.ReadAsync(buffer, 0, (int)files.Length);
-        recipe.ImageBase64 = $"data:image/png;base64,{Convert.ToBase64String(buffer)}";
-    }
-
-    private class Recipe
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public decimal Price { get; set; }
-        public string? ImageBase64 { get; set; }
-        public List<Ingredient> Ingredients { get; set; } = new();
-    }
-
-    private class Ingredient
-    {
-        public string Name { get; set; } = string.Empty;
-        public decimal Quantity { get; set; }
     }
 }
