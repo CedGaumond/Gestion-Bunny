@@ -1,0 +1,247 @@
+@page "/order"
+@using Gestion_Bunny.Services
+@using Gestion_Bunny.Modeles
+@inject PageTitleService TitleService
+@inject NavigationManager Navigation
+@inject IIngredientService IngredientService
+
+<div class="row mb-3 align-items-center">
+    <div class="col-md-4">
+        <label for="filter" class="form-label">Filtrer par nom</label>
+        <div class="input-group">
+            <input type="text" id="filter" class="form-control" 
+                   placeholder="Rechercher un ingrédient" 
+                   @bind-value="filterText" 
+                   @bind-value:event="oninput"
+                   @onkeyup="OnFilterChanged" />
+            @if (!string.IsNullOrEmpty(filterText))
+            {
+                <button class="btn btn-outline-secondary btn-sm" type="button" @onclick="ClearFilter">
+                    ✕
+                </button>
+            }
+        </div>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Trier par</label>
+        <select class="form-select form-select-sm" @onchange="OnSortColumnChanged">
+            <option value="Name">Nom</option>
+            <option value="QuantityRemaining">Quantité restante</option>
+            <option value="MinimumThresholdNotification">Seuil minimum</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-outline-secondary btn-sm mt-4" @onclick="ToggleSortDirection">
+            @(sortAscending ? "▲" : "▼")
+        </button>
+    </div>
+    <div class="text-center col-md-2 mt-4">
+        <button class="btn btn-primary" @onclick="OnConfirmOrder">
+            Confirmer la commande
+        </button>
+    </div>
+</div>
+
+@if (isLoading)
+{
+    <p><em>Chargement des ingrédients...</em></p>
+}
+else if (!filteredIngredients.Any())
+{
+    <p><em>Aucun ingrédient trouvé.</em></p>
+}
+else
+{
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Actions</th>
+                    <th>Nom</th>
+                    <th>Quantité restante</th>
+                    <th>Qté/unité livraison</th>
+                    <th>Seuil minimum</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ingredient in filteredIngredients)
+                {
+                    <tr>
+                        <td class="d-flex align-items-center gap-2">
+                            <div class="d-flex align-items-center col-md-2 gap-2">
+                                <div class="icon-container" @onclick="() => HandleAddAction(ingredient.Id)">
+                                    <img src="images/plus.svg" alt="Modifier" />
+                                </div>
+                                <div class="input-group col-md-2">
+                                    <input type="text" id="filter" class="form-control" 
+                                        placeholder="0" 
+                                        @bind-value="test" 
+                                        @bind-value:event="oninput"
+                                        @onkeyup="testing" />
+                                </div>
+                                <div class="icon-container" @onclick="() => HandleRemAction(ingredient.Id)">
+                                    <img src="images/x.svg" alt="Supprimer" />
+                                </div>
+                            </div>
+                        </td>
+                        <td>@ingredient.Name</td>
+                        <td>@ingredient.QuantityRemaining</td>
+                        <td>@ingredient.QuantityPerDeliveryUnit</td>
+                        <td>@ingredient.MinimumThresholdNotification</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<Ingredient>? ingredients;
+    private List<Ingredient> filteredIngredients = new List<Ingredient>();
+    private string filterText = string.Empty;
+
+    private string test = string.Empty;
+    private bool isLoading = true;
+    private string sortColumn = "Name";
+    private bool sortAscending = false;
+
+    protected override void OnInitialized()
+    {
+        TitleService.Title = "Nouvelle Commande";
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try 
+        {
+           
+            ingredients = await IngredientService.GetAllIngredients();
+
+           
+            filteredIngredients = ingredients ?? new List<Ingredient>();
+            
+           
+            SortIngredients();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Erreur de chargement des ingrédients: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+   
+    private void OnFilterChanged()
+    {
+        if (ingredients == null) return;
+
+        filteredIngredients = string.IsNullOrWhiteSpace(filterText)
+            ? ingredients
+            : ingredients.Where(i => 
+                i.Name.Contains(filterText, StringComparison.OrdinalIgnoreCase) ||
+                i.QuantityRemaining.ToString().Contains(filterText, StringComparison.OrdinalIgnoreCase) ||
+                i.QuantityPerDeliveryUnit.ToString().Contains(filterText, StringComparison.OrdinalIgnoreCase) ||
+                i.MinimumThresholdNotification.ToString().Contains(filterText, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+
+       
+        SortIngredients();
+
+        StateHasChanged();
+    }
+
+    private async Task OnConfirmOrder()
+    {
+        try
+        {
+            Console.WriteLine("Commande confirmée !");
+            
+            Navigation.NavigateTo("/order-summary");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Erreur lors de la confirmation de la commande: {ex.Message}");
+        }
+    }
+
+    private void testing()
+    {
+        if (string.IsNullOrWhiteSpace(test)) return;
+    }
+
+
+    private void OnSortColumnChanged(ChangeEventArgs e)
+    {
+        sortColumn = e.Value?.ToString() ?? "Name";
+        SortIngredients();
+        StateHasChanged();
+    }
+
+    
+    private void SortIngredients()
+    {
+        filteredIngredients = sortColumn switch
+        {
+            "Name" => sortAscending 
+                ? filteredIngredients.OrderBy(i => i.Name).ToList()
+                : filteredIngredients.OrderByDescending(i => i.Name).ToList(),
+            "QuantityRemaining" => sortAscending
+                ? filteredIngredients.OrderBy(i => i.QuantityRemaining).ToList()
+                : filteredIngredients.OrderByDescending(i => i.QuantityRemaining).ToList(),
+            "MinimumThresholdNotification" => sortAscending
+                ? filteredIngredients.OrderBy(i => i.MinimumThresholdNotification).ToList()
+                : filteredIngredients.OrderByDescending(i => i.MinimumThresholdNotification).ToList(),
+            _ => filteredIngredients
+        };
+    }
+
+   
+    private void ToggleSortDirection()
+    {
+        sortAscending = !sortAscending;
+        SortIngredients();
+        StateHasChanged();
+    }
+
+   
+    private void ClearFilter()
+    {
+        filterText = string.Empty;
+        OnFilterChanged();
+    }
+
+    private async Task HandleAddAction(int ingredientId)
+    {
+        try
+        {
+            
+            await IngredientService.DeleteIngredient(ingredientId);
+
+           
+            ingredients = ingredients?.Where(i => i.Id != ingredientId).ToList();
+
+          
+            OnFilterChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Erreur lors de la suppression de l'ingrédient: {ex.Message}");
+        }
+    }
+
+    private void HandleRemAction(int ingredientId)
+    {
+        try
+        {
+            Console.WriteLine($"Suppression de l'ingrédient avec ID : {ingredientId}");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Erreur lors de la suppression de l'ingrédient: {ex.Message}");
+        }
+    }
+}
