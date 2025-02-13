@@ -96,19 +96,19 @@
     }
 
     protected override async Task OnInitializedAsync()
-{
-    try
     {
-        categories = await RecipeService.GetCategoriesAsync();
-        recipes = await RecipeService.GetRecipesAsync();
+        try
+        {
+            categories = await RecipeService.GetCategoriesAsync();
+            recipes = await RecipeService.GetRecipesAsync();
        
-        SelectCategory(1);
+            SelectCategory(1);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de l'initialisation: {ex.Message}");
+        }
     }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Erreur lors de l'initialisation: {ex.Message}");
-    }
-}
 
 
     private async Task HandleDeleteAction(int recipeId)
