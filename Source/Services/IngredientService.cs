@@ -98,7 +98,7 @@ namespace Gestion_Bunny.Services
         }
         public async Task<bool> IsIngredientUsedInItemRecipe(int ingredientId)
         {
-            return await _context.ItemRecipes
+            return await _context.RecipeIngredients
                 .AnyAsync(ir => ir.IngredientId == ingredientId);
         }
 

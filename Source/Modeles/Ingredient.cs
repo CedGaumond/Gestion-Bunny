@@ -38,6 +38,6 @@ namespace Gestion_Bunny.Modeles
         [DefaultValue(false)] 
         public bool IsDeleted { get; set; }
 
-        public ICollection<ItemRecipe> ItemRecipes { get; set; } = new List<ItemRecipe>();
+        public ICollection<RecipeIngredient> RecipeIngredients { get; set; } = new List<RecipeIngredient>();
     }
 }

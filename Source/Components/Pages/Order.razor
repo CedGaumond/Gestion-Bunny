@@ -1,9 +1,10 @@
-@page "/order"
+@page "/order/{id}"
 @using Gestion_Bunny.Services
 @using Gestion_Bunny.Modeles
 @inject PageTitleService TitleService
 @inject NavigationManager Navigation
 @inject IIngredientService IngredientService
+@inject IOrderService OrderService
 
 <div class="row mb-3 align-items-center">
     <div class="col-md-4">
@@ -52,8 +53,8 @@ else if (!filteredIngredients.Any())
 }
 else
 {
-    <div class="table-container">
-        <table class="table">
+    <div class="table-container d-flex flex-column vh-100">
+        <table class="table flex-grow-1">
             <thead>
                 <tr>
                     <th>Actions</th>
@@ -67,21 +68,16 @@ else
                 @foreach (var ingredient in filteredIngredients)
                 {
                     <tr>
-                        <td class="d-flex align-items-center gap-2">
-                            <div class="d-flex align-items-center col-md-2 gap-2">
-                                <div class="icon-container" @onclick="() => HandleAddAction(ingredient.Id)">
-                                    <img src="images/plus.svg" alt="Modifier" />
-                                </div>
-                                <div class="input-group col-md-2">
-                                    <input type="text" id="filter" class="form-control custom-input"
-                                           placeholder="0" 
-                                        @bind-value="test" 
-                                        @bind-value:event="oninput"
-                                        @onkeyup="testing" />
-                                </div>
-                                <div class="icon-container" @onclick="() => HandleRemAction(ingredient.Id)">
-                                    <img src="images/x.svg" alt="Supprimer" />
-                                </div>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <button class="btn btn-sm btn-add-color me-2 fw-bold custom-btn" @onclick="() => HandleAddAction(ingredient.Id)"><i class="bi bi-plus"></i></button>
+                                <input type="number" class="form-control custom-input"
+                                       placeholder="0"
+                                       min="0"
+                                       @bind="ingredientQuantities[ingredient.Id]"
+                                       @bind:event="oninput" />
+
+                                <button class="btn btn-sm btn-remove-color ms-2 fw-bold custom-btn" @onclick="() => HandleRemAction(ingredient.Id)"><i class="bi bi-dash"></i></button>
                             </div>
                         </td>
                         <td>@ingredient.Name</td>
@@ -96,8 +92,14 @@ else
 }
 
 @code {
+    private Modeles.Order? billProvider;
     private List<Ingredient>? ingredients;
     private List<Ingredient> filteredIngredients = new List<Ingredient>();
+    private Dictionary<int, float> ingredientQuantities = new();
+
+
+    [Parameter, SupplyParameterFromQuery] public int id { get; set; }
+
     private string filterText = string.Empty;
 
     private string test = string.Empty;
@@ -114,7 +116,8 @@ else
     {
         try 
         {
-           
+            billProvider = await OrderService.GetOrderByIdAsync(id);
+
             ingredients = await IngredientService.GetAllIngredients();
 
            
@@ -158,8 +161,32 @@ else
     {
         try
         {
-            Console.WriteLine("Commande confirmée !");
-            
+            if (billProvider == null)
+            {
+                Console.Error.WriteLine("Erreur : billProvider est null.");
+                return;
+            }
+
+            var billIngredients = ingredientQuantities
+                .Where(kvp => kvp.Value > 0) // Ne prend que les quantités > 0
+                .Select(kvp => new OrderIngredient
+                    {
+                        OrderId = billProvider.Id, 
+                        IngredientId = kvp.Key,
+                        Quantity = kvp.Value
+                    })
+                .ToList();
+
+            if (billIngredients.Any())
+            {
+                //await OrderService.Add(billIngredients);
+                Console.WriteLine("Commande confirmée avec succès !");
+            }
+            else
+            {
+                Console.WriteLine("Aucun ingrédient ajouté à la commande.");
+            }
+
             Navigation.NavigateTo("/order-summary");
         }
         catch (Exception ex)
@@ -167,6 +194,7 @@ else
             Console.Error.WriteLine($"Erreur lors de la confirmation de la commande: {ex.Message}");
         }
     }
+
 
     private void testing()
     {

@@ -244,6 +244,11 @@ table tbody tr:last-child td {
     height: 25px !important;
 }
 
+img[src$="plus.svg"] {
+    filter: invert(1);
+}
+
+
 .card {
     max-width: 200px;
     margin-bottom: 20px;
@@ -394,12 +399,21 @@ form-label{
 }
 
 .custom-input {
-    height: 2.2rem !important;
+    height: 1.8rem !important;
     padding: 0.5rem !important;
     font-size: 1rem !important;
-    min-width: 3rem !important;
-   
+    width: 4rem !important;
 }
+
+.custom-btn {
+    height: 1.8rem !important;
+    width: 1.8rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+}
+
 
 label{
     color: white !important;

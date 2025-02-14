@@ -3,15 +3,15 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Gestion_Bunny.Modeles
 {
-    [Table("bill_customer", Schema = "public")]
-    public class BillCustomer
+    [Table("bills", Schema = "public")]
+    public class Bill
     {
         [Key]
         [Column("id")]
         public int Id { get; set; }
 
         [Required]
-        [Column("order_date")]
+        [Column("date_created")]
         public DateTime OrderDate { get; set; }
 
         [Column("bill_file")]
@@ -26,6 +26,6 @@ namespace Gestion_Bunny.Modeles
         [Column("total_amount")]
         public float TotalAmount { get; set; }
 
-        public ICollection<BillItem> BillItems { get; set; }
+        public ICollection<BillRecipe> BillRecipes { get; set; }
     }
 }

@@ -1,7 +1,7 @@
 ﻿@page "/recipe-list"
 @using Gestion_Bunny.Services
 @using Gestion_Bunny.Modeles
-@inject IItemService RecipeService
+@inject IRecipeService RecipeService
 @inject PageTitleService TitleService
 @inject NavigationManager Navigation
 
@@ -80,14 +80,14 @@
 
 @code {
     private int selectedCategoryId = 1;
-    private List<Item> recipes = new List<Item>();
-    private List<Item> recipes_filter = new List<Item>();
-    private List<ItemCategory> categories = new List<ItemCategory>();
+    private List<Recipe> recipes = new List<Recipe>();
+    private List<Recipe> recipes_filter = new List<Recipe>();
+    private List<RecipeCategory> categories = new List<RecipeCategory>();
 
     private void SelectCategory(int categoryId)
     {
         selectedCategoryId = categoryId;
-        recipes_filter = selectedCategoryId == 0 ? recipes.ToList() : recipes.Where(r => r.ItemCategoryId == selectedCategoryId).ToList();
+        recipes_filter = selectedCategoryId == 0 ? recipes.ToList() : recipes.Where(r => r.RecipeCategoryId == selectedCategoryId).ToList();
     }
 
     protected override void OnInitialized()

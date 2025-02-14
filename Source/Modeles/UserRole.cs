@@ -1,11 +1,10 @@
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Gestion_Bunny.Modeles
 {
-    [Table("employee_role", Schema = "public")] 
-    public class EmployeeRole
+    [Table("user_role", Schema = "public")] 
+    public class UserRole
     {
         [Key]
         [Column("id")] 
@@ -16,6 +15,6 @@ namespace Gestion_Bunny.Modeles
         [Column("role_name")] 
         public string RoleName { get; set; }
 
-        public ICollection<Employee> Employees { get; set; }
+        public ICollection<User> Users { get; set; }
     }
 }

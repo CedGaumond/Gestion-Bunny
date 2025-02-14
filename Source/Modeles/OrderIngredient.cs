@@ -3,12 +3,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Gestion_Bunny.Modeles
 {
-    [Table("bill_ingredients", Schema = "public")]
-    public class BillIngredient
+    [Table("order_ingredients", Schema = "public")]
+    public class OrderIngredient
     {
-        [Column("bill_customer_id")]
-        public int BillCustomerId { get; set; }
-        public BillCustomer BillCustomer { get; set; }
+        [Column("order_id")]
+        public int OrderId { get; set; }
+        public Bill Bill { get; set; }
 
         [Column("ingredient_id")]
         public int IngredientId { get; set; }

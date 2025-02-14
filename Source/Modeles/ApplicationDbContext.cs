@@ -8,42 +8,44 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<RestaurantProfile> RestaurantProfiles { get; set; }
-    public DbSet<EmployeeRole> EmployeeRoles { get; set; }
+    public DbSet<UserRole> UserRoles { get; set; }
     public DbSet<Employee> Employees { get; set; }
+    public DbSet<User> Users { get; set; }
     public DbSet<Schedule> Schedules { get; set; }
-    public DbSet<BillCustomer> BillCustomers { get; set; }
-    public DbSet<BillProvider> BillProviders { get; set; }
-    public DbSet<ItemCategory> ItemCategories { get; set; }
-    public DbSet<Item> Items { get; set; }
+    public DbSet<Bill> Bill { get; set; }
+    public DbSet<Order> Orders { get; set; }
+    public DbSet<RecipeCategory> RecipeCategories { get; set; }
+    public DbSet<Recipe> Recipes { get; set; }
     public DbSet<Ingredient> Ingredients { get; set; }
-    public DbSet<BillItem> BillItems { get; set; }
-    public DbSet<BillIngredient> BillIngredients { get; set; }
-    public DbSet<ItemRecipe> ItemRecipes { get; set; }
+    public DbSet<BillRecipe> BillRecipes { get; set; }
+    public DbSet<OrderIngredient> OrderIngredients { get; set; }
+    public DbSet<RecipeIngredient> RecipeIngredients { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<BillIngredient>()
-        .HasKey(bi => new { bi.BillCustomerId, bi.IngredientId });
+        modelBuilder.Entity<OrderIngredient>()
+        .HasKey(bi => new { bi.OrderId, bi.IngredientId });
 
-        modelBuilder.Entity<BillItem>()
-       .HasKey(b => new { b.BillCustomerId, b.ItemId });
+        modelBuilder.Entity<BillRecipe>()
+       .HasKey(b => new { b.BillId, b.RecipeId });
 
-        modelBuilder.Entity<ItemRecipe>()
-            .HasKey(ir => new { ir.ItemId, ir.IngredientId });
+        modelBuilder.Entity<RecipeIngredient>()
+            .HasKey(ir => new { ir.RecipeId, ir.IngredientId });
 
-        modelBuilder.Entity<ItemRecipe>()
+        modelBuilder.Entity<RecipeIngredient>()
             .HasOne(ir => ir.Ingredient)
-            .WithMany(i => i.ItemRecipes) 
+            .WithMany(i => i.RecipeIngredients) 
             .HasForeignKey(ir => ir.IngredientId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<ItemRecipe>()
-            .HasOne(ir => ir.Item)
-            .WithMany(i => i.ItemRecipes) 
-            .HasForeignKey(ir => ir.ItemId)
+        modelBuilder.Entity<RecipeIngredient>()
+            .HasOne(ir => ir.Recipe)
+            .WithMany(i => i.RecipeIngredients) 
+            .HasForeignKey(ir => ir.RecipeId)
             .OnDelete(DeleteBehavior.Cascade);
+
 
 
     }

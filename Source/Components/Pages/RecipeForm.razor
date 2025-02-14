@@ -3,7 +3,7 @@
 @using Gestion_Bunny.Services
 @using Microsoft.AspNetCore.Components.Forms
 @inject NavigationManager Navigation
-@inject IItemService ItemService
+@inject IRecipeService ItemService
 @inject IIngredientService ingredientService
 @inject IJSRuntime JSRuntime
 @inject PageTitleService TitleService
@@ -73,9 +73,9 @@
                                 </div>
 
                                 <div>
-                                    @if (recipe.ItemRecipes != null)
+                                    @if (recipe.RecipeIngredients != null)
                                     {
-                                        @foreach (var itemRecipe in recipe.ItemRecipes)
+                                        @foreach (var itemRecipe in recipe.RecipeIngredients)
                                         {
                                             <div class="d-flex align-items-center mb-2">
                                                 <span class="form-control me-2">@(itemRecipe.Ingredient?.Name ?? "Unknown")</span>
@@ -107,18 +107,18 @@
     [Parameter, SupplyParameterFromQuery] public string? IdString { get; set; }
     private int? Id => int.TryParse(IdString, out var id) ? id : null;
 
-    private Item recipe = new() { ItemRecipes = new List<ItemRecipe>() };
+    private Recipe recipe = new() { RecipeIngredients = new List<RecipeIngredient>() };
     private int selectedIngredientId;
     private int selectedCategorieId;
     private List<Ingredient> availableIngredients = new();
-    private List<ItemCategory> availableCategorie = new();
+    private List<RecipeCategory> availableCategorie = new();
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             var dbCategories = await ItemService.GetCategoriesAsync();
-            availableCategorie = dbCategories?.ToList() ?? new List<ItemCategory>();
+            availableCategorie = dbCategories?.ToList() ?? new List<RecipeCategory>();
 
             var dbIngredients = await ingredientService.GetAllIngredients();
             availableIngredients = dbIngredients?.ToList() ?? new List<Ingredient>();
@@ -129,8 +129,8 @@
                 if (existingRecipe != null)
                 {
                     recipe = existingRecipe;
-                    recipe.ItemRecipes ??= new List<ItemRecipe>();
-                    selectedCategorieId = existingRecipe.ItemCategoryId;
+                    recipe.RecipeIngredients ??= new List<RecipeIngredient>();
+                    selectedCategorieId = existingRecipe.RecipeCategoryId;
                 }
             }
         }
@@ -142,11 +142,11 @@
 
     private IEnumerable<Ingredient> GetAvailableIngredients()
     {
-        if (availableIngredients == null || recipe?.ItemRecipes == null)
+        if (availableIngredients == null || recipe?.RecipeIngredients == null)
             return new List<Ingredient>();
 
         return availableIngredients.Where(ing => 
-            !recipe.ItemRecipes.Any(ir => ir.IngredientId == ing.Id));
+            !recipe.RecipeIngredients.Any(ir => ir.IngredientId == ing.Id));
     }
 
 private async Task HandleFileSelected(InputFileChangeEventArgs e)
@@ -198,11 +198,11 @@ private async Task ClearFileInput()
         if (selectedIngredientId <= 0) return;
 
         var ingredient = availableIngredients.FirstOrDefault(i => i.Id == selectedIngredientId);
-        if (ingredient != null && !recipe.ItemRecipes.Any(i => i.IngredientId == selectedIngredientId))
+        if (ingredient != null && !recipe.RecipeIngredients.Any(i => i.IngredientId == selectedIngredientId))
         {
-            recipe.ItemRecipes.Add(new ItemRecipe 
+            recipe.RecipeIngredients.Add(new RecipeIngredient 
             { 
-                ItemId = recipe.Id,
+                RecipeId = recipe.Id,
                 IngredientId = selectedIngredientId,
                 Ingredient = ingredient,
                 Quantity = 1
@@ -211,11 +211,11 @@ private async Task ClearFileInput()
         }
     }
 
-    private void RemoveIngredient(ItemRecipe itemRecipe)
+    private void RemoveIngredient(RecipeIngredient itemRecipe)
     {
-        if (recipe.ItemRecipes != null)
+        if (recipe.RecipeIngredients != null)
         {
-            recipe.ItemRecipes.Remove(itemRecipe);
+            recipe.RecipeIngredients.Remove(itemRecipe);
         }
     }
 
@@ -228,18 +228,18 @@ private async Task ClearFileInput()
             return;
         }
 
-        recipe.ItemCategoryId = selectedCategorieId;
+        recipe.RecipeCategoryId = selectedCategorieId;
 
-        var recipeTosave = new Item
+        var recipeTosave = new Recipe
         {
             Id = recipe.Id,
             Name = recipe.Name,
             Price = recipe.Price,
             Pic = recipe.Pic,
-            ItemCategoryId = recipe.ItemCategoryId,
+            RecipeCategoryId = recipe.RecipeCategoryId,
             IsDeleted = false,
             DeletedDate = null,
-            ItemRecipes = recipe.ItemRecipes.Select(ir => new ItemRecipe
+            RecipeIngredients = recipe.RecipeIngredients.Select(ir => new RecipeIngredient
             {
                 IngredientId = ir.IngredientId,
                 Quantity = ir.Quantity

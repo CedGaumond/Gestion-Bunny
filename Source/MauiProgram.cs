@@ -35,8 +35,8 @@ public static class MauiProgram
 
         // Register the EmployeeService and AuthenticationService for Dependency Injection
         builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-        builder.Services.AddScoped<IBillProviderService, BillProviderService>();
-        builder.Services.AddScoped<IItemService, ItemService>();
+        builder.Services.AddScoped<IOrderService, OrderService>();
+        builder.Services.AddScoped<IRecipeService, RecipeService>();
         builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
         builder.Services.AddSingleton<PageTitleService>();
 

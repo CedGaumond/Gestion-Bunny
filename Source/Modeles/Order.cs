@@ -3,19 +3,19 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Gestion_Bunny.Modeles
 {
-    [Table("bill_provider")]
-    public class BillProvider
+    [Table("orders")]
+    public class Order
     {
         [Key]
         [Column("id")]
         public int Id { get; set; }
 
         [Required]
-        [Column("order_date")]
+        [Column("date_created")]
         public DateTime OrderDate { get; set; }
 
-        [Column("bill_file")]
-        public byte[]? BillFile { get; set; }
+        [Column("order_file")]
+        public byte[]? OrderFill { get; set; }
 
         [Required]
         [Column("is_delivered")]
@@ -26,6 +26,6 @@ namespace Gestion_Bunny.Modeles
         [Range(0, double.MaxValue, ErrorMessage = "Le montant total ne peut pas être négatif.")]
         public decimal TotalAmount { get; set; }
 
-        public ICollection<BillIngredient> BillIngredients { get; set; } = new List<BillIngredient>(); // Init pour éviter null
+        public ICollection<OrderIngredient> OrderIngredients { get; set; } = new List<OrderIngredient>(); 
     }
 }

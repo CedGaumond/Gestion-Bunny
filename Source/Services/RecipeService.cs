@@ -1,45 +1,42 @@
 using Gestion_Bunny.Modeles;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Gestion_Bunny.Services
 {
-    public class ItemService : IItemService
+    public class RecipeService : IRecipeService
     {
         private readonly ApplicationDbContext _context;
 
-        public ItemService(ApplicationDbContext context)
+        public RecipeService(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        public async Task<List<ItemCategory>> GetCategoriesAsync()
+        public async Task<List<RecipeCategory>> GetCategoriesAsync()
         {
-            return await _context.ItemCategories.ToListAsync();
+            return await _context.RecipeCategories.ToListAsync();
         }
 
-        public async Task<List<Item>> GetRecipesAsync()
+        public async Task<List<Recipe>> GetRecipesAsync()
         {
-            return await _context.Items
-                .Include(i => i.ItemCategory)
-                .Include(i => i.ItemRecipes)
+            return await _context.Recipes
+                .Include(i => i.RecipeCategory)
+                .Include(i => i.RecipeIngredients)
                     .ThenInclude(ir => ir.Ingredient)
                 .Where(i => !i.IsDeleted)
                 .ToListAsync();
         }
 
-        public async Task<Item> GetRecipeByIdAsync(int id)
+        public async Task<Recipe> GetRecipeByIdAsync(int id)
         {
-            return await _context.Items
-                .Include(i => i.ItemCategory)
-                .Include(i => i.ItemRecipes)
+            return await _context.Recipes
+                .Include(i => i.RecipeCategory)
+                .Include(i => i.RecipeIngredients)
                     .ThenInclude(ir => ir.Ingredient)
                 .FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
         }
 
-        public async Task UpdateRecipeAsync(Item recipe)
+        public async Task UpdateRecipeAsync(Recipe recipe)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -48,8 +45,8 @@ namespace Gestion_Bunny.Services
                 _context.ChangeTracker.Clear();
 
                 // Load existing recipe
-                var existingRecipe = await _context.Items
-                    .Include(i => i.ItemRecipes)
+                var existingRecipe = await _context.Recipes
+                    .Include(i => i.RecipeIngredients)
                     .FirstOrDefaultAsync(i => i.Id == recipe.Id);
 
                 if (existingRecipe == null)
@@ -59,21 +56,21 @@ namespace Gestion_Bunny.Services
                 existingRecipe.Name = recipe.Name;
                 existingRecipe.Price = recipe.Price;
                 existingRecipe.Pic = recipe.Pic;
-                existingRecipe.ItemCategoryId = recipe.ItemCategoryId;
+                existingRecipe.RecipeCategoryId = recipe.RecipeCategoryId;
 
                 // Remove existing relationships
-                _context.ItemRecipes.RemoveRange(existingRecipe.ItemRecipes);
+                _context.RecipeIngredients.RemoveRange(existingRecipe.RecipeIngredients);
                 await _context.SaveChangesAsync();
 
                 // Add new relationships
-                var newItemRecipes = recipe.ItemRecipes.Select(ir => new ItemRecipe
+                var newItemRecipes = recipe.RecipeIngredients.Select(ir => new RecipeIngredient
                 {
-                    ItemId = existingRecipe.Id,
+                    RecipeId = existingRecipe.Id,
                     IngredientId = ir.IngredientId,
                     Quantity = ir.Quantity
                 }).ToList();
 
-                await _context.ItemRecipes.AddRangeAsync(newItemRecipes);
+                await _context.RecipeIngredients.AddRangeAsync(newItemRecipes);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
@@ -84,7 +81,7 @@ namespace Gestion_Bunny.Services
             }
         }
 
-        public async Task AddRecipeAsync(Item recipe)
+        public async Task AddRecipeAsync(Recipe recipe)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -93,28 +90,28 @@ namespace Gestion_Bunny.Services
                 _context.ChangeTracker.Clear();
 
                 // Create new recipe
-                var newRecipe = new Item
+                var newRecipe = new Recipe
                 {
                     Name = recipe.Name,
                     Price = recipe.Price,
                     Pic = recipe.Pic,
-                    ItemCategoryId = recipe.ItemCategoryId,
+                    RecipeCategoryId = recipe.RecipeCategoryId,
                     IsDeleted = false,
                     DeletedDate = null
                 };
 
-                await _context.Items.AddAsync(newRecipe);
+                await _context.Recipes.AddAsync(newRecipe);
                 await _context.SaveChangesAsync();
 
                 // Add relationships
-                var newItemRecipes = recipe.ItemRecipes.Select(ir => new ItemRecipe
+                var newItemRecipes = recipe.RecipeIngredients.Select(ir => new RecipeIngredient
                 {
-                    ItemId = newRecipe.Id,
+                    RecipeId = newRecipe.Id,
                     IngredientId = ir.IngredientId,
                     Quantity = ir.Quantity
                 }).ToList();
 
-                await _context.ItemRecipes.AddRangeAsync(newItemRecipes);
+                await _context.RecipeIngredients.AddRangeAsync(newItemRecipes);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
@@ -127,7 +124,7 @@ namespace Gestion_Bunny.Services
 
         public async Task DeleteRecipeAsync(int recipeId)
         {
-            var recipe = await _context.Items.FirstOrDefaultAsync(r => r.Id == recipeId);
+            var recipe = await _context.Recipes.FirstOrDefaultAsync(r => r.Id == recipeId);
             if (recipe != null)
             {
                 recipe.IsDeleted = true;
@@ -136,9 +133,9 @@ namespace Gestion_Bunny.Services
             }
         }
 
-        public async Task<ItemCategory> GetCategoryByIdAsync(int categoryId)
+        public async Task<RecipeCategory> GetCategoryByIdAsync(int categoryId)
         {
-            return await _context.ItemCategories.FirstOrDefaultAsync(c => c.Id == categoryId);
+            return await _context.RecipeCategories.FirstOrDefaultAsync(c => c.Id == categoryId);
         }
     }
 }
