@@ -49,3 +49,60 @@ VALUES
     ('Jambon', 50, 10, 5, NULL, false, 2.50),
     ('Poulet', 65, 15, 8, NULL, false, 4.50),
     ('Bœuf', 70, 20, 10, NULL, false, 5.00);
+
+INSERT INTO public.recipes (name, price, pic, deleted_date, is_deleted, recipe_category_id) 
+VALUES 
+('Lapin à la moutarde', 18.99, NULL, NULL, FALSE, 2),
+('Burger de lièvre', 15.50, NULL, NULL, FALSE, 2),
+('Salade de chèvre chaud', 12.00, NULL, NULL, FALSE, 1),
+('Frites maison', 5.00, NULL, NULL, FALSE, 1),
+('Tarte au sucre', 7.50, NULL, NULL, FALSE, 4),
+('Civet de lièvre', 20.99, NULL, NULL, FALSE, 2),
+('Fondant au chocolat', 8.00, NULL, NULL, FALSE, 4),
+('Jus de pomme maison', 4.00, NULL, NULL, FALSE, 3),
+('Café expresso', 3.00, NULL, NULL, FALSE, 3);
+
+INSERT INTO public.recipe_ingredients (recipe_id, ingredient_id, quantity) 
+SELECT r.id, i.id, 1.0 FROM public.recipes r JOIN public.ingredients i ON r.name = 'Lapin à la moutarde' AND i.name = 'Bœuf'
+UNION ALL
+SELECT r.id, i.id, 0.1 FROM public.recipes r JOIN public.ingredients i ON r.name = 'Lapin à la moutarde' AND i.name = 'Sel'
+UNION ALL
+SELECT r.id, i.id, 0.1 FROM public.recipes r JOIN public.ingredients i ON r.name = 'Lapin à la moutarde' AND i.name = 'Poivre'
+
+UNION ALL
+SELECT r.id, i.id, 1.0 FROM public.recipes r JOIN public.ingredients i ON r.name = 'Burger de lièvre' AND i.name = 'Bœuf'
+UNION ALL
+SELECT r.id, i.id, 0.5 FROM public.recipes r JOIN public.ingredients i ON r.name = 'Burger de lièvre' AND i.name = 'Farine'
+
+UNION ALL
+SELECT r.id, i.id, 0.1 FROM public.recipes r JOIN public.ingredients i ON r.name = 'Salade de chèvre chaud' AND i.name = 'Sel'
+UNION ALL
+SELECT r.id, i.id, 0.1 FROM public.recipes r JOIN public.ingredients i ON r.name = 'Salade de chèvre chaud' AND i.name = 'Poivre'
+
+UNION ALL
+SELECT r.id, i.id, 2.0 FROM public.recipes r JOIN public.ingredients i ON r.name = 'Frites maison' AND i.name = 'Pommes de terre'
+UNION ALL
+SELECT r.id, i.id, 0.1 FROM public.recipes r JOIN public.ingredients i ON r.name = 'Frites maison' AND i.name = 'Sel'
+
+UNION ALL
+SELECT r.id, i.id, 1.0 FROM public.recipes r JOIN public.ingredients i ON r.name = 'Tarte au sucre' AND i.name = 'Sucre'
+UNION ALL
+SELECT r.id, i.id, 1.5 FROM public.recipes r JOIN public.ingredients i ON r.name = 'Tarte au sucre' AND i.name = 'Farine'
+
+UNION ALL
+SELECT r.id, i.id, 1.0 FROM public.recipes r JOIN public.ingredients i ON r.name = 'Civet de lièvre' AND i.name = 'Bœuf'
+UNION ALL
+SELECT r.id, i.id, 0.1 FROM public.recipes r JOIN public.ingredients i ON r.name = 'Civet de lièvre' AND i.name = 'Poivre'
+UNION ALL
+SELECT r.id, i.id, 0.1 FROM public.recipes r JOIN public.ingredients i ON r.name = 'Civet de lièvre' AND i.name = 'Sel'
+
+UNION ALL
+SELECT r.id, i.id, 1.0 FROM public.recipes r JOIN public.ingredients i ON r.name = 'Fondant au chocolat' AND i.name = 'Chocolat'
+UNION ALL
+SELECT r.id, i.id, 0.5 FROM public.recipes r JOIN public.ingredients i ON r.name = 'Fondant au chocolat' AND i.name = 'Farine'
+
+UNION ALL
+SELECT r.id, i.id, 0.2 FROM public.recipes r JOIN public.ingredients i ON r.name = 'Jus de pomme maison' AND i.name = 'Sucre'
+
+UNION ALL
+SELECT r.id, i.id, 0.1 FROM public.recipes r JOIN public.ingredients i ON r.name = 'Café expresso' AND i.name = 'Sucre';
