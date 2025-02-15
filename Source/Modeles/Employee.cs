@@ -26,9 +26,6 @@ namespace Gestion_Bunny.Modeles
         [Column("pic")]
         public byte[] Pic { get; set; }
 
-        [ForeignKey("UserId")]
-        public User User { get; set; }
-
         public ICollection<Schedule> Schedules { get; set; } = new List<Schedule>(); // Relation One-to-Many
     }
 }

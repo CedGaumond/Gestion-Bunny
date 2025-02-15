@@ -1,4 +1,4 @@
-@page "/order/{id}"
+@page "/order"
 @using Gestion_Bunny.Services
 @using Gestion_Bunny.Modeles
 @inject PageTitleService TitleService
@@ -7,6 +7,7 @@
 @inject IIngredientService IngredientService
 @inject IOrderCartService OrderCartService
 @inject IOrderService OrderService
+@inject IJSRuntime JSRuntime
 
 <div class="row mb-3 align-items-center">
     <div class="col-md-4">
@@ -96,7 +97,6 @@ else
 }
 
 @code {
-    private Modeles.Order? order;
     private List<Ingredient>? ingredients;
     private List<Ingredient> filteredIngredients = new List<Ingredient>();
     private Dictionary<int, float> ingredientQuantities = new();
@@ -119,11 +119,10 @@ else
     {
         try
         {
-            order = await OrderService.GetOrderByIdAsync(id);
             ingredients = await IngredientService.GetAllIngredients();
             filteredIngredients = ingredients ?? new List<Ingredient>();
 
-            var existingQuantities = OrderCartService.GetOrderQuantitiesForEmployee(AuthState.CurrentUser.Employee.Id);
+            var existingQuantities = OrderCartService.GetOrderQuantitiesForEmployee(AuthState.CurrentUser.Id);
             foreach (var ingredient in filteredIngredients)
             {
 
@@ -175,29 +174,38 @@ else
     {
         try
         {
-            if (order == null)
-            {
-                Console.Error.WriteLine("Erreur : billProvider est null.");
+            var ingredientsInCart = OrderCartService.GetOrderQuantitiesForEmployee(AuthState.CurrentUser.Employee.Id);
+
+            if (ingredientsInCart.Count == 0)
+            { 
+                _ = JSRuntime.InvokeVoidAsync("console.log", "Aucun ingrédient ajouté à la commande.");
                 return;
             }
 
-          
+            
+            var newOrder = new Modeles.Order
+                {
+                    UserId = AuthState.CurrentUser.Id,  
+                    OrderDate = DateTime.Now,  
+                    IsDelivered = false,
+                    TotalAmount = ingredientsInCart.Sum(x => x.Value * x.Key.Price), 
+                    OrderIngredients = ingredientsInCart.Select(ingredient => new Modeles.OrderIngredient
+                    {
+                        IngredientId = ingredient.Key.Id, 
+                        Quantity = ingredient.Value  
+                    }).ToList() 
+                };
 
-            if (true)
-            {
-                //await OrderService.Add(billIngredients);
-                Console.WriteLine("Commande confirmée avec succès !");
-            }
-            else
-            {
-                Console.WriteLine("Aucun ingrédient ajouté à la commande.");
-            }
+             await OrderService.AddOrderAsync(newOrder);
 
+            _ = JSRuntime.InvokeVoidAsync("console.log", "Commande confirmée avec succès !");
+
+            // Rediriger vers la page de résumé de la commande
             Navigation.NavigateTo("/order-summary");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Erreur lors de la confirmation de la commande: {ex.Message}");
+            _ = JSRuntime.InvokeVoidAsync("console.log", $"Erreur lors de la confirmation de la commande: {ex.Message}");
         }
     }
 

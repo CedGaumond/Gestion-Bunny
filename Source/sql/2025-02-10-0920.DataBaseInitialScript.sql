@@ -10,12 +10,23 @@ CREATE TABLE IF NOT EXISTS public.user_role (
     role_name VARCHAR(255) NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS public.employees (
+    id SERIAL PRIMARY KEY,
+    birth_date DATE,
+    social_insurance_number VARCHAR(9),
+    address VARCHAR(255),
+    pic BYTEA,
+    number_hours_desired NUMERIC,
+    hourly_salary NUMERIC
+);
+
 CREATE TABLE IF NOT EXISTS public.users (
     id SERIAL PRIMARY KEY,
     e_mail VARCHAR(100),
     first_name VARCHAR(100),
     last_name VARCHAR(100),
     user_role_id INT REFERENCES user_role(id),
+    employee_id INT REFERENCES employees(id),
     password_hash VARCHAR(255),
     password_salt VARCHAR(255),
     created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -24,16 +35,6 @@ CREATE TABLE IF NOT EXISTS public.users (
     temp_password BOOLEAN
 );
 
-CREATE TABLE IF NOT EXISTS public.employees (
-    id SERIAL PRIMARY KEY,
-    birth_date DATE,
-    social_insurance_number VARCHAR(9),
-    address VARCHAR(255),
-    user_id INT REFERENCES users(id),
-    pic BYTEA,
-    number_hours_desired NUMERIC,
-    hourly_salary NUMERIC
-);
 
 CREATE TABLE IF NOT EXISTS public.schedule (
     id SERIAL PRIMARY KEY,
@@ -47,7 +48,7 @@ CREATE TABLE IF NOT EXISTS public.bills (
     date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     bill_file BYTEA,
     total_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
-    employee_id INT REFERENCES employees(id)
+    user_id INT REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS public.orders (
@@ -56,7 +57,7 @@ CREATE TABLE IF NOT EXISTS public.orders (
     order_file BYTEA,
     total_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
     is_delivered BOOLEAN NOT NULL DEFAULT false,
-    employee_id INT REFERENCES employees(id)
+    user_id INT REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS public.recipe_category (
@@ -77,6 +78,7 @@ CREATE TABLE IF NOT EXISTS public.recipes (
 CREATE TABLE IF NOT EXISTS public.ingredients (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255),
+    price NUMERIC,
     quantity_remaining NUMERIC,
     quantity_per_delivery_unit NUMERIC,
     minimum_threshold_notification NUMERIC,
@@ -119,17 +121,46 @@ VALUES
     ('Boissons'), 
     ('Desserts');    
 
-INSERT INTO public.users (
-    first_name, last_name, e_mail, user_role_id, password_hash, password_salt, is_deleted, temp_password
-) VALUES
-('Carolande', 'Dupont', 'carolande.dupont@example.com', 1, '123', 'salthash1', FALSE, FALSE),
-('Cedrick', 'Lemoine', 'cedrick.lemoine@example.com', 2, '123', 'salthash2', FALSE, FALSE),
-('Jacob', 'Bertier', 'jacob.bertier@example.com', 3, '123', 'salthash3', FALSE, TRUE)
-RETURNING id;
-
+-- Insertion des employés
 INSERT INTO public.employees (
-    birth_date, social_insurance_number, address, user_id, pic, number_hours_desired, hourly_salary
+    birth_date, social_insurance_number, address, pic, number_hours_desired, hourly_salary
 ) VALUES
-('1988-06-25', '123456788', '123 Rue Exemple, Ville', (SELECT id FROM users WHERE e_mail = 'carolande.dupont@example.com'), 'base64,alksfjdasfjaslfjdofawefjopqweorihjjass', 40, 25.50),
-('1992-11-30', '987654322', '456 Avenue Démo, Ville', (SELECT id FROM users WHERE e_mail = 'cedrick.lemoine@example.com'), 'base64,alksfjdasfjaslfjdofawefjopqweorihjjass', 35, 22.00),
-('1985-01-15', '111223343', '789 Boulevard Test, Ville', (SELECT id FROM users WHERE e_mail = 'jacob.bertier@example.com'), 'base64,alksfjdasfjaslfjdofawefjopqweorihjjass', 30, 28.75);
+('1988-06-25', '123456788', '123 Rue Exemple, Ville', 'base64,alksfjdasfjaslfjdofawefjopqweorihjjass', 40, 25.50),
+('1992-11-30', '987654322', '456 Avenue Démo, Ville', 'base64,alksfjdasfjaslfjdofawefjopqweorihjjass', 35, 22.00),
+('1985-01-15', '111223343', '789 Boulevard Test, Ville', 'base64,alksfjdasfjaslfjdofawefjopqweorihjjass', 30, 28.75);
+
+-- Insertion des employés
+INSERT INTO public.employees (
+    birth_date, social_insurance_number, address, pic, number_hours_desired, hourly_salary
+) VALUES
+('1988-06-25', '123456788', '123 Rue Exemple, Ville', 'base64,alksfjdasfjaslfjdofawefjopqweorihjjass', 40, 25.50),
+('1992-11-30', '987654322', '456 Avenue Démo, Ville', 'base64,alksfjdasfjaslfjdofawefjopqweorihjjass', 35, 22.00),
+('1985-01-15', '111223343', '789 Boulevard Test, Ville', 'base64,alksfjdasfjaslfjdofawefjopqweorihjjass', 30, 28.75);
+
+-- Insertion des utilisateurs en récupérant les 3 derniers IDs des employés
+INSERT INTO public.users (
+    first_name, last_name, e_mail, user_role_id, employee_id, password_hash, password_salt, is_deleted, temp_password
+) 
+SELECT 
+    'Carolande', 'Dupont', 'carolande.dupont@example.com', 1, id, '123', 'salthash1', FALSE, FALSE
+FROM public.employees
+ORDER BY id DESC
+LIMIT 1;
+
+INSERT INTO public.users (
+    first_name, last_name, e_mail, user_role_id, employee_id, password_hash, password_salt, is_deleted, temp_password
+) 
+SELECT 
+    'Cedrick', 'Lemoine', 'cedrick.lemoine@example.com', 2, id, '123', 'salthash2', FALSE, FALSE
+FROM public.employees
+ORDER BY id DESC
+LIMIT 1 OFFSET 1;
+
+INSERT INTO public.users (
+    first_name, last_name, e_mail, user_role_id, employee_id, password_hash, password_salt, is_deleted, temp_password
+) 
+SELECT 
+    'Jacob', 'Bertier', 'jacob.bertier@example.com', 3, id, '123', 'salthash3', FALSE, TRUE
+FROM public.employees
+ORDER BY id DESC
+LIMIT 1 OFFSET 2;

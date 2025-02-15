@@ -77,9 +77,23 @@ namespace Gestion_Bunny.Services
             }
         }
 
+        /// <summary>
+        /// Récupère les quantités d'ingrédients associées à un employé dans les commandes en attente.
+        /// Si aucun résultat n'est trouvé pour l'employé, un dictionnaire vide est retourné.
+        /// </summary>
+        /// <param name="employeeId">L'ID de l'employé dont on souhaite récupérer les quantités de commande.</param>
+        /// <returns>
+        /// Un dictionnaire associant chaque ingrédient à sa quantité dans la commande de l'employé.
+        /// Si l'employé n'a pas de commande en attente, un dictionnaire vide est retourné.
+        /// </returns>
         public Dictionary<Ingredient, int> GetOrderQuantitiesForEmployee(int employeeId)
-        { 
-            return _pendingOrders[employeeId];
+        {
+            if (_pendingOrders.ContainsKey(employeeId))
+            {
+                return _pendingOrders[employeeId];
+            }
+
+            return new Dictionary<Ingredient, int>();
         }
 
         /// <summary>

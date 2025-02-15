@@ -17,11 +17,12 @@ namespace Gestion_Bunny.Modeles
         [Column("bill_file")]
         public byte[]? BillFile { get; set; } 
 
+
         [Required]
-        [ForeignKey("EmployeeId")]
-        [Column("employee_id")]
-        public int EmployeeId { get; set; }
-        public Employee Employee { get; set; }
+        [ForeignKey("UserId")]
+        [Column("user_id")]
+        public int UserId { get; set; }
+        public User User { get; set; }
 
         [Column("total_amount")]
         public float TotalAmount { get; set; }

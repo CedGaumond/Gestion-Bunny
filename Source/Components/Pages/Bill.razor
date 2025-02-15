@@ -223,7 +223,7 @@
         {
             Modeles.Bill bill = new Modeles.Bill
             {
-                EmployeeId = AuthState.CurrentUser.Id,
+                UserId = AuthState.CurrentUser.Id,
                 OrderDate = DateTime.UtcNow,
                 TotalAmount = currentOrder.Total,
                 BillRecipes = currentOrder.Recipes.Select(recipe => new BillRecipe

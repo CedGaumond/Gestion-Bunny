@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Gestion_Bunny.Modeles
 {
@@ -46,9 +42,12 @@ namespace Gestion_Bunny.Modeles
         public bool IsDeleted { get; set; }
 
         [Column("temp_password")]
-        public Boolean TempPassword { get; set; }
+        public Boolean TempPassword { get; set; }        
+        
+        [Column("employee_id")]
+        public int? EmployeeId { get; set; }
 
-        [ForeignKey("Id")]
+        [ForeignKey("EmployeeId")]
         public Employee? Employee { get; set; }
 
         public ICollection<Schedule> Schedules { get; set; } = new List<Schedule>();

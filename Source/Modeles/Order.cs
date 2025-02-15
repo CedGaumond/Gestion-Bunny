@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Gestion_Bunny.Modeles
@@ -22,15 +23,21 @@ namespace Gestion_Bunny.Modeles
         public bool IsDelivered { get; set; }
 
         [Required]
-        [ForeignKey("EmployeeId")]
-        [Column("employee_id")]
-        public int EmployeeId { get; set; }
+        [ForeignKey("UserId")]
+        [Column("user_id")]
+        public int UserId { get; set; }
+        public User User { get; set; }
 
         [Required]
         [Column("total_amount")]
         [Range(0, double.MaxValue, ErrorMessage = "Le montant total ne peut pas être négatif.")]
         public decimal TotalAmount { get; set; }
 
-        public ICollection<Ingredient> OrderIngredients { get; set; } = new List<Ingredient>(); 
+        public ICollection<OrderIngredient> OrderIngredients { get; set; } = new List<OrderIngredient>();
+
+        public Order()
+        {
+            OrderDate = DateTime.Now;
+        }
     }
 }

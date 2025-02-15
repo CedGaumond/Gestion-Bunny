@@ -38,6 +38,11 @@ namespace Gestion_Bunny.Modeles
         [DefaultValue(false)] 
         public bool IsDeleted { get; set; }
 
+        [Required]
+        [Range(0, double.MaxValue, ErrorMessage = "Le prix ne peut pas être négatif.")]
+        [Column("price")]
+        public decimal Price { get; set; }
+
         public ICollection<RecipeIngredient> RecipeIngredients { get; set; } = new List<RecipeIngredient>();
     }
 }
