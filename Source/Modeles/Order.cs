@@ -22,10 +22,15 @@ namespace Gestion_Bunny.Modeles
         public bool IsDelivered { get; set; }
 
         [Required]
+        [ForeignKey("EmployeeId")]
+        [Column("employee_id")]
+        public int EmployeeId { get; set; }
+
+        [Required]
         [Column("total_amount")]
         [Range(0, double.MaxValue, ErrorMessage = "Le montant total ne peut pas être négatif.")]
         public decimal TotalAmount { get; set; }
 
-        public ICollection<OrderIngredient> OrderIngredients { get; set; } = new List<OrderIngredient>(); 
+        public ICollection<Ingredient> OrderIngredients { get; set; } = new List<Ingredient>(); 
     }
 }

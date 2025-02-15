@@ -24,18 +24,19 @@ public static class MauiProgram
 
         string connectionString = DatabaseConfiguration.GetConnectionString();
 
-        // Add the DbContext for PostgreSQL using Npgsql
+
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString) // Set up PostgreSQL connection
-           .EnableDetailedErrors() // Optional: Enable detailed error messages (for debugging)
-           .EnableSensitiveDataLogging() // Optional: Logs sensitive data (use with caution)
-           .LogTo(Console.WriteLine, LogLevel.Information) // Optional: Log SQL queries to console for debugging
-);
+        options.UseNpgsql(connectionString) 
+                   .EnableDetailedErrors() 
+                   .EnableSensitiveDataLogging() 
+                   .LogTo(Console.WriteLine, LogLevel.Information) 
+        );
 
 
         // Register the EmployeeService and AuthenticationService for Dependency Injection
         builder.Services.AddScoped<IEmployeeService, EmployeeService>();
         builder.Services.AddScoped<IOrderService, OrderService>();
+        builder.Services.AddSingleton<IOrderCartService, OrderCartService>();
         builder.Services.AddScoped<IRecipeService, RecipeService>();
         builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
         builder.Services.AddSingleton<PageTitleService>();

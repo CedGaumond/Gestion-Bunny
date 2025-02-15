@@ -3,8 +3,8 @@
 @using Gestion_Bunny.Services
 @using Microsoft.AspNetCore.Components.Forms
 @inject NavigationManager Navigation
-@inject IRecipeService ItemService
-@inject IIngredientService ingredientService
+@inject IRecipeService RecipeService
+@inject IIngredientService IngredientService
 @inject IJSRuntime JSRuntime
 @inject PageTitleService TitleService
 
@@ -117,15 +117,15 @@
     {
         try
         {
-            var dbCategories = await ItemService.GetCategoriesAsync();
+            var dbCategories = await RecipeService.GetCategoriesAsync();
             availableCategorie = dbCategories?.ToList() ?? new List<RecipeCategory>();
 
-            var dbIngredients = await ingredientService.GetAllIngredients();
+            var dbIngredients = await IngredientService.GetAllIngredients();
             availableIngredients = dbIngredients?.ToList() ?? new List<Ingredient>();
 
             if (Id.HasValue)
             {
-                var existingRecipe = await ItemService.GetRecipeByIdAsync(Id.Value);
+                var existingRecipe = await RecipeService.GetRecipeByIdAsync(Id.Value);
                 if (existingRecipe != null)
                 {
                     recipe = existingRecipe;
@@ -249,11 +249,11 @@ private async Task ClearFileInput()
         if (Id.HasValue)
         {
             recipeTosave.Id = Id.Value;
-            await ItemService.UpdateRecipeAsync(recipeTosave);
+            await RecipeService.UpdateRecipeAsync(recipeTosave);
         }
         else
         {
-            await ItemService.AddRecipeAsync(recipeTosave);
+            await RecipeService.AddRecipeAsync(recipeTosave);
         }
 
         Navigation.NavigateTo("/recipe-list");

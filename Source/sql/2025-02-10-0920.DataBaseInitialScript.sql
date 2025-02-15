@@ -55,7 +55,8 @@ CREATE TABLE IF NOT EXISTS public.orders (
     date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     order_file BYTEA,
     total_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
-    is_delivered BOOLEAN NOT NULL DEFAULT false
+    is_delivered BOOLEAN NOT NULL DEFAULT false,
+    employee_id INT REFERENCES employees(id)
 );
 
 CREATE TABLE IF NOT EXISTS public.recipe_category (

@@ -17,6 +17,6 @@ namespace Gestion_Bunny.Modeles
         [Required]
         [Column("quantity")]
         [Range(0, double.MaxValue, ErrorMessage = "La quantité ne peut pas être négative.")]
-        public float Quantity { get; set; }
+        public int Quantity { get; set; }
     }
 }

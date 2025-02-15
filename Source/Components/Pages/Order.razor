@@ -3,7 +3,9 @@
 @using Gestion_Bunny.Modeles
 @inject PageTitleService TitleService
 @inject NavigationManager Navigation
+@inject AuthenticationState AuthState
 @inject IIngredientService IngredientService
+@inject IOrderCartService OrderCartService
 @inject IOrderService OrderService
 
 <div class="row mb-3 align-items-center">
@@ -74,8 +76,10 @@ else
                                 <input type="number" class="form-control custom-input"
                                        placeholder="0"
                                        min="0"
-                                       @bind="ingredientQuantities[ingredient.Id]"
-                                       @bind:event="oninput" />
+                                       step="1"
+                                       value="@ingredientQuantities.GetValueOrDefault(ingredient.Id, 0)"
+                                       @oninput="(e) => UpdateOrderIngredient(ingredient, e.Value?.ToString())" />
+
 
                                 <button class="btn btn-sm btn-remove-color ms-2 fw-bold custom-btn" @onclick="() => HandleRemAction(ingredient.Id)"><i class="bi bi-dash"></i></button>
                             </div>
@@ -92,7 +96,7 @@ else
 }
 
 @code {
-    private Modeles.Order? billProvider;
+    private Modeles.Order? order;
     private List<Ingredient>? ingredients;
     private List<Ingredient> filteredIngredients = new List<Ingredient>();
     private Dictionary<int, float> ingredientQuantities = new();
@@ -102,7 +106,6 @@ else
 
     private string filterText = string.Empty;
 
-    private string test = string.Empty;
     private bool isLoading = true;
     private string sortColumn = "Name";
     private bool sortAscending = false;
@@ -114,16 +117,26 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        try 
+        try
         {
-            billProvider = await OrderService.GetOrderByIdAsync(id);
-
+            order = await OrderService.GetOrderByIdAsync(id);
             ingredients = await IngredientService.GetAllIngredients();
-
-           
             filteredIngredients = ingredients ?? new List<Ingredient>();
-            
-           
+
+            var existingQuantities = OrderCartService.GetOrderQuantitiesForEmployee(AuthState.CurrentUser.Employee.Id);
+            foreach (var ingredient in filteredIngredients)
+            {
+
+                if (existingQuantities.ContainsKey(ingredient))
+                {
+                    ingredientQuantities[ingredient.Id] = existingQuantities[ingredient];
+                }
+                else
+                {
+                    ingredientQuantities[ingredient.Id] = 0;
+                }
+            }
+
             SortIngredients();
         }
         catch (Exception ex)
@@ -137,7 +150,8 @@ else
         }
     }
 
-   
+
+
     private void OnFilterChanged()
     {
         if (ingredients == null) return;
@@ -151,7 +165,7 @@ else
                 i.MinimumThresholdNotification.ToString().Contains(filterText, StringComparison.OrdinalIgnoreCase)
             ).ToList();
 
-       
+
         SortIngredients();
 
         StateHasChanged();
@@ -161,23 +175,15 @@ else
     {
         try
         {
-            if (billProvider == null)
+            if (order == null)
             {
                 Console.Error.WriteLine("Erreur : billProvider est null.");
                 return;
             }
 
-            var billIngredients = ingredientQuantities
-                .Where(kvp => kvp.Value > 0) // Ne prend que les quantités > 0
-                .Select(kvp => new OrderIngredient
-                    {
-                        OrderId = billProvider.Id, 
-                        IngredientId = kvp.Key,
-                        Quantity = kvp.Value
-                    })
-                .ToList();
+          
 
-            if (billIngredients.Any())
+            if (true)
             {
                 //await OrderService.Add(billIngredients);
                 Console.WriteLine("Commande confirmée avec succès !");
@@ -196,11 +202,6 @@ else
     }
 
 
-    private void testing()
-    {
-        if (string.IsNullOrWhiteSpace(test)) return;
-    }
-
 
     private void OnSortColumnChanged(ChangeEventArgs e)
     {
@@ -209,7 +210,7 @@ else
         StateHasChanged();
     }
 
-    
+
     private void SortIngredients()
     {
         filteredIngredients = sortColumn switch
@@ -227,7 +228,7 @@ else
         };
     }
 
-   
+
     private void ToggleSortDirection()
     {
         sortAscending = !sortAscending;
@@ -235,7 +236,7 @@ else
         StateHasChanged();
     }
 
-   
+
     private void ClearFilter()
     {
         filterText = string.Empty;
@@ -246,13 +247,13 @@ else
     {
         try
         {
-            
+
             await IngredientService.DeleteIngredient(ingredientId);
 
-           
+
             ingredients = ingredients?.Where(i => i.Id != ingredientId).ToList();
 
-          
+
             OnFilterChanged();
         }
         catch (Exception ex)
@@ -272,4 +273,22 @@ else
             Console.Error.WriteLine($"Erreur lors de la suppression de l'ingrédient: {ex.Message}");
         }
     }
+
+    private void UpdateOrderIngredient(Ingredient ingredient, string? value)
+    {
+        if (int.TryParse(value, out int quantity))
+        {
+            if (quantity > 0)
+            {
+                ingredientQuantities[ingredient.Id] = quantity;
+                OrderCartService.SetIngredientQuantity(AuthState.CurrentUser.Employee.Id, ingredient, quantity); 
+            }
+            else
+            {
+                ingredientQuantities[ingredient.Id] = 0;
+                OrderCartService.RemoveIngredient(AuthState.CurrentUser.Employee.Id, ingredient);
+            }
+        }
+    }
+
 }
