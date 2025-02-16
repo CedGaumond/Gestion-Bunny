@@ -77,13 +77,6 @@ cd Gestion-Bunny/Source
      * Répéter pour `Addingredients.sql`
    * Vérifier les messages de succès
 
-4. **Si les fichiers sont introuvables**:
-   ```powershell
-   # Dans PowerShell
-   cd Gestion-Bunny
-   dir -Recurse -Filter *.sql
-   ```
-
 ## 4. Installation du SDK .NET 🔧
 
 1. **Téléchargement**:
