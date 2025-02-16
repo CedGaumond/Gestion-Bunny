@@ -6,7 +6,7 @@ public static class DatabaseConfiguration
             "Host=127.0.0.1;" +
             "Port=5432;" +
             "Username=postgres;" +
-            "Password=Lolipopi60;" +
+            "Password=UlGBqeXlkG;" +
             "Database=bunny_db;";
 
         return databasePath;
