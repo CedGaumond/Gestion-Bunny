@@ -32,21 +32,18 @@ cd Gestion-Bunny/Source
 
 ### Extensions Essentielles ⚙️
 
-#### .NET MAUI Extension
-1. **Installation**:
+1. **Installation de .NET MAUI**:
    * Ouvrir VS Code
    * Appuyer sur `Ctrl + Shift + X`
    * Rechercher ".NET MAUI"
    * Installer ".NET MAUI Extension Pack"
 
-#### C# Dev Kit
-1. **Installation**:
+2. **Installation de C# Dev Kit**:
    * Rechercher "C# Dev Kit"
    * Installer "C# Dev Kit"
    * Installer les dépendances suggérées
 
-#### PostgreSQL Extension
-1. **Installation**:
+3. **Installation de PostgreSQL**:
    * Rechercher "PostgreSQL"
    * Installer "PostgreSQL" par Chris Kolkman
 
@@ -64,13 +61,28 @@ cd Gestion-Bunny/Source
    * Create > Database
    * Nom: `bunny_db`
 
-2. **Exécution des Scripts**:
-   * Ouvrir Query Tool
-   * Exécuter dans l'ordre:
-     ```sql
-     2025-02-10-0920.DatabaseInitialScript.sql
-     2025-02-12-1618.Addingredients.sql
-     ```
+2. **Localisation des Scripts**:
+   * Naviguer vers le dossier: `Gestion-Bunny/Source/Sql`
+   * Vous trouverez deux fichiers:
+     * `2025-02-10-0920.DatabaseInitialScript.sql`
+     * `2025-02-12-1618.Addingredients.sql`
+
+3. **Exécution des Scripts**:
+   * Dans PgAdmin:
+     * Clic droit sur `bunny_db`
+     * Sélectionner "Query Tool"
+     * Copier le contenu de `DatabaseInitialScript.sql`
+     * Coller dans Query Tool
+     * Exécuter avec le bouton ▶️ ou `F5`
+     * Répéter pour `Addingredients.sql`
+   * Vérifier les messages de succès
+
+4. **Si les fichiers sont introuvables**:
+   ```powershell
+   # Dans PowerShell
+   cd Gestion-Bunny
+   dir -Recurse -Filter *.sql
+   ```
 
 ## 4. Installation du SDK .NET 🔧
 
@@ -106,13 +118,23 @@ dotnet run
 
 ## Dépannage Courant 🔍
 
-* **Erreur PostgreSQL**: Vérifier service Windows
+* **Erreur PostgreSQL**: 
+  * Vérifier le service PostgreSQL dans les services Windows
+  * Vérifier le mot de passe
+
 * **Erreur Compilation**: 
   ```powershell
   dotnet clean
   dotnet build
   ```
-* **Problèmes Extensions**: Réinstaller extensions
+
+* **Fichiers SQL introuvables**:
+  * Vérifier dans tous les sous-dossiers du projet
+  * Utiliser la commande de recherche Windows
+
+* **Erreur d'exécution des scripts SQL**:
+  * Vérifier les droits d'accès à PostgreSQL
+  * Vérifier la connexion à la base de données
 
 ## Support 📚
 
@@ -122,6 +144,6 @@ dotnet run
 
 ## Notes Importantes ⚠️
 
-* Sauvegarder régulièrement
-* Ne pas utiliser en production
-* Mettre à jour régulièrement
+* Sauvegarder régulièrement la base de données
+* Changer le mot de passe par défaut en production
+* Mettre à jour régulièrement les composants
