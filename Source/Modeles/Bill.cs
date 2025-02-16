@@ -25,7 +25,7 @@ namespace Gestion_Bunny.Modeles
         public User User { get; set; }
 
         [Column("total_amount")]
-        public float TotalAmount { get; set; }
+        public decimal TotalAmount { get; set; }
 
         public ICollection<BillRecipe> BillRecipes { get; set; }
     }

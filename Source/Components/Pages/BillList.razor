@@ -109,9 +109,9 @@ else
     {
         try
         {
-            //billsPending = await BillService.GetPendingBillAsync();
-            //billsComplete = await BillService.GetCompleteBillAsync();
-            billsComplete = await BillService.GetBillsAsync();
+            billsPending = await BillService.GetPendingBillsAsync();
+            billsComplete = await BillService.GetCompletedBillsAsync();
+            
 
         }
         catch (Exception ex)
@@ -123,7 +123,7 @@ else
     // Méthode pour gérer l'action de redirection
     private void NavigateToBillPage(int billId = 0)
     {
-        if (billId == 0) { Navigation.NavigateTo("/bill"); }
+        if (billId == 0) { Navigation.NavigateTo($"/bill/{billId}"); }
 
     }
 

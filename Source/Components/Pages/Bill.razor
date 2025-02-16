@@ -94,6 +94,14 @@
                     }
 
                     <div class="d-flex justify-content-between mt-3">
+                        <strong>Sous-total</strong>
+                        <span>@currentOrder.Subtotal.ToString("C")</span>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <strong>TVQ + TVS</strong>
+                        <span>@currentOrder.Tax.ToString("C")</span>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
                         <strong>Total</strong>
                         <span>@currentOrder.Total.ToString("C")</span>
                     </div>
@@ -115,6 +123,7 @@
 @code {
     private int selectedCategoryId = 1;
     private List<Recipe> recipes = new List<Recipe>();
+    private List<Recipe> recipes_order = new List<Recipe>();
     private List<Recipe> recipes_filter = new List<Recipe>();
     private List<RecipeCategory> categories = new List<RecipeCategory>();
     private CurrentOrder currentOrder = new CurrentOrder();
@@ -141,13 +150,13 @@
         {
             categories = await RecipeService.GetCategoriesAsync();
             recipes = await RecipeService.GetRecipesAsync();
-            bill = await BillService.GetBillByIdAsync(billId);
             
             if (billId !=0){
-               // var recipies_order = await BillService.GetBillCustomerItemsByIdAsync(billId);
-                /*foreach (var item in recipies_order){
-                    HandleAddAction(item.);
-                }*/
+                bill = await BillService.GetBillByIdAsync(billId);
+                recipes_order = await BillService.GetBillRecipesByIdAsync(billId);
+                foreach (var item in recipes_order){
+                    HandleAddAction(item.Id);
+                }
             }
             SelectCategory(1);
         }
@@ -166,14 +175,16 @@
     private class CurrentOrder
     {
         public List<OrderItem> Recipes { get; set; } = new List<OrderItem>();
-        public float Total => Recipes.Sum(item => item.Price * item.Quantity);
+        public decimal Subtotal => Recipes.Sum(item => (decimal)item.Price * item.Quantity);
+        public decimal Tax => decimal.Round(Subtotal * 0.15m, 2);
+        public decimal Total => Subtotal + Tax;
     }
 
     private class OrderItem
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public float Price { get; set; }
+        public decimal Price { get; set; }
         public int Quantity { get; set; }
         public string ImageUrl { get; set; }
     }
@@ -191,7 +202,7 @@
             {
                 Id = recipeId,
                 Name = recipes.First(r => r.Id == recipeId).Name,
-                Price = (float)recipes.First(r => r.Id == recipeId).Price,
+                Price = recipes.First(r => r.Id == recipeId).Price,
                 Quantity = 1,
                 ImageUrl = recipes.First(r => r.Id == recipeId).Pic != null && recipes.First(r => r.Id == recipeId).Pic.Length > 0
                     ? $"data:image/jpeg;base64,{Convert.ToBase64String(recipes.First(r => r.Id == recipeId).Pic)}"
