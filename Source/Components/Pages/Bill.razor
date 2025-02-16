@@ -169,7 +169,7 @@
     private class Category
     {
         public int Id { get; set; }
-        public string Name { get; set; }
+        public required string Name { get; set; }
     }
 
     private class CurrentOrder
@@ -183,10 +183,10 @@
     private class OrderItem
     {
         public int Id { get; set; }
-        public string Name { get; set; }
-        public decimal Price { get; set; }
+        public required string Name { get; set; }
+        public float Price { get; set; }
         public int Quantity { get; set; }
-        public string ImageUrl { get; set; }
+        public required string ImageUrl { get; set; }
     }
 
     private void HandleAddAction(int recipeId, int quantity = 1)

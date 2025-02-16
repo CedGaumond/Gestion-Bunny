@@ -67,7 +67,7 @@ public class AuthenticationService : IAuthenticationService
 
     public byte[] GenerateSaltedHash(byte[] plainText, byte[] salt)
     {
-        HashAlgorithm algorithm = new SHA256Managed();
+        using var algorithm = SHA256.Create();
 
         byte[] plainTextWithSaltBytes =
             new byte[plainText.Length + salt.Length];

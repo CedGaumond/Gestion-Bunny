@@ -24,6 +24,6 @@ namespace Gestion_Bunny.Modeles
         public int EmployeeId { get; set; }
 
         [ForeignKey("EmployeeId")] 
-        public Employee Employee { get; set; }
+        public required Employee Employee { get; set; }
     }
 }

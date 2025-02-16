@@ -14,7 +14,7 @@ namespace Gestion_Bunny.Modeles
         [Required]
         [StringLength(255)]
         [Column("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [Required]
         [Range(0, double.MaxValue, ErrorMessage = "Le prix ne peut pas être négatif.")]
@@ -35,7 +35,7 @@ namespace Gestion_Bunny.Modeles
         public int RecipeCategoryId { get; set; }
 
         [ForeignKey("RecipeCategoryId")]
-        public RecipeCategory RecipeCategory { get; set; }
+        public RecipeCategory? RecipeCategory { get; set; }
 
         public ICollection<RecipeIngredient> RecipeIngredients { get; set; } = new List<RecipeIngredient>();
         public ICollection<BillRecipe> BillRecipes { get; set; } = new List<BillRecipe>();

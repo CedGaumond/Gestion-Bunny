@@ -405,6 +405,11 @@ form-label{
     width: 4rem !important;
 }
 
+.custom-input-filter {
+    height: 1.8rem !important;
+    font-size: 1rem !important;
+}
+
 .custom-btn {
     height: 1.8rem !important;
     width: 1.8rem !important;

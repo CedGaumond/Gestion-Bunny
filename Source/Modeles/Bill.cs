@@ -22,7 +22,7 @@ namespace Gestion_Bunny.Modeles
         [ForeignKey("UserId")]
         [Column("user_id")]
         public int UserId { get; set; }
-        public User User { get; set; }
+        public User? User { get; set; }
 
         [Column("total_amount")]
         public decimal TotalAmount { get; set; }

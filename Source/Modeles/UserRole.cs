@@ -13,8 +13,8 @@ namespace Gestion_Bunny.Modeles
         [Required]
         [StringLength(255)]
         [Column("role_name")] 
-        public string RoleName { get; set; }
+        public required string RoleName { get; set; }
 
-        public ICollection<User> Users { get; set; }
+        public required ICollection<User> Users { get; set; }
     }
 }

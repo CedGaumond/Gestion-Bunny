@@ -1,15 +1,26 @@
 @page "/order-summary"
+@using Gestion_Bunny.Modeles
 @using Gestion_Bunny.Services
+@inject IOrderService OrderService
+@inject IOrderCartService OrderCartService
+@inject AuthenticationState AuthState
 @inject PageTitleService TitleService
 @inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
 
 <div class="container d-flex justify-content-center mt-4">
+    <div class="position-fixed bottom-0 end-0 p-3 me-4">
+        <button class="btn btn-primary" @onclick="ScrollToBottom">Descendre jusqu'en bas</button>
+    </div>
+
+
     <div class="card p-4 shadow bg-dark text-light" style="max-width: 500px; width: 100%;">
-        <h4 class="text-center mb-3">Commande #123467</h4>
+        @if (orderedIngredients != null && orderedIngredients.Count > 0)
+        {
+        <h2 class="text-center mb-3">Détail de la commande</h2>
 
         <div class="order-summary">
-            @if (orderedIngredients.Any())
-            {
+            
                   <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
                      <div>
                         <span class="fw-bold">Item</span>
@@ -24,59 +35,149 @@
                 @foreach (var item in orderedIngredients)
                 {
                     <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                        <div>
-                            <span class="fw-bold">@item.Name</span>
-                            <small class="d-block">@item.Price.ToString("C")</small>
+                        <div class="d-flex flex-column" style="flex: 5;">
+                            <span class="fw-bold">@item.Key.Name</span>
+                            <small class="d-block">@item.Key.Price.ToString("C")</small>
                         </div>
-                        <div class="text-center">
-                            <span class="fw-bold">@item.Quantity</span>
+                        <div class="d-flex flex-column" style="flex: 3; text-align: center;">
+                            <span class="fw-bold">@item.Value</span>
                         </div>
-                        <div class="text-end">
-                            <span class="fw-bold">@((item.Price * item.Quantity).ToString("C"))</span>
+                        <div class="d-flex flex-column" style="flex: 5; text-align: end;">
+                            <span class="fw-bold">@((item.Key.Price * item.Value).ToString("C"))</span>
                         </div>
                     </div>
+
+
                 }
-          
+
+                @{
+                    var sousTotal = orderedIngredients.Sum(kv => kv.Key.Price * kv.Value);
+                    var tps = sousTotal * 0.05m;
+                    var tvq = sousTotal * 0.09975m;
+                    var totalAvecTaxes = sousTotal + tps + tvq;
+                }
 
                 <div class="d-flex justify-content-between mt-3">
-                    <strong>Total</strong>
-                    <span class="fw-bold">@orderedIngredients.Sum(i => i.Price * i.Quantity).ToString("C")</span>
+                    <strong>Sous-total</strong>
+                    <span class="fw-bold">@sousTotal.ToString("C")</span>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <strong>TPS (5%)</strong>
+                    <span class="fw-bold">@tps.ToString("C")</span>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <strong>TVQ (9.975%)</strong>
+                    <span class="fw-bold">@tvq.ToString("C")</span>
+                </div>
+
+                <div class="d-flex justify-content-between mt-3 border-top pt-2">
+                    <strong>Total avec taxes</strong>
+                    <span class="fw-bold">@totalAvecTaxes.ToString("C")</span>
                 </div>
 
                 <div class="mt-3 d-grid gap-2">
-                    <button class="btn btn-secondary">Annuler</button>
-                    <button class="btn btn-primary">Commander</button>
+                    <button class="btn btn-secondary" @onclick="OnCancel">Annuler</button>
+                    <button class="btn btn-primary" @onclick="OnConfirmOrder">Commander</button>
                 </div>
-            }
-            else
-            {
-                <p class="text-center text-muted">Aucun ingrédient dans la commande</p>
-            }
-        </div>
+            </div>
+        }
+        else
+        {
+            <p class="text-center text-muted">Aucun ingrédient dans la commande</p>
+        }
+        
     </div>
+    
+</div>
+
+<div id="scrollTarget">
+    
 </div>
 
 @code {
-    private List<OrderedIngredient> orderedIngredients = new();
+    [Parameter, SupplyParameterFromQuery] public int id { get; set; }
+
+    private Dictionary<Ingredient, int>? orderedIngredients;
+
+
+
+
+    protected override void OnInitialized()
+    {
+        TitleService.Title = "Résumé de la commande";
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        TitleService.Title = "Résumé de la commande";
 
         // Simulated order data
         await Task.Delay(500);
-        orderedIngredients = new List<OrderedIngredient>
+
+        if (AuthState.CurrentUser != null)
         {
-            new OrderedIngredient { Name = "Farine", Price = 14.00m, Quantity = 1 },
-            new OrderedIngredient { Name = "Sucre", Price = 12.00m, Quantity = 2 },
-            new OrderedIngredient { Name = "Beurre", Price = 10.00m, Quantity = 1 }
-        };
+            orderedIngredients = OrderCartService.GetOrderQuantitiesForEmployee(AuthState.CurrentUser.Id);
+        }
     }
 
-    private class OrderedIngredient
+    private async Task OnConfirmOrder()
     {
-        public string Name { get; set; } = "";
-        public decimal Price { get; set; }
-        public int Quantity { get; set; }
+        try
+        {
+            var ingredientsInCart = OrderCartService.GetOrderQuantitiesForEmployee(AuthState.CurrentUser.Id);
+
+            if (ingredientsInCart.Count == 0)
+            {
+                _ = JSRuntime.InvokeVoidAsync("console.log", "Aucun ingrédient ajouté à la commande.");
+                return;
+            }
+
+
+            var sousTotal = ingredientsInCart.Sum(x => x.Value * x.Key.Price);
+            var tps = sousTotal * 0.05m;
+            var tvq = sousTotal * 0.09975m;
+            var totalAvecTaxes = sousTotal + tps + tvq;
+
+            var newOrder = new Modeles.Order
+                {
+                    UserId = AuthState.CurrentUser.Id,
+                    OrderDate = DateTime.UtcNow,
+                    IsDelivered = false,
+                    TotalAmount = totalAvecTaxes,
+                    OrderIngredients = ingredientsInCart.Select(ingredient => new Modeles.OrderIngredient
+                    {
+                        IngredientId = ingredient.Key.Id,
+                        Quantity = ingredient.Value
+                    }).ToList()
+                };
+
+
+            await OrderService.AddOrderAsync(newOrder);
+
+            _ = JSRuntime.InvokeVoidAsync("console.log", "Commande confirmée avec succès !");
+
+            OrderCartService.ClearOrder(AuthState.CurrentUser.Id);
+
+            // Rediriger vers la page de résumé de la commande
+            Navigation.NavigateTo("/order-list");
+        }
+        catch (Exception ex)
+        {
+            _ = JSRuntime.InvokeVoidAsync("console.log", $"Erreur lors de la confirmation de la commande: {ex.Message}");
+        }
     }
+
+    private void OnCancel()
+    {
+       
+       Navigation.NavigateTo("/order-list");
+       
+    }
+
+    private async Task ScrollToBottom()
+    {
+        await JSRuntime.InvokeVoidAsync("scrollToElement", "scrollTarget");
+    }
+
 }

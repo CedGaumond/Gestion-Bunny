@@ -8,11 +8,11 @@ namespace Gestion_Bunny.Modeles
     {
         [Column("order_id")]
         public int OrderId { get; set; }
-        public Bill Bill { get; set; }
+        public Order? Order { get; set; }
 
         [Column("ingredient_id")]
         public int IngredientId { get; set; }
-        public Ingredient Ingredient { get; set; }
+        public Ingredient? Ingredient { get; set; }
 
         [Required]
         [Column("quantity")]
