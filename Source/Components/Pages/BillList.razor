@@ -1,6 +1,11 @@
 ﻿@page "/bill-list"
 @using Gestion_Bunny.Services
+@using Gestion_Bunny.Modeles
 @inject PageTitleService TitleService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@inject IBillService BillService
+@inject IEmployeeService EmployeeService
 
 <div class="pt-4 pb-2 d-flex justify-content-between align-items-center">
     <h2>Factures en attente</h2>
@@ -32,15 +37,14 @@ else
                     <tr>
                         <td>
                             <!-- Redirect icon -->
-                            <div class="icon-container" @onclick="() => NavigateToBillPage(bill.Id)">
+                            <div class="icon-container" @onclick="@(() => Navigation.NavigateTo($"/bill/{@bill.Id}"))">
                                 <img src="images/arrow-right-square-fill.svg" alt="Rediriger" />
-                            </div>    
+                            </div>
 
                         </td>
-
-                        <td>@bill.Date.ToShortDateString()</td>
-                        <td>@bill.TemperatureC</td>
-                        <td>@bill.TemperatureF</td>
+                        <td>@bill.GenerateInvoiceNumber()</td>
+                        <td>@recipeQuantities[bill.Id]</td>
+                        <td>@bill.TotalAmount $</td>
                     </tr>
                 }
             </tbody>
@@ -81,10 +85,10 @@ else
                         </td>
 
 
-                        <td>@bill.Date.ToShortDateString()</td>
-                        <td>@bill.TemperatureC</td>
-                        <td>@bill.TemperatureF</td>
-                        <td>@bill.Summary</td>
+                        <td>@bill.GenerateInvoiceNumber()</td>
+                        <td>@recipeQuantities[bill.Id]</td>
+                        <td>@bill.TotalAmount $</td>
+                        <td>@bill.User.FirstName @bill.User.LastName</td>
                     </tr>
                 }
             </tbody>
@@ -99,46 +103,38 @@ else
         TitleService.Title = "Liste des factures";
     }
 
+    private List<Modeles.Bill> billsPending = new List<Modeles.Bill>();
 
-    private WeatherForecast[]? billsPending;
-    private WeatherForecast[]? billsComplete;
+    private List<Modeles.Bill> billsComplete = new List<Modeles.Bill>();
+
+    private Dictionary<int, int> recipeQuantities = new();
 
     protected override async Task OnInitializedAsync()
     {
-        // Simulate asynchronous loading to demonstrate a loading indicator
-        await Task.Delay(500);
-
-        var startDate = DateOnly.FromDateTime(DateTime.Now);
-        var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
-        billsPending = Enumerable.Range(1, 5).Select(index => new WeatherForecast
+        try
+        {
+            billsPending = await BillService.GetPendingBillsAsync();
+            billsComplete = await BillService.GetCompletedBillsAsync();
+            foreach (var bill in billsComplete)
             {
-                Id = index,
-                Date = startDate.AddDays(index),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = summaries[Random.Shared.Next(summaries.Length)]
-            }).ToArray();
-        billsComplete = Enumerable.Range(1, 5).Select(index => new WeatherForecast
+                recipeQuantities[bill.Id] = await BillService.GetTotalRecipeQuantityInBillAsync(bill.Id);
+            }
+            foreach (var bill in billsPending)
             {
-                Id = index,
-                Date = startDate.AddDays(index),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = summaries[Random.Shared.Next(summaries.Length)]
-            }).ToArray();
-    }
-
-    private class WeatherForecast
-    {
-        public int Id { get; set; }
-        public DateOnly Date { get; set; }
-        public int TemperatureC { get; set; }
-        public string? Summary { get; set; }
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+                recipeQuantities[bill.Id] = await BillService.GetTotalRecipeQuantityInBillAsync(bill.Id);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de l'initialisation: {ex.Message}");
+        }
     }
 
     // Méthode pour gérer l'action de redirection
     private void NavigateToBillPage(int billId = 0)
     {
-        Console.WriteLine($"Navigation vers la page de facture avec ID : {billId}");
+        if (billId == 0) { Navigation.NavigateTo($"/bill/{billId}"); }
+
     }
 
     // Méthode pour gérer l'action d'impression

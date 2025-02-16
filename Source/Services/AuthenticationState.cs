@@ -4,11 +4,11 @@ namespace Gestion_Bunny.Services;
 public class AuthenticationState
 {
     public bool IsAuthenticated { get; private set; }
-    public Employee? CurrentUser { get; private set; }
+    public User? CurrentUser { get; private set; }
 
     public event Action OnAuthenticationStateChanged;
 
-    public void SetAuthenticated(Employee user)
+    public void SetAuthenticated(User user)
     {
         IsAuthenticated = true;
         CurrentUser = user;

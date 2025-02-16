@@ -3,7 +3,11 @@
 @using Gestion_Bunny.Modeles
 @inject PageTitleService TitleService
 @inject NavigationManager Navigation
+@inject AuthenticationState AuthState
 @inject IIngredientService IngredientService
+@inject IOrderCartService OrderCartService
+@inject IOrderService OrderService
+@inject IJSRuntime JSRuntime
 
 <div class="row mb-3 align-items-center">
     <div class="col-md-4">
@@ -52,8 +56,8 @@ else if (!filteredIngredients.Any())
 }
 else
 {
-    <div class="table-container">
-        <table class="table">
+    <div class="table-container d-flex flex-column vh-100">
+        <table class="table flex-grow-1">
             <thead>
                 <tr>
                     <th>Actions</th>
@@ -67,21 +71,18 @@ else
                 @foreach (var ingredient in filteredIngredients)
                 {
                     <tr>
-                        <td class="d-flex align-items-center gap-2">
-                            <div class="d-flex align-items-center col-md-2 gap-2">
-                                <div class="icon-container" @onclick="() => HandleAddAction(ingredient.Id)">
-                                    <img src="images/plus.svg" alt="Modifier" />
-                                </div>
-                                <div class="input-group col-md-2">
-                                    <input type="text" id="filter" class="form-control custom-input"
-                                           placeholder="0" 
-                                        @bind-value="test" 
-                                        @bind-value:event="oninput"
-                                        @onkeyup="testing" />
-                                </div>
-                                <div class="icon-container" @onclick="() => HandleRemAction(ingredient.Id)">
-                                    <img src="images/x.svg" alt="Supprimer" />
-                                </div>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <button class="btn btn-sm btn-add-color me-2 fw-bold custom-btn" @onclick="() => HandleAddAction(ingredient.Id)"><i class="bi bi-plus"></i></button>
+                                <input type="number" class="form-control custom-input"
+                                       placeholder="0"
+                                       min="0"
+                                       step="1"
+                                       value="@ingredientQuantities.GetValueOrDefault(ingredient.Id, 0)"
+                                       @oninput="(e) => UpdateOrderIngredient(ingredient, e.Value?.ToString())" />
+
+
+                                <button class="btn btn-sm btn-remove-color ms-2 fw-bold custom-btn" @onclick="() => HandleRemAction(ingredient.Id)"><i class="bi bi-dash"></i></button>
                             </div>
                         </td>
                         <td>@ingredient.Name</td>
@@ -98,9 +99,13 @@ else
 @code {
     private List<Ingredient>? ingredients;
     private List<Ingredient> filteredIngredients = new List<Ingredient>();
+    private Dictionary<int, float> ingredientQuantities = new();
+
+
+    [Parameter, SupplyParameterFromQuery] public int id { get; set; }
+
     private string filterText = string.Empty;
 
-    private string test = string.Empty;
     private bool isLoading = true;
     private string sortColumn = "Name";
     private bool sortAscending = false;
@@ -112,15 +117,25 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        try 
+        try
         {
-           
             ingredients = await IngredientService.GetAllIngredients();
-
-           
             filteredIngredients = ingredients ?? new List<Ingredient>();
-            
-           
+
+            var existingQuantities = OrderCartService.GetOrderQuantitiesForEmployee(AuthState.CurrentUser.Id);
+            foreach (var ingredient in filteredIngredients)
+            {
+
+                if (existingQuantities.ContainsKey(ingredient))
+                {
+                    ingredientQuantities[ingredient.Id] = existingQuantities[ingredient];
+                }
+                else
+                {
+                    ingredientQuantities[ingredient.Id] = 0;
+                }
+            }
+
             SortIngredients();
         }
         catch (Exception ex)
@@ -134,7 +149,8 @@ else
         }
     }
 
-   
+
+
     private void OnFilterChanged()
     {
         if (ingredients == null) return;
@@ -148,7 +164,7 @@ else
                 i.MinimumThresholdNotification.ToString().Contains(filterText, StringComparison.OrdinalIgnoreCase)
             ).ToList();
 
-       
+
         SortIngredients();
 
         StateHasChanged();
@@ -158,20 +174,41 @@ else
     {
         try
         {
-            Console.WriteLine("Commande confirmée !");
+            var ingredientsInCart = OrderCartService.GetOrderQuantitiesForEmployee(AuthState.CurrentUser.Employee.Id);
+
+            if (ingredientsInCart.Count == 0)
+            { 
+                _ = JSRuntime.InvokeVoidAsync("console.log", "Aucun ingrédient ajouté à la commande.");
+                return;
+            }
+
             
+            var newOrder = new Modeles.Order
+                {
+                    UserId = AuthState.CurrentUser.Id,  
+                    OrderDate = DateTime.Now,  
+                    IsDelivered = false,
+                    TotalAmount = ingredientsInCart.Sum(x => x.Value * x.Key.Price), 
+                    OrderIngredients = ingredientsInCart.Select(ingredient => new Modeles.OrderIngredient
+                    {
+                        IngredientId = ingredient.Key.Id, 
+                        Quantity = ingredient.Value  
+                    }).ToList() 
+                };
+
+             await OrderService.AddOrderAsync(newOrder);
+
+            _ = JSRuntime.InvokeVoidAsync("console.log", "Commande confirmée avec succès !");
+
+            // Rediriger vers la page de résumé de la commande
             Navigation.NavigateTo("/order-summary");
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Erreur lors de la confirmation de la commande: {ex.Message}");
+            _ = JSRuntime.InvokeVoidAsync("console.log", $"Erreur lors de la confirmation de la commande: {ex.Message}");
         }
     }
 
-    private void testing()
-    {
-        if (string.IsNullOrWhiteSpace(test)) return;
-    }
 
 
     private void OnSortColumnChanged(ChangeEventArgs e)
@@ -181,7 +218,7 @@ else
         StateHasChanged();
     }
 
-    
+
     private void SortIngredients()
     {
         filteredIngredients = sortColumn switch
@@ -199,7 +236,7 @@ else
         };
     }
 
-   
+
     private void ToggleSortDirection()
     {
         sortAscending = !sortAscending;
@@ -207,7 +244,7 @@ else
         StateHasChanged();
     }
 
-   
+
     private void ClearFilter()
     {
         filterText = string.Empty;
@@ -218,13 +255,13 @@ else
     {
         try
         {
-            
+
             await IngredientService.DeleteIngredient(ingredientId);
 
-           
+
             ingredients = ingredients?.Where(i => i.Id != ingredientId).ToList();
 
-          
+
             OnFilterChanged();
         }
         catch (Exception ex)
@@ -244,4 +281,22 @@ else
             Console.Error.WriteLine($"Erreur lors de la suppression de l'ingrédient: {ex.Message}");
         }
     }
+
+    private void UpdateOrderIngredient(Ingredient ingredient, string? value)
+    {
+        if (int.TryParse(value, out int quantity))
+        {
+            if (quantity > 0)
+            {
+                ingredientQuantities[ingredient.Id] = quantity;
+                OrderCartService.SetIngredientQuantity(AuthState.CurrentUser.Employee.Id, ingredient, quantity); 
+            }
+            else
+            {
+                ingredientQuantities[ingredient.Id] = 0;
+                OrderCartService.RemoveIngredient(AuthState.CurrentUser.Employee.Id, ingredient);
+            }
+        }
+    }
+
 }

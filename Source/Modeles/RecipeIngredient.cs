@@ -5,13 +5,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Gestion_Bunny.Modeles
 {
-    [Table("item_recipe", Schema = "public")]
-    public class ItemRecipe
+    [Table("recipe_ingredients", Schema = "public")]
+    public class RecipeIngredient
     {
-        [Column("item_id")] 
-        [ForeignKey("Item")] 
-        public int ItemId { get; set; }
-        public Item Item { get; set; }
+        [Column("recipe_id")] 
+        [ForeignKey("Recipe")] 
+        public int RecipeId { get; set; }
+        public Recipe Recipe { get; set; }
 
         [Column("ingredient_id")] 
         [ForeignKey("Ingredient")]

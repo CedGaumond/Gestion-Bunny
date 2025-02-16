@@ -2,7 +2,7 @@
 @using Gestion_Bunny.Modeles
 @using Gestion_Bunny.Services
 @inject PageTitleService TitleService
-@inject IBillProviderService BillProviderService
+@inject IOrderService BillProviderService
 @inject NavigationManager Navigation
 
 <div class="pt-4 pb-2 d-flex justify-content-between align-items-center">
@@ -100,13 +100,13 @@ else
     }
 
 
-    private List<BillProvider>? ordersPending;
-    private List<BillProvider>? ordersComplete;
+    private List<Modeles.Order>? ordersPending;
+    private List<Modeles.Order>? ordersComplete;
 
     protected override async Task OnInitializedAsync()
     {
 
-        var billProviders = await BillProviderService.GetBillProvidersAsync();
+        var billProviders = await BillProviderService.GetOrdersAsync();
         ordersPending = billProviders.Where(b => !b.IsDelivered).ToList();
         ordersComplete = billProviders.Where(b => b.IsDelivered).ToList();
 
@@ -122,7 +122,7 @@ else
     {
         await BillProviderService.UpdateOrderAsReceivedAsync(orderId);
 
-        var billProviders = await BillProviderService.GetBillProvidersAsync();
+        var billProviders = await BillProviderService.GetOrdersAsync();
         ordersPending = billProviders.Where(b => !b.IsDelivered).ToList();
         ordersComplete = billProviders.Where(b => b.IsDelivered).ToList();
     }

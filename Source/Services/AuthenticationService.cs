@@ -16,21 +16,21 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<bool> LoginAsync(string email, string password)
     {
-        var employee = await _context.Employees
+        var user = await _context.Users
             .Where(e => e.Email == email)
             .FirstOrDefaultAsync();
 
-        if (employee == null)
+        if (user == null)
         {
             return false;
         }
 
         // TODO: password hasing fr
-        bool isPasswordValid = password == employee.PasswordHash;
+        bool isPasswordValid = password == user.PasswordHash;
 
         if (isPasswordValid)
         {
-            _authState.SetAuthenticated(employee);
+            _authState.SetAuthenticated(user);
         }
 
         return isPasswordValid;

@@ -4,8 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Gestion_Bunny.Modeles
 {
-    [Table("items", Schema = "public")] 
-    public class Item
+    [Table("recipes", Schema = "public")] 
+    public class Recipe
     {
         [Key]
         [Column("id")]
@@ -31,14 +31,13 @@ namespace Gestion_Bunny.Modeles
         [DefaultValue(false)] 
         public bool IsDeleted { get; set; }
 
-        // Foreign Key property
-        [ForeignKey("ItemCategory")]  
-        [Column("item_category_id")] 
-        public int ItemCategoryId { get; set; }
+        [Column("recipe_category_id")] 
+        public int RecipeCategoryId { get; set; }
 
-        public ItemCategory ItemCategory { get; set; }
+        [ForeignKey("RecipeCategoryId")]
+        public RecipeCategory RecipeCategory { get; set; }
 
-        public ICollection<ItemRecipe> ItemRecipes { get; set; } = new List<ItemRecipe>();
-        public ICollection<BillItem> BillItems { get; set; } = new List<BillItem>();
+        public ICollection<RecipeIngredient> RecipeIngredients { get; set; } = new List<RecipeIngredient>();
+        public ICollection<BillRecipe> BillRecipes { get; set; } = new List<BillRecipe>();
     }
 }

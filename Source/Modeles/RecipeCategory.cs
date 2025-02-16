@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Gestion_Bunny.Modeles
 {
-    [Table("item_category", Schema = "public")] 
-    public class ItemCategory
+    [Table("recipe_category", Schema = "public")] 
+    public class RecipeCategory
     {
         [Key]
         [Column("id")]
@@ -15,6 +15,6 @@ namespace Gestion_Bunny.Modeles
         [Column("name")] 
         public string Name { get; set; }
 
-        public ICollection<Item> Items { get; set; } = new List<Item>(); 
+        public ICollection<Recipe> Recipes { get; set; } = new List<Recipe>(); 
     }
 }
