@@ -42,7 +42,7 @@ else
 
                         </td>
 
-                        <td>@order.Id</td>
+                        <td>@order.GenerateInvoiceNumber()</td>
                         <td>@order.OrderDate.ToShortDateString()</td>
                         <td>@order.TotalAmount.ToString("F2")</td>
                     </tr>
@@ -82,7 +82,7 @@ else
                         </td>
 
 
-                        <td>@order.Id</td>
+                        <td>@order.GenerateInvoiceNumber()</td>
                         <td>@order.OrderDate.ToShortDateString()</td>
                         <td>@order.TotalAmount.ToString("F2")</td>
                     </tr>
