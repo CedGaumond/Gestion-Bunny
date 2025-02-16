@@ -135,8 +135,3 @@ dotnet run
 * Guide PostgreSQL
 * Manuel Gestion-Bunny
 
-## Notes Importantes ⚠️
-
-* Sauvegarder régulièrement la base de données
-* Changer le mot de passe par défaut en production
-* Mettre à jour régulièrement les composants
