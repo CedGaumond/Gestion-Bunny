@@ -14,9 +14,23 @@ git clone https://github.com/CedGaumond/Gestion-Bunny.git
 
 # Naviguez vers le dossier du projet
 cd Gestion-Bunny
-cd BunnyCO/BunnyCO
+cd Source
 ```
 ## Installation des Logiciels Requis 💻
+
+### 2. PgAdmin
+
+1. Téléchargez PgAdmin à partir du lien suivant : [https://www.pgadmin.org/download/](https://www.pgadmin.org/download/).
+2. Suivez les étapes de l'assistant d'installation.
+3. Pendant le processus d'installation, un mot de passe vous sera demandé. Utilisez le mot de passe suivant : **UlGBqeXlkG**.
+
+### 3. Exécution des scripts SQL
+
+1. Faites un clic droit sur votre base de données et sélectionnez **Query Tool**.
+2. Insérez le contenu du fichier `2025-02-10-0920.DatabaseInitialScript.sql` situé dans le répertoire `Gestion-Bunny/Source/Sql`.
+3. Exécutez le script.
+4. Répétez la même procédure pour le fichier `2025-02-12-1618.Addingredients.sql`.
+
 
 ### 2. Visual Studio Code
 
