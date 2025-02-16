@@ -1,95 +1,127 @@
-# Comment Configurer et Exécuter le Projet 🚀 (Windows)
+# Guide Complet d'Installation et Configuration - Gestion-Bunny 🚀
 
-## Première Étape : Cloner le Projet 📂
+## Prérequis Système 🖥️
 
-### 1. Cloner le Dépôt Git
+* Windows 10 ou plus récent
+* Minimum 8 GB RAM
+* 10 GB d'espace disque disponible
+* Connexion Internet stable
+
+## 1. Clonage du Projet 📂
 
 ```powershell
-# Ouvrez l'Invite de Commandes (CMD)
-# ⚠️ IMPORTANT : Gardez le CMD ouvert, il sera nécessaire pour les étapes suivantes!
-# Choisissez un dossier où vous voulez cloner le projet
-
-# Clonez le dépôt
+# Ouvrir PowerShell en mode administrateur
 git clone https://github.com/CedGaumond/Gestion-Bunny.git
-
-# Naviguez vers le dossier du projet
-cd Gestion-Bunny
-cd Source
+cd Gestion-Bunny/Source
 ```
-## Installation des Logiciels Requis 💻
 
-### 2. PgAdmin
+## 2. Installation des Logiciels Requis 💻
 
-1. Téléchargez PgAdmin à partir du lien suivant : [https://www.pgadmin.org/download/](https://www.pgadmin.org/download/).
-2. Suivez les étapes de l'assistant d'installation.
-3. Pendant le processus d'installation, un mot de passe vous sera demandé. Utilisez le mot de passe suivant : **UlGBqeXlkG**.
+### Visual Studio Code
+1. **Téléchargement**:
+   * Visiter [https://code.visualstudio.com/](https://code.visualstudio.com/)
+   * Cliquer sur "Download for Windows"
+   * Choisir la version 64-bit
 
-### 3. Exécution des scripts SQL
+2. **Installation**:
+   * Exécuter le fichier `.exe`
+   * Cocher toutes les options:
+     * "Ajouter l'action 'Ouvrir avec Code' au menu contextuel"
+     * "Ajouter au PATH"
+     * "Enregistrer Code comme éditeur par défaut"
 
-1. Faites un clic droit sur votre base de données et sélectionnez **Query Tool**.
-2. Insérez le contenu du fichier `2025-02-10-0920.DatabaseInitialScript.sql` situé dans le répertoire `Gestion-Bunny/Source/Sql`.
-3. Exécutez le script.
-4. Répétez la même procédure pour le fichier `2025-02-12-1618.Addingredients.sql`.
+### Extensions Essentielles ⚙️
 
+#### .NET MAUI Extension
+1. **Installation**:
+   * Ouvrir VS Code
+   * Appuyer sur `Ctrl + Shift + X`
+   * Rechercher ".NET MAUI"
+   * Installer ".NET MAUI Extension Pack"
 
-### 2. Visual Studio Code
+#### C# Dev Kit
+1. **Installation**:
+   * Rechercher "C# Dev Kit"
+   * Installer "C# Dev Kit"
+   * Installer les dépendances suggérées
 
-Téléchargez Visual Studio Code depuis https://code.visualstudio.com/
-Suivez l'assistant d'installation
-Lancez VS Code après l'installation
+#### PostgreSQL Extension
+1. **Installation**:
+   * Rechercher "PostgreSQL"
+   * Installer "PostgreSQL" par Chris Kolkman
 
-### 3. Extension .NET MAUI ⚙️
+### PgAdmin
+1. **Installation**:
+   * Télécharger depuis [https://www.pgadmin.org/download/](https://www.pgadmin.org/download/)
+   * Suivre l'assistant d'installation
+   * Mot de passe maître: **UlGBqeXlkG**
 
-Lancez Visual Studio Code
-Appuyez sur Ctrl + Shift + X pour ouvrir les Extensions
-Recherchez ".NET MAUI"
-Cliquez sur "Installer"
+## 3. Configuration de la Base de Données 🗄️
 
-### 4. Installation du SDK .NET 🔧
+1. **Création de la Base**:
+   * Ouvrir PgAdmin
+   * Clic droit sur "Databases"
+   * Create > Database
+   * Nom: `bunny_db`
 
-Visitez https://dotnet.microsoft.com/en-us/download/dotnet/9.0
-Téléchargez le SDK
-Exécutez l'installateur
+2. **Exécution des Scripts**:
+   * Ouvrir Query Tool
+   * Exécuter dans l'ordre:
+     ```sql
+     2025-02-10-0920.DatabaseInitialScript.sql
+     2025-02-12-1618.Addingredients.sql
+     ```
 
-## Configuration du Projet 📝
-### 5. Restauration des Dépendances
+## 4. Installation du SDK .NET 🔧
+
+1. **Téléchargement**:
+   * Visiter [https://dotnet.microsoft.com/en-us/download/dotnet/9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+   * Télécharger le SDK
+   * Installer avec les options par défaut
+
+2. **Vérification**:
+   ```powershell
+   dotnet --version
+   ```
+
+## 5. Configuration du Projet 📝
+
+1. **Restauration des Packages**:
+   ```powershell
+   dotnet workload restore
+   ```
+
+2. **Installation des Dépendances**:
+   ```powershell
+   dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL
+   dotnet add package QuestPDF
+   ```
+
+## 6. Compilation et Exécution ▶️
+
 ```powershell
-# Dans le même CMD que précédemment
-# Assurez-vous d'être dans le dossier BunnyCO
-dotnet workload restore
+dotnet build
+dotnet run
 ```
 
-### 6. Ajout des packets NuGet
-```powershell
-dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL
-dotnet add package QuestPDF
-```
-## Configuration de la Base de Données PostgreSQL 🗄️
+## Dépannage Courant 🔍
 
-### 7. Configuration de l'Environnement
-```powershell
-# Naviguez vers le dossier de la base de données
-cd ~/SchoolWork/BD-2
+* **Erreur PostgreSQL**: Vérifier service Windows
+* **Erreur Compilation**: 
+  ```powershell
+  dotnet clean
+  dotnet build
+  ```
+* **Problèmes Extensions**: Réinstaller extensions
 
-# Création du dossier pour la base de données
-read -p "Entrez le nom du nouveau dossier : " nom_dossier
-mkdir "$nom_dossier"
-cd "$nom_dossier"
+## Support 📚
 
-# Configuration de la connexion PostgreSQL
-export PGPASSWORD='UlGBqeXlkG'
-psql -U postgres -e -L "log${nom_dossier}.log"
-\c "$nom_dossier"
-unset PGPASSWORD
-```
+* Documentation .NET MAUI
+* Guide PostgreSQL
+* Manuel Gestion-Bunny
 
-### 8. Compiler et Exécuter ▶️
+## Notes Importantes ⚠️
 
-Ouvrez App.xaml.cs dans Visual Studio Code
-
-Cherchez le bouton d'exécution (▶️) en haut à droite
-
-Cliquez pour compiler et exécuter votre application
-
-
-dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL
+* Sauvegarder régulièrement
+* Ne pas utiliser en production
+* Mettre à jour régulièrement
