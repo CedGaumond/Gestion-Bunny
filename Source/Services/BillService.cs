@@ -80,8 +80,6 @@ namespace Gestion_Bunny.Services
             await _context.SaveChangesAsync();
         }
 
-
-
         public async Task DeleteBillAsync(int billId)
         {
             var billCustomer = await _context.Bills.FindAsync(billId);
@@ -92,5 +90,11 @@ namespace Gestion_Bunny.Services
             }
         }
 
+        public async Task<int> GetTotalRecipeQuantityInBillAsync(int billId)
+        {
+            return await _context.BillRecipes
+                .Where(br => br.BillId == billId)
+                .SumAsync(br => br.Quantity);
+        }
     }
 }

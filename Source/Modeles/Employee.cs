@@ -20,9 +20,6 @@ namespace Gestion_Bunny.Modeles
         [Column("address")]
         public string Address { get; set; }
 
-        [Column("user_id")]
-        public int? UserId { get; set; }
-
         [Column("pic")]
         public byte[] Pic { get; set; }
 
