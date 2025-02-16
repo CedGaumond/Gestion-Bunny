@@ -9,8 +9,8 @@ namespace Gestion_Bunny.Services
         Task<List<Bill>> GetCompletedBillsAsync();   
         Task<Bill> GetBillByIdAsync(int billId);
         Task AddBillAsync(Bill bill);
-        Task UpdateBillAsync(Bill bill);
+        Task UpdateBillAsync(Bill bill, List<BillRecipe> billRecipes);
         Task DeleteBillAsync(int billId);
-        Task<List<Recipe>> GetBillRecipesByIdAsync(int billId);
+        Task<List<(Recipe Recipe, int Quantity)>> GetBillRecipesByIdAsync(int billId);
     }
 }
