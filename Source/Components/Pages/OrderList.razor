@@ -2,7 +2,7 @@
 @using Gestion_Bunny.Modeles
 @using Gestion_Bunny.Services
 @inject PageTitleService TitleService
-@inject IOrderService BillProviderService
+@inject IOrderService OrderService
 @inject NavigationManager Navigation
 
 <div class="pt-4 pb-2 d-flex justify-content-between align-items-center">
@@ -106,9 +106,9 @@ else
     protected override async Task OnInitializedAsync()
     {
 
-        var billProviders = await BillProviderService.GetOrdersAsync();
-        ordersPending = billProviders.Where(b => !b.IsDelivered).ToList();
-        ordersComplete = billProviders.Where(b => b.IsDelivered).ToList();
+        var orders = await OrderService.GetOrdersAsync();
+        ordersPending = orders.Where(b => !b.IsDelivered).ToList();
+        ordersComplete = orders.Where(b => b.IsDelivered).ToList();
 
     }
 
@@ -120,11 +120,11 @@ else
 
     private async Task HandleOrderReceivedAction(int orderId)
     {
-        await BillProviderService.UpdateOrderAsReceivedAsync(orderId);
+        await OrderService.UpdateOrderAsReceivedAsync(orderId);
 
-        var billProviders = await BillProviderService.GetOrdersAsync();
-        ordersPending = billProviders.Where(b => !b.IsDelivered).ToList();
-        ordersComplete = billProviders.Where(b => b.IsDelivered).ToList();
+        var orders = await OrderService.GetOrdersAsync();
+        ordersPending = orders.Where(b => !b.IsDelivered).ToList();
+        ordersComplete = orders.Where(b => b.IsDelivered).ToList();
     }
 
     // Méthode pour gérer l'action d'impression

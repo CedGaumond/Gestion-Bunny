@@ -14,7 +14,7 @@ namespace Gestion_Bunny.Modeles
         [Required]
         [StringLength(255)]
         [Column("name")]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         [Required]
         [Range(0, double.MaxValue, ErrorMessage = "La quantité restante ne peut pas être négative.")]

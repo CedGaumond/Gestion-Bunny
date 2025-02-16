@@ -70,7 +70,6 @@ else
     private Employee? selectedEmployee;
 
     private Modal modal = default!;
-    private string? message;
 
     private async Task OnShowModalClick()
     {
@@ -141,15 +140,15 @@ else
     private class Employee
     {
         public int Id { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Email { get; set; }
+        public required string FirstName { get; set; }
+        public required string LastName { get; set; }
+        public required string Email { get; set; }
         public DateTime BirthDate { get; set; }
-        public string SocialInsuranceNumber { get; set; }
+        public string? SocialInsuranceNumber { get; set; }
         public int? EmployeeRoleId { get; set; }
-        public byte[] Pic { get; set; }
-        public string PasswordHash { get; set; }
-        public string PasswordSalt { get; set; }
+        public byte[]? Pic { get; set; }
+        public string? PasswordHash { get; set; }
+        public string? PasswordSalt { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool IsDeleted { get; set; }
         public bool TempPassword { get; set; }

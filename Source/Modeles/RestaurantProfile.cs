@@ -13,15 +13,15 @@ namespace Gestion_Bunny.Modeles
         [Required]
         [StringLength(255)]
         [Column("restaurant_name")]
-        public string RestaurantName { get; set; }
+        public required string RestaurantName { get; set; }
 
         [Required]
         [StringLength(255)]
         [Column("restaurant_address")] 
-        public string RestaurantAddress { get; set; }
+        public required string RestaurantAddress { get; set; }
 
         [StringLength(100)]
         [Column("opening_hours")]
-        public string OpeningHours { get; set; }
+        public required string OpeningHours { get; set; }
     }
 }

@@ -118,11 +118,11 @@
                                                    ingredient.QuantityPerDeliveryUnit, ingredient.MinimumThresholdNotification);
         }
 
-        Navigation.NavigateTo("/ingredient-list"); // Redirect to ingredient list
+        Navigation.NavigateTo("/ingredient-list");
     }
     catch (Exception ex)
     {
-        errorMessage = ex.Message; // Set the error message to display in case of failure
+        errorMessage = ex.Message;
     }
 }
 

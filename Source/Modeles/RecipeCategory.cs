@@ -13,7 +13,7 @@ namespace Gestion_Bunny.Modeles
         [Required]
         [StringLength(255)]
         [Column("name")] 
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         public ICollection<Recipe> Recipes { get; set; } = new List<Recipe>(); 
     }

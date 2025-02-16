@@ -6,7 +6,7 @@ public class AuthenticationState
     public bool IsAuthenticated { get; private set; }
     public User? CurrentUser { get; private set; }
 
-    public event Action OnAuthenticationStateChanged;
+    public event Action OnAuthenticationStateChanged = delegate { };
 
     public void SetAuthenticated(User user)
     {

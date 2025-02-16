@@ -11,12 +11,12 @@ namespace Gestion_Bunny.Modeles
         [Column("recipe_id")] 
         [ForeignKey("Recipe")] 
         public int RecipeId { get; set; }
-        public Recipe Recipe { get; set; }
+        public Recipe? Recipe { get; set; }
 
         [Column("ingredient_id")] 
         [ForeignKey("Ingredient")]
         public int IngredientId { get; set; }
-        public Ingredient Ingredient { get; set; }
+        public Ingredient? Ingredient { get; set; }
 
         [Required]
         [Column("quantity")]

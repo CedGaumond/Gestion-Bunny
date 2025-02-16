@@ -53,7 +53,7 @@
     [Parameter] public string? IdString { get; set; }
     private int? Id => int.TryParse(IdString, out var id) ? id : null;
 
-    private Employee employee;
+    private Employee? employee;
 
     protected override async Task OnInitializedAsync()
     {
@@ -102,15 +102,15 @@
     private class Employee
     {
         public int Id { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Email { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? Email { get; set; }
         public DateTime BirthDate { get; set; }
-        public string SocialInsuranceNumber { get; set; }
+        public string? SocialInsuranceNumber { get; set; }
         public int? EmployeeRoleId { get; set; }
-        public byte[] Pic { get; set; }
-        public string PasswordHash { get; set; }
-        public string PasswordSalt { get; set; }
+        public byte[]? Pic { get; set; }
+        public string? PasswordHash { get; set; }
+        public string? PasswordSalt { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool IsDeleted { get; set; }
         public bool TempPassword { get; set; }

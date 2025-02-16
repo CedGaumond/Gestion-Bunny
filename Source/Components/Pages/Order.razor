@@ -9,13 +9,13 @@
 @inject IOrderService OrderService
 @inject IJSRuntime JSRuntime
 
-<div class="row mb-3 align-items-center">
+<div class="row mb-3 mt-3 align-items-center">
     <div class="col-md-4">
         <label for="filter" class="form-label">Filtrer par nom</label>
         <div class="input-group">
-            <input type="text" id="filter" class="form-control" 
-                   placeholder="Rechercher un ingrédient" 
-                   @bind-value="filterText" 
+            <input type="text" id="filter" class="custom-input-filter form-control"
+                   placeholder="Rechercher un ingrédient"
+                   @bind-value="filterText"
                    @bind-value:event="oninput"
                    @onkeyup="OnFilterChanged" />
             @if (!string.IsNullOrEmpty(filterText))
@@ -26,25 +26,36 @@
             }
         </div>
     </div>
+
     <div class="col-md-4">
-        <label class="form-label">Trier par</label>
-        <select class="form-select form-select-sm" @onchange="OnSortColumnChanged">
-            <option value="Name">Nom</option>
-            <option value="QuantityRemaining">Quantité restante</option>
-            <option value="MinimumThresholdNotification">Seuil minimum</option>
-        </select>
+        <label class="form-label" for="sortColumn">Trier par</label>
+        <div class="d-flex align-items-center">
+            <select id="sortColumn" class="form-select form-select-sm" @onchange="OnSortColumnChanged">
+                <option value="Name">Nom</option>
+                <option value="QuantityRemaining">Quantité restante</option>
+                <option value="MinimumThresholdNotification">Seuil minimum</option>
+            </select>
+
+            <button class="btn btn-outline-secondary btn-sm ms-2" @onclick="ToggleSortDirection">
+                @(sortAscending ? "▲" : "▼")
+            </button>
+        </div>
     </div>
-    <div class="col-md-2">
-        <button class="btn btn-outline-secondary btn-sm mt-4" @onclick="ToggleSortDirection">
-            @(sortAscending ? "▲" : "▼")
-        </button>
-    </div>
-    <div class="text-center col-md-2 mt-4">
-        <button class="btn btn-primary" @onclick="OnConfirmOrder">
-            Confirmer la commande
-        </button>
+
+    <div class="col-md-4 d-flex justify-content-end align-items-center">
+        <div class="d-flex gap-2 pt-4">
+            <button class="btn btn-primary" @onclick="OnConfirmOrder">
+                Commander
+            </button>
+            <button class="btn btn-secondary" @onclick="OnReinitialize">
+                Réinitialiser
+            </button>
+        </div>
     </div>
 </div>
+
+
+
 
 @if (isLoading)
 {
@@ -56,50 +67,54 @@ else if (!filteredIngredients.Any())
 }
 else
 {
-    <div class="table-container d-flex flex-column vh-100">
-        <table class="table flex-grow-1">
-            <thead>
-                <tr>
-                    <th>Actions</th>
-                    <th>Nom</th>
-                    <th>Quantité restante</th>
-                    <th>Qté/unité livraison</th>
-                    <th>Seuil minimum</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var ingredient in filteredIngredients)
-                {
+    <div class="d-flex flex-column mt-4 mb-4">
+        <div class="table-responsive flex-grow-1 d-flex flex-column">
+            <table class="table" style="flex-grow: 1; overflow-y: auto;">
+                <thead>
                     <tr>
-                        <td>
-                            <div class="d-flex align-items-center gap-2">
-                                <button class="btn btn-sm btn-add-color me-2 fw-bold custom-btn" @onclick="() => HandleAddAction(ingredient.Id)"><i class="bi bi-plus"></i></button>
-                                <input type="number" class="form-control custom-input"
-                                       placeholder="0"
-                                       min="0"
-                                       step="1"
-                                       value="@ingredientQuantities.GetValueOrDefault(ingredient.Id, 0)"
-                                       @oninput="(e) => UpdateOrderIngredient(ingredient, e.Value?.ToString())" />
-
-
-                                <button class="btn btn-sm btn-remove-color ms-2 fw-bold custom-btn" @onclick="() => HandleRemAction(ingredient.Id)"><i class="bi bi-dash"></i></button>
-                            </div>
-                        </td>
-                        <td>@ingredient.Name</td>
-                        <td>@ingredient.QuantityRemaining</td>
-                        <td>@ingredient.QuantityPerDeliveryUnit</td>
-                        <td>@ingredient.MinimumThresholdNotification</td>
+                        <th>Actions</th>
+                        <th>Nom</th>
+                        <th>Quantité restante</th>
+                        <th>Qté/unité livraison</th>
+                        <th>Seuil minimum</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var ingredient in filteredIngredients)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <button class="btn btn-sm btn-add-color me-2 fw-bold custom-btn" @onclick="() => HandleAddAction(ingredient)">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                    <input type="number" class="form-control custom-input"
+                                           placeholder="0"
+                                           min="0"
+                                           step="1"
+                                           value="@ingredientQuantities.GetValueOrDefault(ingredient.Id, 0)"
+                                           @oninput="(e) => UpdateOrderIngredient(ingredient, e.Value?.ToString())" />
+                                    <button class="btn btn-sm btn-remove-color ms-2 fw-bold custom-btn" @onclick="() => HandleRemAction(ingredient)">
+                                        <i class="bi bi-dash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                            <td>@ingredient.Name</td>
+                            <td>@ingredient.QuantityRemaining</td>
+                            <td>@ingredient.QuantityPerDeliveryUnit</td>
+                            <td>@ingredient.MinimumThresholdNotification</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 }
 
 @code {
     private List<Ingredient>? ingredients;
     private List<Ingredient> filteredIngredients = new List<Ingredient>();
-    private Dictionary<int, float> ingredientQuantities = new();
+    private Dictionary<int, int> ingredientQuantities = new();
 
 
     [Parameter, SupplyParameterFromQuery] public int id { get; set; }
@@ -149,8 +164,6 @@ else
         }
     }
 
-
-
     private void OnFilterChanged()
     {
         if (ingredients == null) return;
@@ -170,46 +183,18 @@ else
         StateHasChanged();
     }
 
-    private async Task OnConfirmOrder()
+    private void OnConfirmOrder()
     {
-        try
+        var ingredientsInCart = OrderCartService.GetOrderQuantitiesForEmployee(AuthState.CurrentUser.Id);
+
+        if (ingredientsInCart.Count == 0)
         {
-            var ingredientsInCart = OrderCartService.GetOrderQuantitiesForEmployee(AuthState.CurrentUser.Employee.Id);
-
-            if (ingredientsInCart.Count == 0)
-            { 
-                _ = JSRuntime.InvokeVoidAsync("console.log", "Aucun ingrédient ajouté à la commande.");
-                return;
-            }
-
-            
-            var newOrder = new Modeles.Order
-                {
-                    UserId = AuthState.CurrentUser.Id,  
-                    OrderDate = DateTime.Now,  
-                    IsDelivered = false,
-                    TotalAmount = ingredientsInCart.Sum(x => x.Value * x.Key.Price), 
-                    OrderIngredients = ingredientsInCart.Select(ingredient => new Modeles.OrderIngredient
-                    {
-                        IngredientId = ingredient.Key.Id, 
-                        Quantity = ingredient.Value  
-                    }).ToList() 
-                };
-
-             await OrderService.AddOrderAsync(newOrder);
-
-            _ = JSRuntime.InvokeVoidAsync("console.log", "Commande confirmée avec succès !");
-
-            // Rediriger vers la page de résumé de la commande
-            Navigation.NavigateTo("/order-summary");
+            _ = JSRuntime.InvokeVoidAsync("console.log", "Aucun ingrédient ajouté à la commande.");
+            return;
         }
-        catch (Exception ex)
-        {
-            _ = JSRuntime.InvokeVoidAsync("console.log", $"Erreur lors de la confirmation de la commande: {ex.Message}");
-        }
+
+        Navigation.NavigateTo("/order-summary");
     }
-
-
 
     private void OnSortColumnChanged(ChangeEventArgs e)
     {
@@ -217,7 +202,6 @@ else
         SortIngredients();
         StateHasChanged();
     }
-
 
     private void SortIngredients()
     {
@@ -236,7 +220,6 @@ else
         };
     }
 
-
     private void ToggleSortDirection()
     {
         sortAscending = !sortAscending;
@@ -244,23 +227,58 @@ else
         StateHasChanged();
     }
 
-
     private void ClearFilter()
     {
         filterText = string.Empty;
         OnFilterChanged();
     }
 
-    private async Task HandleAddAction(int ingredientId)
+    private async Task HandleAddAction(Ingredient ingredient)
     {
         try
         {
+            if (ingredientQuantities.ContainsKey(ingredient.Id))
+            {
+                ingredientQuantities[ingredient.Id]++;
+            }
+            else
+            {
+                ingredientQuantities[ingredient.Id] = 1;
+            }
 
-            await IngredientService.DeleteIngredient(ingredientId);
+            if (ingredient != null)
+            {
+                OrderCartService.SetIngredientQuantity(AuthState.CurrentUser.Id, ingredient, ingredientQuantities[ingredient.Id]);
+            }
 
+            OnFilterChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Erreur lors de l'ajout de l'ingrédient: {ex.Message}");
+        }
+    }
 
-            ingredients = ingredients?.Where(i => i.Id != ingredientId).ToList();
+    private async Task HandleRemAction(Ingredient ingredient)
+    {
+        try
+        {
+            if (ingredientQuantities.ContainsKey(ingredient.Id) && ingredientQuantities[ingredient.Id] > 0)
+            {
+                ingredientQuantities[ingredient.Id]--;
+            }
 
+            if (ingredient != null)
+            {
+                if (ingredientQuantities[ingredient.Id] > 0)
+                {
+                    OrderCartService.SetIngredientQuantity(AuthState.CurrentUser.Id, ingredient, ingredientQuantities[ingredient.Id]);
+                }
+                else
+                {
+                    OrderCartService.RemoveIngredient(AuthState.CurrentUser.Id, ingredient);
+                }
+            }
 
             OnFilterChanged();
         }
@@ -270,17 +288,6 @@ else
         }
     }
 
-    private void HandleRemAction(int ingredientId)
-    {
-        try
-        {
-            Console.WriteLine($"Suppression de l'ingrédient avec ID : {ingredientId}");
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Erreur lors de la suppression de l'ingrédient: {ex.Message}");
-        }
-    }
 
     private void UpdateOrderIngredient(Ingredient ingredient, string? value)
     {
@@ -289,14 +296,21 @@ else
             if (quantity > 0)
             {
                 ingredientQuantities[ingredient.Id] = quantity;
-                OrderCartService.SetIngredientQuantity(AuthState.CurrentUser.Employee.Id, ingredient, quantity); 
+                OrderCartService.SetIngredientQuantity(AuthState.CurrentUser.Id, ingredient, quantity); 
             }
             else
             {
                 ingredientQuantities[ingredient.Id] = 0;
-                OrderCartService.RemoveIngredient(AuthState.CurrentUser.Employee.Id, ingredient);
+                OrderCartService.RemoveIngredient(AuthState.CurrentUser.Id, ingredient);
             }
         }
+    }
+
+    private void OnReinitialize()
+    {
+        OrderCartService.ClearOrder(AuthState.CurrentUser.Id);
+        ingredientQuantities = new();
+        OnFilterChanged();
     }
 
 }
