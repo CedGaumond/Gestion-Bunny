@@ -1,6 +1,7 @@
 ﻿@page "/bill-list"
 @using Gestion_Bunny.Services
 @using Gestion_Bunny.Modeles
+@using System.Diagnostics
 @inject PageTitleService TitleService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
@@ -140,6 +141,13 @@ else
     // Méthode pour gérer l'action d'impression
     private void HandlePrintAction(int billId)
     {
-        Console.WriteLine($"Impression de la facture avec ID : {billId}");
+        Modeles.Bill currentBill = billsComplete.FirstOrDefault(b => b.Id == billId);
+        if (currentBill.BillFile != null)
+        {
+              string downloadsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+              string filePath = Path.Combine(downloadsPath, $"{currentBill.GenerateInvoiceNumber()}.pdf");
+              File.WriteAllBytes(filePath, currentBill.BillFile);
+              Process.Start(new ProcessStartInfo(filePath) { UseShellExecute = true });
+        }
     }
 }
