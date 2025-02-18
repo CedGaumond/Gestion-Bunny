@@ -42,8 +42,8 @@ namespace Gestion_Bunny.Modeles
         public bool IsDeleted { get; set; }
 
         [Column("temp_password")]
-        public Boolean TempPassword { get; set; }        
-        
+        public Boolean TempPassword { get; set; }
+
         [Column("employee_id")]
         public int? EmployeeId { get; set; }
 
@@ -58,6 +58,11 @@ namespace Gestion_Bunny.Modeles
                 return string.Empty;
 
             return $"{FirstName[0]}{LastName[0]}".ToUpper();
+        }
+
+        public string GetFullName()
+        {
+            return $"{FirstName} {LastName}";
         }
     }
 }

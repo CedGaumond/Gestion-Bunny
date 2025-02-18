@@ -398,6 +398,17 @@ form-label{
     color: white !important;
 }
 
+.form-select:focus {
+    border-color: transparent !important; 
+    box-shadow: none !important;
+}
+
+.form-control:focus {
+    outline: none !important;
+    border: transparent !important;
+    box-shadow: transparent !important;
+}
+
 .custom-input {
     height: 1.8rem !important;
     padding: 0.5rem !important;
@@ -423,13 +434,6 @@ form-label{
 label{
     color: white !important;
 }
-
-.form-control:focus {
-    outline: none !important;
-    border: 2px solid #B5E6A8 !important;
-    box-shadow: 0 0 8px rgba(168, 230, 207, 0.6) !important;
-}
-
 
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
