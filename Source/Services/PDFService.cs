@@ -51,21 +51,18 @@ namespace Gestion_Bunny.Services
 
             return new InvoiceModel
             {
-                InvoiceNumber = bill.Id,
+                InvoiceNumber = bill.GenerateInvoiceNumber(),
                 IssueDate = bill.OrderDate,
-                DueDate = bill.OrderDate.AddDays(1), // Assuming next day delivery
                 Items = orderItems,
                 Comments = "",
                 
                 // These could be populated from your actual data
                 SellerAddress = new Address
                 {
-                    CompanyName = "Bunny Shop",
+                    CompanyName = "Bunny&Co Joliette",
                     Street = "123 Rue Principale",
-                    City = "Montréal",
-                    State = "QC",
-                    Email = "contact@bunnyshop.com",
-                    Phone = "514-555-1234"
+                    City = "Joliette",
+                    State = "QC"
                 },
                 
                 CustomerAddress = new Address
@@ -73,9 +70,7 @@ namespace Gestion_Bunny.Services
                     CompanyName = "Client",
                     Street = "",
                     City = "",
-                    State = "",
-                    Email = "",
-                    Phone = ""
+                    State = ""
                 }
             };
         }
@@ -122,19 +117,29 @@ namespace Gestion_Bunny.Services
                 row.RelativeItem().Column(column =>
                 {
                     column.Item()
-                        .Text($"Reçu #{Model.InvoiceNumber}")
+                        .Text($"{Model.InvoiceNumber}")
                         .FontSize(20).SemiBold().FontColor(QuestPDF.Helpers.Colors.Blue.Medium);
 
                     column.Item().Text(text =>
                     {
-                        text.Span("Date payé: ").SemiBold();
+                        text.Span("Date d'achat: ").SemiBold();
                         text.Span($"{Model.IssueDate:d}");
                     });
                     
+                    column.Spacing(5);
+                    column.Item().Height(5);
+                    
                     column.Item().Text(text =>
                     {
-                        text.Span("Date approx. de réception : ").SemiBold();
-                        text.Span($"{Model.DueDate:d}");
+                        text.Span($"{Model.SellerAddress.CompanyName}");
+                    });
+                     column.Item().Text(text =>
+                    {
+                        text.Span($"{Model.SellerAddress.Street}");
+                    });
+                     column.Item().Text(text =>
+                    {
+                        text.Span($"{Model.SellerAddress.City}, {Model.SellerAddress.State}");
                     });
                 });
 
@@ -153,15 +158,23 @@ namespace Gestion_Bunny.Services
                 column.Spacing(5);
 
                 column.Item().Element(ComposeTable);
+                column.Item().Element(ComposeTaxes);
                 column.Item().Element(ComposeTotal);
             });
         }
 
         void ComposeTotal(QuestPDF.Infrastructure.IContainer container)
         {
+            container.PaddingVertical(5).Column(column => {
+                column.Spacing(5);
+                column.Item().AlignCenter().Text($"Total: {Model.Items.Sum(x => x.Price * x.Quantity) + (Model.Items.Sum(x => x.Price * x.Quantity) * 0.1475m):C}").SemiBold();
+            });
+        }
+        void ComposeTaxes(QuestPDF.Infrastructure.IContainer container)
+        {
             container.PaddingVertical(0).Column(column => {
                 column.Spacing(5);
-                column.Item().AlignCenter().Text($"Grand total: {Model.Items.Sum(x => x.Price * x.Quantity):C}").SemiBold();
+                column.Item().AlignCenter().Text($"TPS + TVQ: {Model.Items.Sum(x => x.Price * x.Quantity) * 0.1475m:C}").SemiBold();
             });
         }
 
@@ -171,8 +184,8 @@ namespace Gestion_Bunny.Services
             {
                 table.ColumnsDefinition(columns =>
                 {
-                    columns.ConstantColumn(35);  // Fixed width for the # column
-                    columns.RelativeColumn(3);   // Flexible column for the product name
+                    columns.ConstantColumn(20);  // Fixed width for the # column
+                    columns.RelativeColumn(2);   // Flexible column for the product name
                     columns.RelativeColumn();    // Unit price column
                     columns.RelativeColumn();    // Quantity column
                     columns.RelativeColumn();    // Total column
@@ -184,7 +197,7 @@ namespace Gestion_Bunny.Services
                     header.Cell().Element(CellStyle).Text("Item").Bold().FontColor("#fff");
                     header.Cell().Element(CellStyle).AlignLeft().Text("Prix Unitaire").Bold().FontColor("#fff");
                     header.Cell().Element(CellStyle).AlignLeft().Text("Quantité").Bold().FontColor("#fff");
-                    header.Cell().Element(CellStyle).AlignLeft().Text("Total").Bold().FontColor("#fff");
+                    header.Cell().Element(CellStyle).AlignLeft().Text("Sous-total / Item").Bold().FontColor("#fff");
                 });
 
                 foreach (var item in Model.Items)
@@ -196,7 +209,7 @@ namespace Gestion_Bunny.Services
                     table.Cell().Background(rowBackground).Text(item.Name);  // Product Name
                     table.Cell().Background(rowBackground).AlignLeft().Text($"{item.Price:C}");  // Unit price
                     table.Cell().Background(rowBackground).AlignLeft().Text(item.Quantity);  // Quantity
-                    table.Cell().Background(rowBackground).AlignLeft().Text($"{item.Price * item.Quantity:C}");  // Total
+                    table.Cell().Background(rowBackground).AlignCenter().Text($"{item.Price * item.Quantity:C}");  // Total
                 }
 
                 static QuestPDF.Infrastructure.IContainer CellStyle(QuestPDF.Infrastructure.IContainer container)
@@ -209,9 +222,8 @@ namespace Gestion_Bunny.Services
 
     public class InvoiceModel
     {
-        public int InvoiceNumber { get; set; }
+        public String InvoiceNumber { get; set; }
         public DateTime IssueDate { get; set; }
-        public DateTime DueDate { get; set; }
 
         public Address SellerAddress { get; set; }
         public Address CustomerAddress { get; set; }
@@ -233,7 +245,5 @@ namespace Gestion_Bunny.Services
         public string Street { get; set; }
         public string City { get; set; }
         public string State { get; set; }
-        public object Email { get; set; }
-        public string Phone { get; set; }
     }
 }
