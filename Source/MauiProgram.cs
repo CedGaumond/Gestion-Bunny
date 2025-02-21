@@ -26,10 +26,10 @@ public static class MauiProgram
 
 
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseNpgsql(connectionString) 
-                   .EnableDetailedErrors() 
-                   .EnableSensitiveDataLogging() 
-                   .LogTo(Console.WriteLine, LogLevel.Information) 
+        options.UseNpgsql(connectionString)
+                   .EnableDetailedErrors()
+                   .EnableSensitiveDataLogging()
+                   .LogTo(Console.WriteLine, LogLevel.Information)
         );
 
 
@@ -44,7 +44,7 @@ public static class MauiProgram
 
 
         builder.Services.AddSingleton<IIngredientService, IngredientService>();
-
+        builder.Services.AddSingleton<IScheduleService, ScheduleService>();
         builder.Services.AddSingleton<AuthenticationState>();
 
         // If using Debug mode, add developer tools and logging

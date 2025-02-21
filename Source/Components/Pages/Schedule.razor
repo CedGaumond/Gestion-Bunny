@@ -1,13 +1,239 @@
 ﻿@page "/schedule"
+@using Gestion_Bunny.Modeles
 @using Gestion_Bunny.Services
+@using Microsoft.EntityFrameworkCore
 @inject PageTitleService TitleService
+@inject IScheduleService ScheduleService
+@inject IEmployeeService EmployeeService
+@inject ApplicationDbContext _context
 
+<div class="schedule-page">
+    <div class="schedule-header">
+        <div class="week-navigation">
+            <button class="btn btn-outline-primary" @onclick="PreviousWeek">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <h2 class="week-title">
+                Semaine du @CurrentWeekStart.ToString("d MMMM yyyy", new System.Globalization.CultureInfo("fr-FR"))
+            </h2>
+            <button class="btn btn-outline-primary" @onclick="NextWeek">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+        <button class="btn btn-primary" @onclick="() => ShowAddDialog = true">
+            <i class="fas fa-plus"></i> Ajouter un horaire
+        </button>
+    </div>
 
+    <div class="schedule-grid">
+        <div class="time-column">
+            <div class="grid-header">Heures</div>
+            @foreach (var time in TimeSlots)
+            {
+                <div class="time-slot">@time.ToString("HH:mm")</div>
+            }
+        </div>
+
+        @foreach (var day in WeekDays)
+        {
+            <div class="day-column">
+                <div class="grid-header">@day.ToString("dddd", new System.Globalization.CultureInfo("fr-FR"))<br/>@day.ToString("dd/MM")</div>
+                @foreach (var time in TimeSlots)
+                {
+                    var currentSlot = new DateTime(day.Year, day.Month, day.Day, time.Hour, time.Minute, 0);
+                    var shiftsInSlot = Schedules.Where(s => s.ShiftStart <= currentSlot && s.ShiftEnd > currentSlot).ToList();
+
+                    <div class="time-slot @(IsCurrentTime(currentSlot) ? "current-time" : "")"
+                         @onclick="() => OpenAddShiftDialog(currentSlot)">
+                        @foreach (var shift in shiftsInSlot)
+                        {
+                            <div class="shift-card">
+                                <div class="shift-info">
+                                    <span class="employee-name">@GetEmployeeName(shift.EmployeeId)</span>
+                                    <span class="shift-time">
+                                        @shift.ShiftStart.ToLocalTime().ToString("HH:mm") - @shift.ShiftEnd.ToLocalTime().ToString("HH:mm")
+                                    </span>
+                                </div>
+                                <button class="btn btn-link btn-sm delete-btn" 
+                                        @onclick:stopPropagation="true"
+                                        @onclick="() => DeleteShiftAsync(shift.Id)">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    @if (ShowAddDialog)
+    {
+        <div class="modal-backdrop" @onclick="CloseDialog">
+            <div class="modal-dialog" @onclick:stopPropagation="true">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Ajouter un horaire</h5>
+                        <button type="button" class="btn-close" @onclick="CloseDialog"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group mb-3">
+                            <label>Employé:</label>
+                            <select @bind="NewShift.EmployeeId" class="form-select">
+                                <option value="0">Sélectionner un employé</option>
+                                @foreach (var employee in Employees)
+                                {
+                                    <option value="@employee.Id">@EmployeeNames[employee.Id]</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label>Début:</label>
+                            <input type="datetime-local" @bind="NewShift.ShiftStart" class="form-control" />
+                        </div>
+                        <div class="form-group mb-3">
+                            <label>Fin:</label>
+                            <input type="datetime-local" @bind="NewShift.ShiftEnd" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" @onclick="CloseDialog">Annuler</button>
+                        <button class="btn btn-primary" @onclick="SaveShiftAsync">Enregistrer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
 
 @code {
+    private DateTime CurrentWeekStart = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek);
+    private List<DateTime> WeekDays => Enumerable.Range(0, 7)
+        .Select(i => CurrentWeekStart.AddDays(i))
+        .ToList();
+    private List<DateTime> TimeSlots => Enumerable.Range(8, 14)
+        .Select(i => DateTime.Today.AddHours(i))
+        .ToList();
+    
+    private List<ScheduleModel> Schedules = new(); // Updated to ScheduleModel
+    private List<Employee> Employees = new();
+    private Dictionary<int, string> EmployeeNames = new();
+    private bool ShowAddDialog;
+    private ScheduleModel NewShift = new(); // Updated to ScheduleModel
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         TitleService.Title = "Horaire";
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        await Task.WhenAll(
+            LoadSchedulesAsync(),
+            LoadEmployeesAsync()
+        );
+    }
+
+    private async Task LoadSchedulesAsync()
+    {
+        Schedules = await ScheduleService.GetSchedulesForWeekAsync(CurrentWeekStart); // Updated to ScheduleModel
+    }
+
+    private async Task LoadEmployeesAsync()
+    {
+        Employees = await EmployeeService.GetEmployeesAsync();
+        var users = await _context.Users
+            .Where(u => u.EmployeeId != null)
+            .ToListAsync();
+        
+        EmployeeNames = new Dictionary<int, string>();
+        foreach (var employee in Employees)
+        {
+            var matchingUser = users.FirstOrDefault(u => u.EmployeeId == employee.Id);
+            EmployeeNames[employee.Id] = matchingUser?.FirstName ?? "Unknown";
+        }
+    }
+
+    private string GetEmployeeName(int employeeId)
+    {
+        return EmployeeNames.TryGetValue(employeeId, out var employeeName) ? employeeName : "Unknown";
+    }
+
+    private async Task PreviousWeek()
+    {
+        CurrentWeekStart = CurrentWeekStart.AddDays(-7);
+        await LoadDataAsync();
+        StateHasChanged();
+    }
+
+    private async Task NextWeek()
+    {
+        CurrentWeekStart = CurrentWeekStart.AddDays(7);
+        await LoadDataAsync();
+        StateHasChanged();
+    }
+
+    private async Task OpenAddShiftDialog(DateTime startTime)
+    {
+        var defaultEmployee = Employees.FirstOrDefault();
+        if (defaultEmployee != null)
+        {
+            NewShift = new ScheduleModel
+                {
+                    // Convert to UTC when initializing
+                    ShiftStart = startTime.ToUniversalTime(),
+                    ShiftEnd = startTime.AddHours(8).ToUniversalTime(),
+                    EmployeeId = defaultEmployee.Id
+                };
+            ShowAddDialog = true;
+            StateHasChanged();
+        }
+    }
+
+    private void CloseDialog()
+    {
+        ShowAddDialog = false;
+        NewShift = null;
+        StateHasChanged();
+    }
+
+    private async Task SaveShiftAsync()
+    {
+        if (NewShift != null && NewShift.EmployeeId != 0 && NewShift.ShiftEnd > NewShift.ShiftStart)
+        {
+            try
+            {
+                // Convert to UTC before saving
+                NewShift.ShiftStart = NewShift.ShiftStart.ToUniversalTime();
+                NewShift.ShiftEnd = NewShift.ShiftEnd.ToUniversalTime();
+                await ScheduleService.AddScheduleAsync(NewShift);
+                await LoadDataAsync();
+                CloseDialog();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error saving shift: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task DeleteShiftAsync(int shiftId)
+    {
+        try
+        {
+            await ScheduleService.DeleteScheduleAsync(shiftId); // Updated to ScheduleModel
+            await LoadDataAsync();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting shift: {ex.Message}");
+        }
+    }
+
+    private bool IsCurrentTime(DateTime time)
+    {
+        return DateTime.Now.Date == time.Date && DateTime.Now.Hour == time.Hour;
     }
 }
