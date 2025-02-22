@@ -134,7 +134,7 @@ else
     {
         try
         {
-            ingredients = await IngredientService.GetAllIngredients();
+            ingredients = IngredientService.GetAllIngredients();
             filteredIngredients = ingredients ?? new List<Ingredient>();
 
             var existingQuantities = OrderCartService.GetOrderQuantitiesForEmployee(AuthState.CurrentUser.Id);

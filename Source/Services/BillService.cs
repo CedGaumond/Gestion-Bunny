@@ -12,56 +12,56 @@ namespace Gestion_Bunny.Services
             _context = context;
         }
 
-        public async Task<List<Bill>> GetBillsAsync()
+        public List<Bill> GetBills()
         {
-            return await _context.Bills.ToListAsync();
+            return _context.Bills.ToList();
         }
 
-        public async Task<List<Bill>> GetPendingBillsAsync()
+        public List<Bill> GetPendingBills()
         {
-            return await _context.Bills.
+            return _context.Bills.
             Where(b => b.BillFile  == null || b.BillFile.Length == 0).
-            ToListAsync();
+            ToList();
         }
 
-        public async Task<List<Bill>> GetCompletedBillsAsync()
+        public List<Bill> GetCompletedBills()
         {
             // First get the bills from database
-            var bills = await _context.Bills.ToListAsync();
+            var bills = _context.Bills.ToList();
 
             // Then filter in memory
             return bills.Where(b => b.BillFile != null && b.BillFile.Length > 0).ToList();
         }
 
-        public async Task<Bill> GetBillByIdAsync(int billId)
+        public Bill GetBillById(int billId)
         {
-            return await _context.Bills.FindAsync(billId);
+            return _context.Bills.Find(billId);
         }
 
-        public async Task<List<(Recipe Recipe, int Quantity)>> GetBillRecipesByIdAsync(int billId)
+        public List<(Recipe Recipe, int Quantity)> GetBillRecipesById(int billId)
         {
-            return await _context.BillRecipes
+            var result = _context.BillRecipes
                 .Where(br => br.BillId == billId)
-                .Include(br => br.Recipe) 
-                .Select(br => new { br.Recipe, br.Quantity }) 
-                .ToListAsync()
-                .ContinueWith(task => task.Result.Select(br => (br.Recipe, br.Quantity)).ToList()); 
+                .Include(br => br.Recipe)
+                .Select(br => new { br.Recipe, br.Quantity })
+                .ToList();
+
+            return result.Select(br => (br.Recipe, br.Quantity)).ToList();
         }
 
-
-        public async Task AddBillAsync(Bill bill)
+        public void AddBill(Bill bill)
         {
-            await _context.Bills.AddAsync(bill);
-            await _context.SaveChangesAsync();
+            _context.Bills.Add(bill);
+            _context.SaveChanges();
         }
 
-        public async Task UpdateBillAsync(Bill bill, List<BillRecipe> newBillRecipes)
+        public void UpdateBill(Bill bill, List<BillRecipe> newBillRecipes)
         {
             _context.Entry(bill).State = EntityState.Modified;
 
-            var existingBillRecipes = await _context.BillRecipes
+            var existingBillRecipes = _context.BillRecipes
                 .Where(br => br.BillId == bill.Id)
-                .ToListAsync();
+                .ToList();
 
             foreach (var newBr in newBillRecipes)
             {
@@ -77,24 +77,24 @@ namespace Gestion_Bunny.Services
                     _context.BillRecipes.Add(newBr);
                 }
             }
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
         }
 
-        public async Task DeleteBillAsync(int billId)
+        public void DeleteBill(int billId)
         {
-            var billCustomer = await _context.Bills.FindAsync(billId);
+            var billCustomer = _context.Bills.Find(billId);
             if (billCustomer != null)
             {
                 _context.Bills.Remove(billCustomer);
-                await _context.SaveChangesAsync();
+                _context.SaveChanges();
             }
         }
 
-        public async Task<int> GetTotalRecipeQuantityInBillAsync(int billId)
+        public int GetTotalRecipeQuantityInBill(int billId)
         {
-            return await _context.BillRecipes
+            return _context.BillRecipes
                 .Where(br => br.BillId == billId)
-                .SumAsync(br => br.Quantity);
+                .Sum(br => br.Quantity);
         }
     }
 }

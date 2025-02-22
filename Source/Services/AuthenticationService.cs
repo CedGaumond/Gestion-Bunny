@@ -14,11 +14,9 @@ public class AuthenticationService : IAuthenticationService
 
     }
 
-    public async Task<bool> LoginAsync(string email, string password)
+    public bool Login(string email, string password)
     {
-        var user = await _context.Users
-            .Where(e => e.Email == email)
-            .FirstOrDefaultAsync();
+        var user =  _context.Users.Where(e => e.Email == email).FirstOrDefault();
 
         if (user == null)
         {
@@ -37,7 +35,7 @@ public class AuthenticationService : IAuthenticationService
     }
 
 
-    public async Task LogoutAsync()
+    public void Logout()
     {
         _authState.SetUnauthenticated();
     }

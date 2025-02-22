@@ -153,7 +153,7 @@
                 };
 
 
-            await OrderService.AddOrderAsync(newOrder);
+            OrderService.AddOrder(newOrder);
 
             _ = JSRuntime.InvokeVoidAsync("console.log", "Commande confirmée avec succès !");
 

@@ -92,10 +92,10 @@
 
         if (Id.HasValue)
         {
-            user = await UserService.GetUserByIdAsync(Id.Value);
+            user = UserService.GetUserById(Id.Value);
             if(user.EmployeeId != null)
             {
-                var employeeTemp = await UserService.GetEmployeeByIdAsync((int)user.EmployeeId);
+                var employeeTemp = UserService.GetEmployeeById((int)user.EmployeeId);
                 if(employeeTemp != null)
                 {
                     user.Employee = employeeTemp;
@@ -108,7 +108,7 @@
     {
         if (user != null)
         {
-            await UserService.ResetPasswordAsync(user.Id);
+            UserService.ResetPassword(user.Id);
             Navigation.NavigateTo("/employee-list");
         }
     }

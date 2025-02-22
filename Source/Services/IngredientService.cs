@@ -15,28 +15,27 @@ namespace Gestion_Bunny.Services
             _context = context;
         }
 
-        public async Task<List<Ingredient>> GetAllIngredients()
+        public List<Ingredient> GetAllIngredients()
         {
-            return await _context.Ingredients.Where(i => !i.IsDeleted).ToListAsync();
+            return _context.Ingredients.Where(i => !i.IsDeleted).ToList();
         }
 
-        public async Task<bool> IsIngredientNameExists(string name)
+        public bool IsIngredientNameExists(string name)
         {
-            return await _context.Ingredients
-                .AnyAsync(i => i.Name.ToLower() == name.ToLower() && !i.IsDeleted);
+            return _context.Ingredients
+                .Any(i => i.Name.ToLower() == name.ToLower() && !i.IsDeleted);
         }
 
 
-        public async Task<Ingredient> GetIngredientById(int id)
+        public Ingredient GetIngredientById(int id)
         {
-            return await _context.Ingredients.FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
+            return _context.Ingredients.FirstOrDefault(i => i.Id == id && !i.IsDeleted);
         }
 
-        public async Task AddIngredient(string name, decimal quantityRemaining, decimal quantityPerDeliveryUnit, decimal minimumThresholdNotification)
+        public void AddIngredient(string name, decimal quantityRemaining, decimal quantityPerDeliveryUnit, decimal minimumThresholdNotification)
         {
-            // Use ToLower() to perform a case-insensitive comparison
-            var existingIngredient = await _context.Ingredients
-                .FirstOrDefaultAsync(i => i.Name.ToLower() == name.ToLower() && !i.IsDeleted);
+            var existingIngredient = _context.Ingredients
+                .FirstOrDefault(i => i.Name.ToLower() == name.ToLower() && !i.IsDeleted);
 
             if (existingIngredient != null)
             {
@@ -54,13 +53,13 @@ namespace Gestion_Bunny.Services
             };
 
             _context.Ingredients.Add(ingredient);
-            await _context.SaveChangesAsync();
+            _context.SaveChangesAsync();
         }
 
-        public async Task<string> GetIngredientNameById(int id)
+        public string GetIngredientNameById(int id)
         {
-            var ingredient = await _context.Ingredients
-                .FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
+            var ingredient = _context.Ingredients
+                .FirstOrDefault(i => i.Id == id && !i.IsDeleted);
 
             if (ingredient == null)
             {
@@ -69,17 +68,17 @@ namespace Gestion_Bunny.Services
 
             return ingredient.Name;
         }
-        public async Task UpdateIngredient(int id, string name = null, decimal? quantityRemaining = null, decimal? quantityPerDeliveryUnit = null, decimal? minimumThresholdNotification = null)
+        public void UpdateIngredient(int id, string name = null, decimal? quantityRemaining = null, decimal? quantityPerDeliveryUnit = null, decimal? minimumThresholdNotification = null)
         {
-            var ingredient = await _context.Ingredients.FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
+            var ingredient = _context.Ingredients.FirstOrDefault(i => i.Id == id && !i.IsDeleted);
 
             if (ingredient != null)
             {
 
                 if (name != null && !name.Equals(ingredient.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    var existingIngredient = await _context.Ingredients
-                        .FirstOrDefaultAsync(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && !i.IsDeleted);
+                    var existingIngredient = _context.Ingredients
+                        .FirstOrDefault(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && !i.IsDeleted);
 
                     if (existingIngredient != null)
                     {
@@ -93,26 +92,26 @@ namespace Gestion_Bunny.Services
                 if (quantityPerDeliveryUnit.HasValue) ingredient.QuantityPerDeliveryUnit = quantityPerDeliveryUnit.Value;
                 if (minimumThresholdNotification.HasValue) ingredient.MinimumThresholdNotification = minimumThresholdNotification.Value;
 
-                await _context.SaveChangesAsync();
+                _context.SaveChanges();
             }
         }
-        public async Task<bool> IsIngredientUsedInItemRecipe(int ingredientId)
+        public bool IsIngredientUsedInItemRecipe(int ingredientId)
         {
-            return await _context.RecipeIngredients
-                .AnyAsync(ir => ir.IngredientId == ingredientId);
+            return _context.RecipeIngredients
+                .Any(ir => ir.IngredientId == ingredientId);
         }
 
 
-        public async Task DeleteIngredient(int id)
+        public void DeleteIngredient(int id)
         {
-            var ingredient = await _context.Ingredients.FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
+            var ingredient = _context.Ingredients.FirstOrDefault(i => i.Id == id && !i.IsDeleted);
 
             if (ingredient != null)
             {
                 ingredient.IsDeleted = true;
                 ingredient.DeletedDate = DateTime.UtcNow;
 
-                await _context.SaveChangesAsync();
+                 _context.SaveChanges();
             }
         }
     }

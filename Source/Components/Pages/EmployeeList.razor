@@ -87,9 +87,9 @@ else
     {
         TitleService.Title = "Liste d'employés";
 
-        var userRoleAdmin = UserService.GetUserRoleByNameAsync("Admin");
+        var userRoleAdmin = UserService.GetUserRoleByName("Admin");
 
-        users = await UserService.GetUsersAsync();
+        users = UserService.GetUsers();
 
         if (!(AuthState.CurrentUser?.UserRoleId == userRoleAdmin.Id))
         {
@@ -99,7 +99,7 @@ else
 
     private void HandleDeleteAction(User user)
     {
-        UserService.DeleteUserAsync(user);
+        UserService.DeleteUser(user);
     }
 
     private List<User> GetFilteredUsers()

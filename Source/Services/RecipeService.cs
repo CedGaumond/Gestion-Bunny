@@ -12,42 +12,42 @@ namespace Gestion_Bunny.Services
             _context = context;
         }
 
-        public async Task<List<RecipeCategory>> GetCategoriesAsync()
+        public List<RecipeCategory> GetCategories()
         {
-            return await _context.RecipeCategories.ToListAsync();
+            return _context.RecipeCategories.ToList();
         }
 
-        public async Task<List<Recipe>> GetRecipesAsync()
+        public List<Recipe> GetRecipes()
         {
-            return await _context.Recipes
+            return  _context.Recipes
                 .Include(i => i.RecipeCategory)
                 .Include(i => i.RecipeIngredients)
                     .ThenInclude(ir => ir.Ingredient)
                 .Where(i => !i.IsDeleted)
-                .ToListAsync();
+                .ToList();
         }
 
-        public async Task<Recipe> GetRecipeByIdAsync(int id)
+        public Recipe GetRecipeById(int id)
         {
-            return await _context.Recipes
+            return _context.Recipes
                 .Include(i => i.RecipeCategory)
                 .Include(i => i.RecipeIngredients)
                     .ThenInclude(ir => ir.Ingredient)
-                .FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
+                .FirstOrDefault(i => i.Id == id && !i.IsDeleted);
         }
 
-        public async Task UpdateRecipeAsync(Recipe recipe)
+        public void UpdateRecipe(Recipe recipe)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            using var transaction = _context.Database.BeginTransaction();
             try
             {
                 // Clear tracking
                 _context.ChangeTracker.Clear();
 
                 // Load existing recipe
-                var existingRecipe = await _context.Recipes
+                var existingRecipe = _context.Recipes
                     .Include(i => i.RecipeIngredients)
-                    .FirstOrDefaultAsync(i => i.Id == recipe.Id);
+                    .FirstOrDefault(i => i.Id == recipe.Id);
 
                 if (existingRecipe == null)
                     throw new InvalidOperationException($"Recipe with ID {recipe.Id} not found.");
@@ -60,7 +60,7 @@ namespace Gestion_Bunny.Services
 
                 // Remove existing relationships
                 _context.RecipeIngredients.RemoveRange(existingRecipe.RecipeIngredients);
-                await _context.SaveChangesAsync();
+                _context.SaveChangesAsync();
 
                 // Add new relationships
                 var newItemRecipes = recipe.RecipeIngredients.Select(ir => new RecipeIngredient
@@ -70,20 +70,20 @@ namespace Gestion_Bunny.Services
                     Quantity = ir.Quantity
                 }).ToList();
 
-                await _context.RecipeIngredients.AddRangeAsync(newItemRecipes);
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+                _context.RecipeIngredients.AddRange(newItemRecipes);
+                _context.SaveChanges();
+                transaction.Commit();
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
+                transaction.Rollback();
                 throw new Exception($"Failed to update recipe: {ex.Message}", ex);
             }
         }
 
-        public async Task AddRecipeAsync(Recipe recipe)
+        public void AddRecipe(Recipe recipe)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            using var transaction = _context.Database.BeginTransaction();
             try
             {
                 // Clear tracking
@@ -100,8 +100,8 @@ namespace Gestion_Bunny.Services
                     DeletedDate = null
                 };
 
-                await _context.Recipes.AddAsync(newRecipe);
-                await _context.SaveChangesAsync();
+                _context.Recipes.Add(newRecipe);
+                _context.SaveChanges();
 
                 // Add relationships
                 var newItemRecipes = recipe.RecipeIngredients.Select(ir => new RecipeIngredient
@@ -111,31 +111,31 @@ namespace Gestion_Bunny.Services
                     Quantity = ir.Quantity
                 }).ToList();
 
-                await _context.RecipeIngredients.AddRangeAsync(newItemRecipes);
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+                _context.RecipeIngredients.AddRange(newItemRecipes);
+                _context.SaveChanges();
+                transaction.Commit();
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
+                transaction.Rollback();
                 throw new Exception($"Failed to add recipe: {ex.Message}", ex);
             }
         }
 
-        public async Task DeleteRecipeAsync(int recipeId)
+        public void DeleteRecipe(int recipeId)
         {
-            var recipe = await _context.Recipes.FirstOrDefaultAsync(r => r.Id == recipeId);
+            var recipe = _context.Recipes.FirstOrDefault(r => r.Id == recipeId);
             if (recipe != null)
             {
                 recipe.IsDeleted = true;
                 recipe.DeletedDate = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
+                _context.SaveChanges();
             }
         }
 
-        public async Task<RecipeCategory> GetCategoryByIdAsync(int categoryId)
+        public RecipeCategory GetCategoryById(int categoryId)
         {
-            return await _context.RecipeCategories.FirstOrDefaultAsync(c => c.Id == categoryId);
+            return _context.RecipeCategories.FirstOrDefault(c => c.Id == categoryId);
         }
     }
 }

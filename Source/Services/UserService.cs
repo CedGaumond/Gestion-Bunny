@@ -12,59 +12,70 @@ public class UserService : IUserService
         _context = context;
     }
 
-    public async Task<List<User>> GetUsersAsync()
+    public List<User> GetUsers()
     {
-        return await _context.Users.ToListAsync();
+        return _context.Users.ToList();
     }
 
-    public async Task<User> GetUserByIdAsync(int userId)
+    public User GetUserById(int userId)
     {
-        return await _context.Users.FindAsync(userId);
+        return _context.Users.Find(userId);
     }
 
-    public async Task<Employee> GetEmployeeByIdAsync(int employeeId)
+    public Employee GetEmployeeById(int employeeId)
     {
-        return await _context.Employees.FindAsync(employeeId);
+        return _context.Employees.Find(employeeId);
     }
 
-    public async Task ResetPasswordAsync(int userId)
+    public void ResetPassword(int userId)
     {
         /*TO DO*/
     }
 
-    public async Task AddUserAsync(User user)
+    public void AddUser(User user)
     {
-        await _context.Users.AddAsync(user);
-        await _context.SaveChangesAsync();
+        _context.Users.Add(user);
+        _context.SaveChanges();
     }
 
-    public async Task UpdateUserAsync(User user)
+    public void UpdateUser(User user)
     {
+        var userTemp = GetUserById(user.Id);
+
+        if (userTemp != null && userTemp.IsDeleted != user.IsDeleted) // Vérification si l'état de suppression a changé
+        {
+            user.DeletedDate = user.IsDeleted ? DateTime.UtcNow : (DateTime?)null; // Si supprimé, on définit la date, sinon on la supprime
+        }
+
         _context.Entry(user).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
+        _context.SaveChanges();
     }
 
-    public async Task DeleteUserAsync(User user)
+    public void DeleteUser(User user)
     {
-        user.IsDeleted = true;
-        _context.Entry(user).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
+        if(user.IsDeleted = false)
+        {
+            user.IsDeleted = true;
+            user.DeletedDate = DateTime.UtcNow;
+            _context.Entry(user).State = EntityState.Modified;
+            _context.SaveChanges();
+        }
     }
 
-    public async Task<UserRole?> GetUserRoleByNameAsync(string name)
+    public UserRole? GetUserRoleByName(string name)
     {
-        return await _context.UserRoles.FirstOrDefaultAsync(ur => ur.RoleName == name);
+        return _context.UserRoles.FirstOrDefault(ur => ur.RoleName == name);
     }
 
-    public async Task<List<UserRole>> GetUserRolesAsync()
+    public List<UserRole> GetUserRoles()
     {
-        return await _context.UserRoles.ToListAsync();
+        return _context.UserRoles.ToList();
     }
 
-    public async Task<bool> IsEmailExists(string email)
+    public bool IsEmailExists(string email)
     {
-        return await _context.Users
-            .AnyAsync(i => i.Email.ToLower() == email.ToLower());
+        return _context.Users
+            .Any(i => i.Email.ToLower() == email.ToLower());
     }
 
 }

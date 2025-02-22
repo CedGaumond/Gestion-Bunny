@@ -113,15 +113,15 @@ else
     {
         try
         {
-            billsPending = await BillService.GetPendingBillsAsync();
-            billsComplete = await BillService.GetCompletedBillsAsync();
+            billsPending = BillService.GetPendingBills();
+            billsComplete = BillService.GetCompletedBills();
             foreach (var bill in billsComplete)
             {
-                recipeQuantities[bill.Id] = await BillService.GetTotalRecipeQuantityInBillAsync(bill.Id);
+                recipeQuantities[bill.Id] = BillService.GetTotalRecipeQuantityInBill(bill.Id);
             }
             foreach (var bill in billsPending)
             {
-                recipeQuantities[bill.Id] = await BillService.GetTotalRecipeQuantityInBillAsync(bill.Id);
+                recipeQuantities[bill.Id] = BillService.GetTotalRecipeQuantityInBill(bill.Id);
             }
         }
         catch (Exception ex)

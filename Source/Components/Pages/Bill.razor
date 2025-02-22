@@ -158,12 +158,12 @@
     {
         try
         {
-            categories = await RecipeService.GetCategoriesAsync();
-            recipes = await RecipeService.GetRecipesAsync();
+            categories = RecipeService.GetCategories();
+            recipes = RecipeService.GetRecipes();
 
             if (billId !=0){
-                currentBill = await BillService.GetBillByIdAsync(billId);
-                recipes_order = await BillService.GetBillRecipesByIdAsync(billId);
+                currentBill = BillService.GetBillById(billId);
+                recipes_order = BillService.GetBillRecipesById(billId);
                 foreach (var (recipe, quantity) in recipes_order){
                     HandleAddAction(recipe.Id, quantity);
                 }
@@ -252,7 +252,7 @@
                     Quantity = recipe.Quantity
                 }).ToList();
 
-            await BillService.UpdateBillAsync(currentBill, newBillRecipes);
+            BillService.UpdateBill(currentBill, newBillRecipes);
 
             Navigation.NavigateTo("/bill-list");
         }
@@ -272,7 +272,7 @@
                     }).ToList()
                 };
 
-                await BillService.AddBillAsync(bill);
+                BillService.AddBill(bill);
                 Console.WriteLine("Bill added successfully.");
                 await JSRuntime.InvokeVoidAsync("console.log", "Bill added successfully.");
 
@@ -305,7 +305,7 @@
                     Quantity = recipe.Quantity
                 }).ToList();
 
-            await BillService.UpdateBillAsync(currentBill, newBillRecipes);
+            BillService.UpdateBill(currentBill, newBillRecipes);
 
             Navigation.NavigateTo("/bill-list");
         }
@@ -326,7 +326,7 @@
                         }).ToList()
                     };
 
-                await BillService.AddBillAsync(bill);
+                BillService.AddBill(bill);
                 
                 Console.WriteLine("Bill added successfully.");
                 await JSRuntime.InvokeVoidAsync("console.log", "Bill added successfully.");

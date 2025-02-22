@@ -1,7 +1,7 @@
 public interface IAuthenticationService
 {
-    Task<bool> LoginAsync(string email, string password);
-    Task LogoutAsync();
+    bool Login(string email, string password);
+    void Logout();
     string GenerateRandomPassword();
     byte[] GenerateSaltedHash(byte[] plainText, byte[] salt);
 }

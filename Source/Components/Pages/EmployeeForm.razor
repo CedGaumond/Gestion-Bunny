@@ -140,7 +140,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var dbUserRoles = await UserService.GetUserRolesAsync();
+        var dbUserRoles = UserService.GetUserRoles();
 
         if(dbUserRoles != null)
         {
@@ -158,7 +158,7 @@
 
         if (Id.HasValue)
         {
-            var userTemp = await UserService.GetUserByIdAsync(Id.Value);
+            var userTemp = UserService.GetUserById(Id.Value);
             if (userTemp != null)
             {
                 user = userTemp;
@@ -168,7 +168,7 @@
 
                 if (user.EmployeeId != null)
                 {
-                    var employeeTemp = await UserService.GetEmployeeByIdAsync((int)user.EmployeeId);
+                    var employeeTemp = UserService.GetEmployeeById((int)user.EmployeeId);
                     if (employeeTemp != null)
                     {
                         user.Employee = employeeTemp;
@@ -195,7 +195,7 @@
         try
         {
 
-            if (await UserService.IsEmailExists(user.Email) && (Id == null))
+            if (UserService.IsEmailExists(user.Email) && (Id == null))
             {
                 errorMessage = $"Un employé avec le courriel '{user.Email}' existe déjà.";
                 return;
@@ -205,11 +205,11 @@
 
             if (Id.HasValue)
             {
-                await UserService.UpdateUserAsync(user);
+                UserService.UpdateUser(user);
             }
             else
             {
-                await UserService.AddUserAsync(user);
+                UserService.AddUser(user);
             }
 
             Navigation.NavigateTo("/employee-list");

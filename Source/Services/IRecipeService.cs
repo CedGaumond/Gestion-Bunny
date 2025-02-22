@@ -6,12 +6,12 @@ namespace Gestion_Bunny.Services
 {
     public interface IRecipeService
     {
-        Task<List<RecipeCategory>> GetCategoriesAsync();
-        Task<Recipe> GetRecipeByIdAsync(int id);
-        Task<List<Recipe>> GetRecipesAsync();
-        Task DeleteRecipeAsync(int recipeId);
-        Task AddRecipeAsync(Recipe recipe);
-        Task UpdateRecipeAsync(Recipe recipe);
-        Task<RecipeCategory> GetCategoryByIdAsync(int categoryId);
+        List<RecipeCategory> GetCategories();
+        Recipe GetRecipeById(int id);
+        List<Recipe> GetRecipes();
+        void DeleteRecipe(int recipeId);
+        void AddRecipe(Recipe recipe);
+        void UpdateRecipe(Recipe recipe);
+        RecipeCategory GetCategoryById(int categoryId);
     }
 }
