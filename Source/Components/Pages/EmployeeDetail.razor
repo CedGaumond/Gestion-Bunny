@@ -15,17 +15,19 @@
                 <div class="d-flex justify-content-center mb-4">
                     @if (user.Employee?.Pic != null && user.Employee.Pic.Length > 0)
                     {
-                        <img src="@($"data:image/png;base64,{Convert.ToBase64String(user.Employee.Pic)}")"
+                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(user.Employee.Pic)"
                              class="rounded-circle border border-light"
                              alt="Photo de profil"
                              style="width: 150px; height: 150px; object-fit: cover;" />
                     }
                     else
                     {
-                        <img src="/images/default-profile.png"
-                             class="rounded-circle border border-light"
-                             alt="Photo de profil par défaut"
-                             style="width: 150px; height: 150px; object-fit: cover;" />
+                        <!-- Message ou icône lorsque la photo n'est pas disponible -->
+                        <div class="d-flex justify-content-center align-items-center" style="width: 150px; height: 150px; background-color: #f0f0f0; border-radius: 50%;">
+                            <i class="bi bi-person-circle" style="font-size: 3rem; color: #ccc;"></i>
+                            <!-- Ou message à la place de l'icône -->
+                            <!-- <span class="text-muted">Aucune photo</span> -->
+                        </div>
                     }
                 </div>
 
@@ -65,7 +67,7 @@
                     <button type="button" class="btn btn-light px-4" @onclick="@(() => Navigation.NavigateTo("/employee-list"))">
                         Retour
                     </button>
-                    <button type="button" class="btn btn-warning px-4" @onclick="ResetPassword">
+                    <button type="button" class="btn btn-secondary px-4" @onclick="ResetPassword">
                         Réinitialiser le mot de passe
                     </button>
                 </div>
@@ -91,6 +93,14 @@
         if (Id.HasValue)
         {
             user = await UserService.GetUserByIdAsync(Id.Value);
+            if(user.EmployeeId != null)
+            {
+                var employeeTemp = await UserService.GetEmployeeByIdAsync((int)user.EmployeeId);
+                if(employeeTemp != null)
+                {
+                    user.Employee = employeeTemp;
+                }
+            }
         }
     }
 

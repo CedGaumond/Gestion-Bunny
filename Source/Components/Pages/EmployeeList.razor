@@ -2,6 +2,7 @@
 @using Gestion_Bunny.Services
 @using Gestion_Bunny.Modeles
 @inject IUserService UserService
+@inject AuthenticationState AuthState
 @inject PageTitleService TitleService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
@@ -59,7 +60,7 @@ else
                             </div>
 
                             <!-- Bouton Supprimer -->
-                            <div class="icon-container" @onclick="() => HandleDeleteAction(user.Id)">
+                            <div class="icon-container" @onclick="() => HandleDeleteAction(user)">
                                 <img src="images/trash.svg" alt="Supprimer" />
                             </div>
                         </td>
@@ -85,12 +86,20 @@ else
     protected override async Task OnInitializedAsync()
     {
         TitleService.Title = "Liste d'employés";
+
+        var userRoleAdmin = UserService.GetUserRoleByNameAsync("Admin");
+
         users = await UserService.GetUsersAsync();
+
+        if (!(AuthState.CurrentUser?.UserRoleId == userRoleAdmin.Id))
+        {
+            users = users.Where(user => user.UserRoleId != userRoleAdmin.Id).ToList();
+        }
     }
 
-    private void HandleDeleteAction(int userId)
+    private void HandleDeleteAction(User user)
     {
-        UserService.DeleteUserAsync(userId);
+        UserService.DeleteUserAsync(user);
     }
 
     private List<User> GetFilteredUsers()

@@ -12,25 +12,25 @@ namespace Gestion_Bunny.Modeles
         public int Id { get; set; }
 
         [Column("e_mail")]
-        public required string Email { get; set; }
+        public string? Email { get; set; }
 
         [Column("first_name")]
-        public required string FirstName { get; set; }
+        public string? FirstName { get; set; }
 
         [Column("last_name")]
-        public required string LastName { get; set; }
+        public string? LastName { get; set; }
 
         [Column("user_role_id")]
         public int? UserRoleId { get; set; }
 
         [ForeignKey("UserRoleId")]
-        public required UserRole UserRole { get; set; }
+        public UserRole? UserRole { get; set; }
 
         [Column("password_hash")]
-        public required string PasswordHash { get; set; }
+        public string? PasswordHash { get; set; }
 
         [Column("password_salt")]
-        public required string PasswordSalt { get; set; }
+        public string? PasswordSalt { get; set; }
 
         [Column("created_date")]
         public DateTime CreatedAt { get; set; }

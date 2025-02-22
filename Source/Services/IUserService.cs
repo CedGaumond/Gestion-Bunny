@@ -9,5 +9,9 @@ public interface IUserService
     Task ResetPasswordAsync(int userId);
     Task AddUserAsync(User user);
     Task UpdateUserAsync(User user);
-    Task DeleteUserAsync(int userId);
+    Task DeleteUserAsync(User user);
+    Task<UserRole?> GetUserRoleByNameAsync(string name);
+    Task<bool> IsEmailExists(string email);
+    Task<List<UserRole>> GetUserRolesAsync();
+    Task<Employee> GetEmployeeByIdAsync(int employeeId);
 }

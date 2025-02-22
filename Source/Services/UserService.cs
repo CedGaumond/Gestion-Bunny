@@ -21,7 +21,12 @@ public class UserService : IUserService
     {
         return await _context.Users.FindAsync(userId);
     }
-    
+
+    public async Task<Employee> GetEmployeeByIdAsync(int employeeId)
+    {
+        return await _context.Employees.FindAsync(employeeId);
+    }
+
     public async Task ResetPasswordAsync(int userId)
     {
         /*TO DO*/
@@ -39,10 +44,27 @@ public class UserService : IUserService
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteUserAsync(int userId)
+    public async Task DeleteUserAsync(User user)
     {
-        /*TO DO*/
+        user.IsDeleted = true;
+        _context.Entry(user).State = EntityState.Modified;
+        await _context.SaveChangesAsync();
     }
 
-   
+    public async Task<UserRole?> GetUserRoleByNameAsync(string name)
+    {
+        return await _context.UserRoles.FirstOrDefaultAsync(ur => ur.RoleName == name);
+    }
+
+    public async Task<List<UserRole>> GetUserRolesAsync()
+    {
+        return await _context.UserRoles.ToListAsync();
+    }
+
+    public async Task<bool> IsEmailExists(string email)
+    {
+        return await _context.Users
+            .AnyAsync(i => i.Email.ToLower() == email.ToLower());
+    }
+
 }

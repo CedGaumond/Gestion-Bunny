@@ -447,6 +447,20 @@ label{
     color: #e50000;
 }
 
+.custom-validation-message {
+    color: #842029; 
+    background-color: #f8d7da; 
+    border: 1px solid #f5c2c7;
+    padding: 6px 12px; 
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 4px;
+    margin-top: 4px;
+    display: inline-block;
+    max-width: 100%;
+}
+
+
 #blazor-error-ui {
     background: lightyellow;
     bottom: 0;
