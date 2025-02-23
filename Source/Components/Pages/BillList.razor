@@ -93,6 +93,7 @@ else
                 <tr>
                     <th>Actions</th>
                     <th>Numéro de facture</th>
+                    <th>Date de facturation</th>
                     <th>Nombre d’items</th>
                     <th>Total</th>
                     <th>Facturé par</th>
@@ -111,6 +112,7 @@ else
                             </div>
                         </td>
                         <td>@bill.GenerateInvoiceNumber()</td>
+                        <td>@bill.OrderDate.ToShortDateString()</td>
                         <td>@recipeQuantities[bill.Id]</td>
                         <td>@bill.TotalAmount $</td>
                         <td>@(bill.User?.FirstName ?? "N/A") @(bill.User?.LastName ?? "")</td>
@@ -130,6 +132,7 @@ else
                                 </div>
                             </td>
                             <td>@bill.GenerateInvoiceNumber()</td>
+                            <td>@bill.OrderDate.ToShortDateString()</td>
                             <td>@recipeQuantities[bill.Id]</td>
                             <td>@bill.TotalAmount $</td>
                             <td>@(bill.User?.FirstName ?? "N/A") @(bill.User?.LastName ?? "")</td>
