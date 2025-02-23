@@ -287,62 +287,7 @@
             }
         }
     }
-
-    /*private async Task HandleCloseAction()
-    {
-        //TODO : Vérification des ingrédients + Génération du pdf
-        byte[] tempBytes = new byte[16]; // 16-byte array - Temp
-        new Random().NextBytes(tempBytes); // Fill with random - Temp
-        if (billId != 0)
-        {
-            currentBill.TotalAmount = currentOrder.Total;
-            currentBill.OrderDate = DateTime.UtcNow;
-            currentBill.BillFile = tempBytes;
-
-            var newBillRecipes = currentOrder.Recipes.Select(recipe => new BillRecipe
-                {
-                    BillId = currentBill.Id, 
-                    RecipeId = recipe.Id,
-                    Quantity = recipe.Quantity
-                }).ToList();
-
-            await BillService.UpdateBillAsync(currentBill, newBillRecipes);
-
-            Navigation.NavigateTo("/bill-list");
-        }
-        else
-        {
-            try
-            {
-                Modeles.Bill bill = new Modeles.Bill
-                    {
-                        UserId = AuthState.CurrentUser.Id,
-                        OrderDate = DateTime.UtcNow,
-                        TotalAmount = currentOrder.Total,
-                        BillFile = tempBytes,
-                        BillRecipes = currentOrder.Recipes.Select(recipe => new BillRecipe
-                        {
-                            RecipeId = recipe.Id,
-                            Quantity = recipe.Quantity
-                        }).ToList()
-                    };
-
-                await BillService.AddBillAsync(bill);
-                
-                Console.WriteLine("Bill added successfully.");
-                await JSRuntime.InvokeVoidAsync("console.log", "Bill added successfully.");
-
-
-                Navigation.NavigateTo("/bill-list");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error adding bill: {ex.Message}");
-                await JSRuntime.InvokeVoidAsync("console.error", $"Error adding bill: {ex.Message}");
-            }
-        }
-    }
-    */
+    
      private async Task HandleCloseAction()
     {
         // Convert order items to the format expected by PDFService

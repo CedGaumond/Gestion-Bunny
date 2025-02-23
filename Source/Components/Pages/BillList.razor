@@ -7,6 +7,7 @@
 @inject IJSRuntime JSRuntime
 @inject IBillService BillService
 @inject IEmployeeService EmployeeService
+@inject AuthenticationState AuthService
 
 <div class="pt-4 pb-2 d-flex justify-content-between align-items-center">
     <h2>Factures en attente</h2>
@@ -22,6 +23,8 @@
 }
 else
 {
+   
+        
     <div class="table-container">
         <table class="table">
             <thead>
@@ -32,23 +35,45 @@ else
                     <th>Total</th>
                 </tr>
             </thead>
-            <tbody>
-                @foreach (var bill in billsPending)
-                {
-                    <tr>
-                        <td>
-                            <!-- Redirect icon -->
-                            <div class="icon-container" @onclick="@(() => Navigation.NavigateTo($"/bill/{@bill.Id}"))">
-                                <img src="images/arrow-right-square-fill.svg" alt="Rediriger" />
-                            </div>
+            @if (!isDisposed && AuthService?.CurrentUser?.UserRoleId is int roleId && (roleId == 1 || roleId == 2))
+            {
+                <tbody>
+                    @foreach (var bill in billsPending)
+                    {
+                        <tr>
+                            <td>
+                                <!-- Redirect icon -->
+                                <div class="icon-container" @onclick="@(() => Navigation.NavigateTo($"/bill/{@bill.Id}"))">
+                                    <img src="images/arrow-right-square-fill.svg" alt="Rediriger" />
+                                </div>
 
-                        </td>
-                        <td>@bill.GenerateInvoiceNumber()</td>
-                        <td>@recipeQuantities[bill.Id]</td>
-                        <td>@bill.TotalAmount $</td>
-                    </tr>
-                }
-            </tbody>
+                            </td>
+                            <td>@bill.GenerateInvoiceNumber()</td>
+                            <td>@recipeQuantities[bill.Id]</td>
+                            <td>@bill.TotalAmount $</td>
+                        </tr>
+                    }
+                </tbody>
+            } else
+            {
+                 <tbody>
+                    @foreach (var bill in billsPending.Where(b => b.UserId == AuthService.CurrentUser.Id))
+                    {
+                        <tr>
+                            <td>
+                                <!-- Redirect icon -->
+                                <div class="icon-container" @onclick="@(() => Navigation.NavigateTo($"/bill/{@bill.Id}"))">
+                                    <img src="images/arrow-right-square-fill.svg" alt="Rediriger" />
+                                </div>
+
+                            </td>
+                            <td>@bill.GenerateInvoiceNumber()</td>
+                            <td>@recipeQuantities[bill.Id]</td>
+                            <td>@bill.TotalAmount $</td>
+                        </tr>
+                    }
+                </tbody>
+            }
         </table>
     </div>
 }
@@ -56,7 +81,6 @@ else
 <div class="pb-2">
     <h2>Factures complétées</h2>
 </div>
-
 @if (billsComplete == null)
 {
     <p><em>Loading...</em></p>
@@ -74,6 +98,8 @@ else
                     <th>Facturé par</th>
                 </tr>
             </thead>
+            @if (!isDisposed && AuthService?.CurrentUser?.UserRoleId is int roleId && (roleId == 1 || roleId == 2))
+            {
             <tbody>
                 @foreach (var bill in billsComplete)
                 {
@@ -84,18 +110,37 @@ else
                                 <img src="images/printer-fill.svg" alt="Imprimer" />
                             </div>
                         </td>
-
-
                         <td>@bill.GenerateInvoiceNumber()</td>
                         <td>@recipeQuantities[bill.Id]</td>
                         <td>@bill.TotalAmount $</td>
-                        <td>@bill.User.FirstName @bill.User.LastName</td>
+                        <td>@(bill.User?.FirstName ?? "N/A") @(bill.User?.LastName ?? "")</td>
                     </tr>
                 }
             </tbody>
+            } else
+            {
+                <tbody>
+                    @foreach (var bill in billsComplete.Where(b => b.OrderDate.Date == DateTime.Now.Date))
+                    {
+                        <tr>
+                            <td>
+                                <!-- Printer icon -->
+                                <div class="icon-container" @onclick="() => HandlePrintAction(bill.Id)">
+                                    <img src="images/printer-fill.svg" alt="Imprimer" />
+                                </div>
+                            </td>
+                            <td>@bill.GenerateInvoiceNumber()</td>
+                            <td>@recipeQuantities[bill.Id]</td>
+                            <td>@bill.TotalAmount $</td>
+                            <td>@(bill.User?.FirstName ?? "N/A") @(bill.User?.LastName ?? "")</td>
+                        </tr>
+                    }
+                </tbody>
+            }
         </table>
     </div>
 }
+
 
 @code {
 
@@ -110,12 +155,19 @@ else
 
     private Dictionary<int, int> recipeQuantities = new();
 
+    private bool isDisposed = false;
+
+    public void Dispose()
+    {
+        isDisposed = true;
+    }
+
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            billsPending = await BillService.GetPendingBillsAsync();
-            billsComplete = await BillService.GetCompletedBillsAsync();
+            billsPending = await BillService.GetPendingBillsAsync() ?? new List<Modeles.Bill>();
+            billsComplete = await BillService.GetCompletedBillsAsync() ?? new List<Modeles.Bill>();
             foreach (var bill in billsComplete)
             {
                 recipeQuantities[bill.Id] = await BillService.GetTotalRecipeQuantityInBillAsync(bill.Id);

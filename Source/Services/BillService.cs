@@ -19,18 +19,19 @@ namespace Gestion_Bunny.Services
 
         public async Task<List<Bill>> GetPendingBillsAsync()
         {
-            return await _context.Bills.
-            Where(b => b.BillFile  == null || b.BillFile.Length == 0).
-            ToListAsync();
+            return await _context.Bills
+                .Where(b => b.BillFile == null || b.BillFile.Length == 0)
+                .OrderByDescending(b => b.OrderDate.Date)  
+                .ToListAsync();
         }
 
         public async Task<List<Bill>> GetCompletedBillsAsync()
         {
-            // First get the bills from database
-            var bills = await _context.Bills.ToListAsync();
-
-            // Then filter in memory
-            return bills.Where(b => b.BillFile != null && b.BillFile.Length > 0).ToList();
+            return await _context.Bills
+                .Include(b => b.User)
+                .Where(b => b.BillFile != null)
+                .OrderByDescending(b => b.OrderDate.Date)
+                .ToListAsync();
         }
 
         public async Task<Bill> GetBillByIdAsync(int billId)
