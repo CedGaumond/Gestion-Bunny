@@ -34,7 +34,7 @@ namespace Gestion_Bunny.Services
 
         public async Task AddIngredient(string name, decimal quantityRemaining, decimal quantityPerDeliveryUnit, decimal minimumThresholdNotification)
         {
-            // Use ToLower() to perform a case-insensitive comparison
+            
             var existingIngredient = await _context.Ingredients
                 .FirstOrDefaultAsync(i => i.Name.ToLower() == name.ToLower() && !i.IsDeleted);
 

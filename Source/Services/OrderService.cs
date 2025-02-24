@@ -10,6 +10,7 @@ namespace Gestion_Bunny.Services
         public OrderService(ApplicationDbContext context)
         {
             _context = context;
+
         }
 
         public async Task<List<Order>> GetOrdersAsync()
@@ -50,8 +51,10 @@ namespace Gestion_Bunny.Services
             if (billProvider != null)
             {
                 billProvider.IsDelivered = true;
+                await _context.Database.ExecuteSqlRawAsync("CALL mark_order_received({0})", orderId);
                 await _context.SaveChangesAsync();
             }
+            
         }
     }
 }
