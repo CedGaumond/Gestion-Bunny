@@ -38,6 +38,7 @@ public static class MauiProgram
         builder.Services.AddScoped<IOrderService, OrderService>();
         builder.Services.AddSingleton<IOrderCartService, OrderCartService>();
         builder.Services.AddSingleton<IBillService, BillService>();
+        builder.Services.AddSingleton<IPDFService, PDFService>();
         builder.Services.AddScoped<IRecipeService, RecipeService>();
         builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
         builder.Services.AddSingleton<PageTitleService>();

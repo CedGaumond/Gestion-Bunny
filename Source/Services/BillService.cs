@@ -19,18 +19,19 @@ namespace Gestion_Bunny.Services
 
         public List<Bill> GetPendingBills()
         {
-            return _context.Bills.
-            Where(b => b.BillFile  == null || b.BillFile.Length == 0).
-            ToList();
+            return _context.Bills
+                .Where(b => b.BillFile == null || b.BillFile.Length == 0)
+                .OrderByDescending(b => b.OrderDate.Date)  
+                .ToList();
         }
 
         public List<Bill> GetCompletedBills()
         {
-            // First get the bills from database
-            var bills = _context.Bills.ToList();
-
-            // Then filter in memory
-            return bills.Where(b => b.BillFile != null && b.BillFile.Length > 0).ToList();
+            return _context.Bills
+                .Include(b => b.User)
+                .Where(b => b.BillFile != null)
+                .OrderByDescending(b => b.OrderDate.Date)
+                .ToList();
         }
 
         public Bill GetBillById(int billId)
