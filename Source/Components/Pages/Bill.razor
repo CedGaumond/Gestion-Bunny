@@ -4,6 +4,7 @@
 @inject PageTitleService PageTitleService
 @inject IRecipeService RecipeService
 @inject IBillService BillService
+@inject IPDFService PDFService
 @inject AuthenticationState AuthState
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
@@ -158,12 +159,12 @@
     {
         try
         {
-            categories = await RecipeService.GetCategoriesAsync();
-            recipes = await RecipeService.GetRecipesAsync();
+            categories = RecipeService.GetCategories();
+            recipes = RecipeService.GetRecipes();
 
             if (billId !=0){
-                currentBill = await BillService.GetBillByIdAsync(billId);
-                recipes_order = await BillService.GetBillRecipesByIdAsync(billId);
+                currentBill = BillService.GetBillById(billId);
+                recipes_order = BillService.GetBillRecipesById(billId);
                 foreach (var (recipe, quantity) in recipes_order){
                     HandleAddAction(recipe.Id, quantity);
                 }
@@ -252,7 +253,7 @@
                     Quantity = recipe.Quantity
                 }).ToList();
 
-            await BillService.UpdateBillAsync(currentBill, newBillRecipes);
+            BillService.UpdateBill(currentBill, newBillRecipes);
 
             Navigation.NavigateTo("/bill-list");
         }
@@ -272,7 +273,7 @@
                     }).ToList()
                 };
 
-                await BillService.AddBillAsync(bill);
+                BillService.AddBill(bill);
                 Console.WriteLine("Bill added successfully.");
                 await JSRuntime.InvokeVoidAsync("console.log", "Bill added successfully.");
 
@@ -286,17 +287,21 @@
             }
         }
     }
-
-    private async Task HandleCloseAction()
+    
+     private async Task HandleCloseAction()
     {
-        //TODO : Vérification des ingrédients + Génération du pdf
-        byte[] tempBytes = new byte[16]; // 16-byte array - Temp
-        new Random().NextBytes(tempBytes); // Fill with random - Temp
+        // Convert order items to the format expected by PDFService
+        var orderItems = currentOrder.Recipes.Select(item => 
+            (recipes.First(r => r.Id == item.Id), item.Quantity)
+        ).ToList();
+        
         if (billId != 0)
         {
             currentBill.TotalAmount = currentOrder.Total;
             currentBill.OrderDate = DateTime.UtcNow;
-            currentBill.BillFile = tempBytes;
+            
+            // Generate PDF
+            currentBill.BillFile = PDFService.GenerateInvoicePdf(currentBill, orderItems);
 
             var newBillRecipes = currentOrder.Recipes.Select(recipe => new BillRecipe
                 {
@@ -305,7 +310,7 @@
                     Quantity = recipe.Quantity
                 }).ToList();
 
-            await BillService.UpdateBillAsync(currentBill, newBillRecipes);
+            BillService.UpdateBill(currentBill, newBillRecipes);
 
             Navigation.NavigateTo("/bill-list");
         }
@@ -314,23 +319,27 @@
             try
             {
                 Modeles.Bill bill = new Modeles.Bill
+                {
+                    UserId = AuthState.CurrentUser.Id,
+                    OrderDate = DateTime.UtcNow,
+                    TotalAmount = currentOrder.Total,
+                    BillRecipes = currentOrder.Recipes.Select(recipe => new BillRecipe
                     {
-                        UserId = AuthState.CurrentUser.Id,
-                        OrderDate = DateTime.UtcNow,
-                        TotalAmount = currentOrder.Total,
-                        BillFile = tempBytes,
-                        BillRecipes = currentOrder.Recipes.Select(recipe => new BillRecipe
-                        {
-                            RecipeId = recipe.Id,
-                            Quantity = recipe.Quantity
-                        }).ToList()
-                    };
+                        RecipeId = recipe.Id,
+                        Quantity = recipe.Quantity
+                    }).ToList()
+                };
 
-                await BillService.AddBillAsync(bill);
+                BillService.AddBill(bill);
                 
-                Console.WriteLine("Bill added successfully.");
-                await JSRuntime.InvokeVoidAsync("console.log", "Bill added successfully.");
-
+                // Generate PDF with the saved bill data
+                bill.BillFile = PDFService.GenerateInvoicePdf(bill, orderItems);
+                
+                // Update bill with PDF file
+                BillService.UpdateBill(bill, bill.BillRecipes.ToList());
+                
+                Console.WriteLine("Bill added successfully with PDF.");
+                await JSRuntime.InvokeVoidAsync("console.log", "Bill added successfully with PDF.");
 
                 Navigation.NavigateTo("/bill-list");
             }

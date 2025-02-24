@@ -112,7 +112,7 @@ else
     {
         try 
         {
-            ingredients = await IngredientService.GetAllIngredients();
+            ingredients = IngredientService.GetAllIngredients();
             filteredIngredients = ingredients ?? new List<Ingredient>();
             SortIngredients();
         }
@@ -187,7 +187,7 @@ else
     {
         try
         {
-            var isUsedInItemRecipe = await IngredientService.IsIngredientUsedInItemRecipe(ingredientId);
+            var isUsedInItemRecipe = IngredientService.IsIngredientUsedInItemRecipe(ingredientId);
 
             if (isUsedInItemRecipe)
             {
@@ -198,7 +198,7 @@ else
             }
 
       
-            await IngredientService.DeleteIngredient(ingredientId);
+            IngredientService.DeleteIngredient(ingredientId);
 
             ingredients = ingredients?.Where(i => i.Id != ingredientId).ToList();
 

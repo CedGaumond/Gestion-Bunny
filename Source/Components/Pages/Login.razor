@@ -41,7 +41,7 @@
     private async Task HandleLogin()
     {
         loginError = false;
-        var result = await AuthenticationService.LoginAsync(loginModel.Email, loginModel.Password);
+        var result = AuthenticationService.Login(loginModel.Email, loginModel.Password);
         if (result)
         {
             Navigation.NavigateTo("/home");

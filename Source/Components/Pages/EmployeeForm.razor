@@ -1,50 +1,123 @@
 ﻿@page "/employee/{IdString?}"
 @using Gestion_Bunny.Services
+@using Gestion_Bunny.Modeles
 @inject NavigationManager Navigation
 @inject PageTitleService TitleService
+@inject AuthenticationState AuthState
+@inject IUserService UserService
+@inject IJSRuntime JSRuntime
 
 <div class="container d-flex justify-content-center mt-4">
     <div class="card p-4 shadow" style="max-width: 500px; width: 100%;">
-        <h3 class="text-center">@(Id != null ? "Modifier un employé" : "Ajouter un employé")</h3>
+        <h3 class="text-center pb-2">@(Id != null ? "Modifier un employé" : "Ajouter un employé")</h3>
 
-        <EditForm Model="employee" OnValidSubmit="Save">
+        <EditForm Model="user" OnValidSubmit="Save">
             <DataAnnotationsValidator />
 
-            <!-- First Name -->
-            <div class="mb-3">
-                <label for="firstName" class="form-label">Prénom</label>
-                <InputText id="firstName" class="form-control" @bind-Value="employee.FirstName" required />
+            <div class="row">
+                <!-- First Name -->
+                <div class="col-md-6 mb-3">
+                    <label for="firstName" class="form-label">Prénom</label>
+                    <InputText id="firstName" class="form-control" @bind-Value="user.FirstName" required />
+                </div>
+
+                <!-- Last Name -->
+                <div class="col-md-6 mb-3">
+                    <label for="lastName" class="form-label">Nom</label>
+                    <InputText id="lastName" class="form-control" @bind-Value="user.LastName" required />
+                </div>
             </div>
 
-            <!-- Last Name -->
-            <div class="mb-3">
-                <label for="lastName" class="form-label">Nom</label>
-                <InputText id="lastName" class="form-control" @bind-Value="employee.LastName" required />
+            <div class="row">
+                <!-- Email -->
+                <div class="col-md-6 mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <InputText id="email" class="form-control" @bind-Value="user.Email" required />
+                </div>
+
+                <!-- Sélection du rôle -->
+                @if (userRoles != null && userRoles.Count > 0)
+                {
+                    <div class="col-md-6 mb-3">
+                        <label for="userRole" class="form-label">Rôle</label>
+                        <InputSelect class="form-control me-2" @bind-Value="selectedRoleId">
+                            <option value="0">-- Sélectionner --</option>
+                            @foreach (var userRole in GetRoles())
+                            {
+                                <option value="@userRole.Id">@userRole.RoleName</option>
+                            }
+                        </InputSelect>
+                    </div>
+                }
             </div>
 
-            <!-- Email -->
-            <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <InputText id="email" class="form-control" @bind-Value="employee.Email" required />
+            <div class="row">
+                <!-- Status -->
+                <div class="col-md-6 mb-3">
+                    <label for="status" class="form-label">Statut</label>
+                    <InputSelect id="status" class="form-control" @bind-Value="user.IsDeleted">
+                        <option value="false">Actif</option>
+                        <option value="true">Inactif</option>
+                    </InputSelect>
+                </div>
+                 @if (selectedRoleId != adminRoleId)
+                {
+                    <div class="col-md-6 mb-3">
+                        <label for="numberHoursDesired" class="form-label">Nombre d'heures désirées</label>
+                    <InputNumber id="numberHoursDesired" class="form-control" @bind-Value="user.Employee.NumberHoursDesired"
+                                 required />
+                    </div>
+                }
+
             </div>
 
-            <!-- Birth Date -->
-            <div class="mb-3">
-                <label for="birthDate" class="form-label">Date de naissance</label>
-                <InputDate id="birthDate" class="form-control" @bind-Value="employee.BirthDate" required />
-            </div>
+             @if (selectedRoleId != adminRoleId)
+             {
+                <div class="row">
+                    <!-- Birth Date -->
+                    <div class="col-md-6 mb-3">
+                        <label for="birthDate" class="form-label">Date de naissance</label>
+                        <InputDate id="birthDate" class="form-control" @bind-Value="user.Employee.BirthDate" required />
+                        <ValidationMessage For="@(() => user.Employee.BirthDate)" class="custom-validation-message" />
+                    </div>
 
-            <!-- Social Insurance Number -->
-            <div class="mb-3">
-                <label for="socialInsuranceNumber" class="form-label">Numéro d'assurance sociale</label>
-                <InputText id="socialInsuranceNumber" class="form-control" @bind-Value="employee.SocialInsuranceNumber" required />
-            </div>
+                    <!-- Social Insurance Number -->
+                    <div class="col-md-6 mb-3">
+                        <label for="socialInsuranceNumber" class="form-label">Numéro d'assurance sociale</label>
+                        <InputText id="socialInsuranceNumber" class="form-control" @bind-Value="user.Employee.SocialInsuranceNumber" required />
+                        <ValidationMessage For="@(() => user.Employee.SocialInsuranceNumber)" class="custom-validation-message" />
+                    </div>
+                </div>
 
-            <!-- Picture -->
-            <div class="mb-3">
-                <label for="pic" class="form-label">Photo</label>
-                <InputFile id="pic" class="form-control" @bind-Value="employee.Pic" />
-            </div>
+                <div class="row">
+                    <!-- Address -->
+                    <div class="col-md-12 mb-3">
+                        <label for="address" class="form-label">Adresse</label>
+                        <InputText id="address" class="form-control" @bind-Value="user.Employee.Address" required />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Picture -->
+                    <div class="col-md-12 mb-3">
+                        <label for="pic" class="form-label">Photo</label>
+                        <InputFile class="form-control" OnChange="HandleFileSelected" accept="image/*" />
+                        @if (user.Employee.Pic != null)
+                        {
+                            <img src="data:image/jpeg;base64,@Convert.ToBase64String(user.Employee.Pic)" alt="Preview" class="img-fluid mt-2 rounded" style="max-height: 150px;" />
+                        }
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @errorMessage
+                        </div>
+                    }
+                </div>
+             }
 
             <!-- Buttons -->
             <div class="d-flex justify-content-center">
@@ -59,49 +132,91 @@
     [Parameter, SupplyParameterFromQuery] public string? IdString { get; set; }
 
     private int? Id => int.TryParse(IdString, out var id) ? id : null;
-
-    private Employee employee = new();
+    private string? errorMessage;
+    private User user = new Gestion_Bunny.Modeles.User { Employee = new Employee() };
+    private List<UserRole> userRoles = new();
+    private int selectedRoleId = 0;
+    private int adminRoleId;
 
     protected override async Task OnInitializedAsync()
     {
+        var dbUserRoles = UserService.GetUserRoles();
+
+        if(dbUserRoles != null)
+        {
+            var adminRole = dbUserRoles?.FirstOrDefault(role => role.RoleName == "Admin");
+            if (adminRole != null)
+            {
+                adminRoleId = adminRole.Id;
+            }
+
+            if (AuthState.CurrentUser?.UserRoleId == adminRoleId)
+                userRoles = dbUserRoles;
+            else
+                userRoles = dbUserRoles?.Where(ur => ur.RoleName != "Admin").ToList() ?? new List<UserRole>();
+        }
+
         if (Id.HasValue)
         {
-            employee = new Employee
+            var userTemp = UserService.GetUserById(Id.Value);
+            if (userTemp != null)
             {
-                Id = Id.Value,
-                FirstName = "Test Prénom",  // Exemple, à remplacer par des données réelles
-                LastName = "Test Nom",
-                Email = "test@example.com",
-                BirthDate = DateTime.Now.AddYears(-30),
-                SocialInsuranceNumber = "123-45-6789",
-                EmployeeRoleId = 1,  // Exemples, à remplacer par des données réelles
-                Pic = new byte[] { },
-                PasswordHash = "hashed_password",  // À remplacer par un mot de passe réel
-                TempPassword = false
-            };
+                user = userTemp;
+
+                if(user.UserRoleId != null)
+                    selectedRoleId = (int)user.UserRoleId;
+
+                if (user.EmployeeId != null)
+                {
+                    var employeeTemp = UserService.GetEmployeeById((int)user.EmployeeId);
+                    if (employeeTemp != null)
+                    {
+                        user.Employee = employeeTemp;
+                    }
+                }
+            }
         }
         else
         {
-            employee = new Employee();
+            user.IsDeleted = false;
         }
     }
 
-    protected override void OnInitialized()
+    private IEnumerable<UserRole> GetRoles()
     {
-        TitleService.Title = "Gestion des employés";
+        if (userRoles == null)
+            return new List<UserRole>();
+
+        return userRoles;
     }
 
     private async Task Save()
     {
-        if (Id.HasValue)
+        try
         {
-            // Logique de mise à jour de l'employé
-            // await EmployeeService.UpdateAsync(employee);
+
+            if (UserService.IsEmailExists(user.Email) && (Id == null))
+            {
+                errorMessage = $"Un employé avec le courriel '{user.Email}' existe déjà.";
+                return;
+            }
+
+            user.UserRoleId = selectedRoleId;
+
+            if (Id.HasValue)
+            {
+                UserService.UpdateUser(user);
+            }
+            else
+            {
+                UserService.AddUser(user);
+            }
+
+            Navigation.NavigateTo("/employee-list");
         }
-        else
+        catch (Exception ex)
         {
-            // Logique de création d'un nouvel employé
-            // await EmployeeService.CreateAsync(employee);
+            errorMessage = ex.Message;
         }
     }
 
@@ -110,20 +225,47 @@
         Navigation.NavigateTo("/employee-list");
     }
 
-    private class Employee
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
-        public int Id { get; set; }
-        public string? FirstName { get; set; }
-        public string? LastName { get; set; }
-        public string? Email { get; set; }
-        public DateTime BirthDate { get; set; }
-        public string? SocialInsuranceNumber { get; set; }
-        public int? EmployeeRoleId { get; set; }
-        public byte[]? Pic { get; set; }
-        public string? PasswordHash { get; set; }
-        public string? PasswordSalt { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public bool IsDeleted { get; set; }
-        public bool TempPassword { get; set; }
+        try
+        {
+            var file = e.File;
+            if (file != null)
+            {
+                var maxFileSize = 1024 * 1024 * 5;
+                if (file.Size > maxFileSize)
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "La taille du fichier doit être inférieure à 5 Mo.");
+                    await ClearFileInput();
+                    user.Employee.Pic = null;
+                    return;
+                }
+
+
+                var allowedImageTypes = new[] { "image/jpeg", "image/png", "image/gif" };
+                if (!allowedImageTypes.Contains(file.ContentType))
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", "Veuillez télécharger une image valide (PNG, JPG, GIF).");
+                    await ClearFileInput();
+                    user.Employee.Pic = null;
+                    return;
+                }
+
+                using var stream = file.OpenReadStream(maxFileSize);
+                using var ms = new MemoryStream();
+                await stream.CopyToAsync(ms);
+                user.Employee.Pic = ms.ToArray();
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Erreur lors du téléchargement du fichier : {ex.Message}");
+            user.Employee.Pic = null;
+        }
+    }
+
+    private async Task ClearFileInput()
+    {
+        await JSRuntime.InvokeVoidAsync("eval", "document.querySelector('input[type=file]').value = '';");
     }
 }

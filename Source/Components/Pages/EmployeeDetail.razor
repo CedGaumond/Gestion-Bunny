@@ -1,118 +1,115 @@
 ﻿@page "/employee-detail/{IdString}"
+@using Gestion_Bunny.Modeles
 @using Gestion_Bunny.Services
 @inject NavigationManager Navigation
+@inject IUserService UserService
 @inject PageTitleService TitleService
 
-<div class="container mt-4">
-    <div class="card shadow" style="max-width: 800px; margin: 0 auto;">
-        <div class="card-body">
-            @if (employee != null)
+<div class="container d-flex justify-content-center mt-4">
+    <div class="card shadow bg-dark text-white" style="max-width: 800px; margin: 0 auto;">
+        <div class="card-body overflow-auto">
+
+            @if (user != null)
             {
-                <!-- Affichage de la photo de l'employé -->
+                <!-- Photo de profil -->
                 <div class="d-flex justify-content-center mb-4">
-                    <img src="@($"data:image/png;base64,{Convert.ToBase64String(employee.Pic)}")" class="rounded-circle" alt="Photo de l'employé" style="width: 150px; height: 150px; object-fit: cover;" />
+                    @if (user.Employee?.Pic != null && user.Employee.Pic.Length > 0)
+                    {
+                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(user.Employee.Pic)"
+                             class="rounded-circle border border-light"
+                             alt="Photo de profil"
+                             style="width: 150px; height: 150px; object-fit: cover;" />
+                    }
+                    else
+                    {
+                        <!-- Message ou icône lorsque la photo n'est pas disponible -->
+                        <div class="d-flex justify-content-center align-items-center" style="width: 150px; height: 150px; background-color: #f0f0f0; border-radius: 50%;">
+                            <i class="bi bi-person-circle" style="font-size: 3rem; color: #ccc;"></i>
+                            <!-- Ou message à la place de l'icône -->
+                            <!-- <span class="text-muted">Aucune photo</span> -->
+                        </div>
+                    }
                 </div>
 
-                <!-- Détails de l'employé, alignés à gauche -->
+                <!-- Informations de l'utilisateur -->
+                <div class="text-center">
+                    <h4 class="fw-bold">@user.FirstName @user.LastName</h4>
+                    <p class="text-secondary">@user.UserRole?.RoleName</p>
+                </div>
+
+                <hr class="bg-light" />
+
                 <div class="mb-3">
-                    <h4 class="text-left">@employee.FirstName @employee.LastName</h4>
+                    <strong>Email :</strong>
+                    <span>@user.Email</span>
                 </div>
 
-                <div class="mb-3">
-                    <strong class="text-left">Email : </strong>
-                    <span>@employee.Email</span>
-                </div>
+                @if (user.Employee != null)
+                {
+                    <div class="mb-3">
+                        <strong>Date de naissance :</strong>
+                        <span>@(user.Employee.BirthDate?.ToString("dd MMM yyyy") ?? "Non renseigné")</span>
+                    </div>
 
-                <div class="mb-3">
-                    <strong class="text-left">Date de naissance : </strong>
-                    <span>@employee.BirthDate.ToString("dd MMM yyyy")</span>
-                </div>
+                    <div class="mb-3">
+                        <strong>Numéro d'assurance sociale :</strong>
+                        <span>@(user.Employee.SocialInsuranceNumber ?? "Non renseigné")</span>
+                    </div>
 
-                <div class="mb-3">
-                    <strong class="text-left">Numéro d'assurance sociale : </strong>
-                    <span>@employee.SocialInsuranceNumber</span>
-                </div>
+                    <div class="mb-3">
+                        <strong>Adresse :</strong>
+                        <span>@(user.Employee.Address ?? "Non renseignée")</span>
+                    </div>
+                }
 
-                <!-- Boutons d'actions, centrés -->
-                <div class="d-flex justify-content-center mt-4">
-                    <button type="button" class="btn btn-secondary mx-2" @onclick="@(() => Navigation.NavigateTo("/employee-list"))">Retour à la liste</button>
-                    <button type="button" class="btn btn-warning mx-2" @onclick="ResetPassword">Réinitialiser le mot de passe</button>
+                <!-- Boutons d'actions -->
+                <div class="d-flex justify-content-center mt-4 gap-3">
+                    <button type="button" class="btn btn-light px-4" @onclick="@(() => Navigation.NavigateTo("/employee-list"))">
+                        Retour
+                    </button>
+                    <button type="button" class="btn btn-secondary px-4" @onclick="ResetPassword">
+                        Réinitialiser le mot de passe
+                    </button>
                 </div>
             }
             else
             {
-                <p>Chargement des informations de l'employé...</p>
+                <p class="text-center">Chargement des informations...</p>
             }
         </div>
     </div>
 </div>
 
-
-
 @code {
     [Parameter] public string? IdString { get; set; }
     private int? Id => int.TryParse(IdString, out var id) ? id : null;
 
-    private Employee? employee;
+    private User? user;
 
     protected override async Task OnInitializedAsync()
     {
-        TitleService.Title = "Détail de l'Employé";
+        TitleService.Title = "Détail de l'Utilisateur";
 
         if (Id.HasValue)
         {
-            employee = new Employee
+            user = UserService.GetUserById(Id.Value);
+            if(user.EmployeeId != null)
+            {
+                var employeeTemp = UserService.GetEmployeeById((int)user.EmployeeId);
+                if(employeeTemp != null)
                 {
-                    Id = Id.Value,
-                    FirstName = "Test Prénom",  // Exemple, à remplacer par des données réelles
-                    LastName = "Test Nom",
-                    Email = "test@example.com",
-                    BirthDate = DateTime.Now.AddYears(-30),
-                    SocialInsuranceNumber = "123-45-6789",
-                    EmployeeRoleId = 1,  // Exemples, à remplacer par des données réelles
-                    Pic = new byte[] { },
-                    PasswordHash = "hashed_password",  // À remplacer par un mot de passe réel
-                    TempPassword = false
-                };
-            // Charge les informations de l'employé en fonction de l'ID
-           // employee = await EmployeeService.GetEmployeeByIdAsync(Id.Value);
+                    user.Employee = employeeTemp;
+                }
+            }
         }
     }
 
     private async Task ResetPassword()
     {
-        if (employee != null)
+        if (user != null)
         {
-            /*// Appel à un service pour réinitialiser le mot de passe
-            //var result = await EmployeeService.ResetPasswordAsync(employee.Id);
-            if (result)
-            {
-                // Afficher un message ou rediriger l'utilisateur après la réinitialisation
-                Navigation.NavigateTo("/employee-list");
-            }
-            else
-            {
-                // Afficher une erreur si la réinitialisation échoue
-                // Exemple d'alerte
-                // AlertService.ShowError("Échec de la réinitialisation du mot de passe");
-            }*/
+            UserService.ResetPassword(user.Id);
+            Navigation.NavigateTo("/employee-list");
         }
-    }
-
-    private class Employee
-    {
-        public int Id { get; set; }
-        public string? FirstName { get; set; }
-        public string? LastName { get; set; }
-        public string? Email { get; set; }
-        public DateTime BirthDate { get; set; }
-        public string? SocialInsuranceNumber { get; set; }
-        public int? EmployeeRoleId { get; set; }
-        public byte[]? Pic { get; set; }
-        public string? PasswordHash { get; set; }
-        public string? PasswordSalt { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public bool IsDeleted { get; set; }
-        public bool TempPassword { get; set; }
     }
 }

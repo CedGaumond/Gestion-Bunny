@@ -1,17 +1,33 @@
 ﻿@page "/employee-list"
 @using Gestion_Bunny.Services
+@using Gestion_Bunny.Modeles
+@inject IUserService UserService
+@inject AuthenticationState AuthState
 @inject PageTitleService TitleService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
+<div class="pt-4 pb-2 d-flex justify-content-between align-items-center">
+    <div class="d-flex">
+        <label class="me-2 fw-bold">Filtrer :</label>
+        <div class="position-relative">
+            <select class="form-select form-select-sm" @bind="selectedFilter">
+                <option value="Tous">Tous</option>
+                <option value="Actifs">Actifs</option>
+                <option value="Inactifs">Inactifs</option>
+            </select>
+            <span class="position-absolute top-50 end-0 translate-middle-y me-3">
+                <i class="fas fa-chevron-down"></i>
+            </span>
+        </div>
+    </div>
 
-<div class="pt-4 pb-2 d-flex justify-content-end align-items-end">
     <div class="icon-container plus-container" @onclick="@(() => Navigation.NavigateTo("/employee"))">
         <img class="plus" src="images/plus.svg" alt="Ajouter" />
     </div>
 </div>
 
-@if (employees == null)
+@if (users == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -29,128 +45,70 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var employee in employees)
+                @foreach (var user in GetFilteredUsers())
                 {
                     <tr>
                         <td>
                             <!-- Bouton Voir Détails -->
-                            <div class="icon-container" @onclick="() => ShowEmployeeDetail(employee.Id)">
+                            <div class="icon-container" @onclick="@(() => Navigation.NavigateTo($"/employee-detail/{user.Id}"))">
                                 <img src="images/box-arrow-right.svg" alt="Voir détails" />
                             </div>
 
                             <!-- Bouton Modifier -->
-                            <div class="icon-container" @onclick="@(() => Navigation.NavigateTo($"/employee/{employee.Id}"))">
+                            <div class="icon-container" @onclick="@(() => Navigation.NavigateTo($"/employee/{user.Id}"))">
                                 <img src="images/pencil-square.svg" alt="Modifier" />
                             </div>
 
                             <!-- Bouton Supprimer -->
-                            <div class="icon-container" @onclick="() => HandleDeleteAction(employee.Id)">
+                            <div class="icon-container" @onclick="() => HandleDeleteAction(user)">
                                 <img src="images/trash.svg" alt="Supprimer" />
                             </div>
                         </td>
 
-                        <td>@employee.BirthDate.ToShortDateString()</td>
-                        <td>@employee.FirstName</td>
-                        <td>@employee.LastName</td>
-                        <td>@employee.Email</td>
+                        <td>@user.GetFullName()</td>
+                        <td>@user.Email</td>
+                        <td>@(user.Employee?.BirthDate.HasValue == true ? user.Employee.BirthDate.Value.ToShortDateString() : "Non renseigné")</td>
+                        <td>@(user.IsDeleted ? "❌" : "✅")</td>
                     </tr>
                 }
             </tbody>
         </table>
     </div>
-
-    <Modal @ref="modal" IsVerticallyCentered="true" />
-    <Button Color="ButtonColor.Primary" @onclick="OnShowModalClick">Show Employee Component</Button>
    
 }
 
 @code {
-   
-    private Employee[]? employees;
-    private Employee? selectedEmployee;
 
-    private Modal modal = default!;
-
-    private async Task OnShowModalClick()
-    {
-        var parameters = new Dictionary<string, object>();
-        parameters.Add("EmployeeId", 322);
-        parameters.Add("OnclickCallback", EventCallback.Factory.Create<MouseEventArgs>(this, CloseModal));
-        await modal.ShowAsync<EmployeeDetailComponent>(title: "Détail de l'employé", parameters: parameters);
-    }
+    private List<User>? users;
+    private User? selectedUser;
+    private string selectedFilter = "Tous";
 
     protected override async Task OnInitializedAsync()
     {
         TitleService.Title = "Liste d'employés";
-        await LoadEmployees();
+
+        var userRoleAdmin = UserService.GetUserRoleByName("Admin");
+
+        users = UserService.GetUsers();
+
+        if (!(AuthState.CurrentUser?.UserRoleId == userRoleAdmin.Id))
+        {
+            users = users.Where(user => user.UserRoleId != userRoleAdmin.Id).ToList();
+        }
     }
 
-    private async Task LoadEmployees()
+    private void HandleDeleteAction(User user)
     {
-        await Task.Delay(500);
-
-        employees = Enumerable.Range(1, 5).Select(index => new Employee
-            {
-                Id = index,
-                FirstName = $"Employé {index}",
-                LastName = "Doe",
-                Email = $"employee{index}@example.com",
-                BirthDate = DateTime.Now.AddYears(-30),
-                EmployeeRoleId = index % 3,
-            }).ToArray();
+        UserService.DeleteUser(user);
     }
 
-    private async Task ShowEmployeeDetail(int employeeId)
+    private List<User> GetFilteredUsers()
     {
-        selectedEmployee = employees?.FirstOrDefault(e => e.Id == employeeId);
-      
-        Console.WriteLine("Le modal est instancié !");
-        selectedEmployee = new Employee
-            {
-                Id = employeeId,
-                FirstName = "Test Prénom",
-                LastName = "Test Nom",
-                Email = "test@example.com",
-                BirthDate = DateTime.Now.AddYears(-30),
-                SocialInsuranceNumber = "123-45-6789",
-                Pic = new byte[] { } // Remplace par une vraie image
-            };
-        await modal?.ShowAsync();
-    }
-
-    private async Task CloseModal()
-    {
-       await modal?.HideAsync();
-    }
-
-    private void HandleDeleteAction(int employeeId)
-    {
-        employees = employees?.Where(e => e.Id != employeeId).ToArray();
-    }
-
-    private class WeatherForecast
-    {
-        public int Id { get; set; }
-        public DateOnly Date { get; set; }
-        public int TemperatureC { get; set; }
-        public string? Summary { get; set; }
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-    }
-
-    private class Employee
-    {
-        public int Id { get; set; }
-        public required string FirstName { get; set; }
-        public required string LastName { get; set; }
-        public required string Email { get; set; }
-        public DateTime BirthDate { get; set; }
-        public string? SocialInsuranceNumber { get; set; }
-        public int? EmployeeRoleId { get; set; }
-        public byte[]? Pic { get; set; }
-        public string? PasswordHash { get; set; }
-        public string? PasswordSalt { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public bool IsDeleted { get; set; }
-        public bool TempPassword { get; set; }
+        return selectedFilter switch
+        {
+            "Actifs" => users?.Where(u => !u.IsDeleted).ToList() ?? new List<User>(),
+            "Inactifs" => users?.Where(u => u.IsDeleted).ToList() ?? new List<User>(),
+            _ => users ?? new List<User>()
+        };
     }
 }

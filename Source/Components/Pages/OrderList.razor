@@ -106,7 +106,7 @@ else
     protected override async Task OnInitializedAsync()
     {
 
-        var orders = await OrderService.GetOrdersAsync();
+        var orders = OrderService.GetOrders();
         ordersPending = orders.Where(b => !b.IsDelivered).ToList();
         ordersComplete = orders.Where(b => b.IsDelivered).ToList();
 
@@ -120,9 +120,9 @@ else
 
     private async Task HandleOrderReceivedAction(int orderId)
     {
-        await OrderService.UpdateOrderAsReceivedAsync(orderId);
+        OrderService.UpdateOrderAsReceived(orderId);
 
-        var orders = await OrderService.GetOrdersAsync();
+        var orders = OrderService.GetOrders();
         ordersPending = orders.Where(b => !b.IsDelivered).ToList();
         ordersComplete = orders.Where(b => b.IsDelivered).ToList();
     }

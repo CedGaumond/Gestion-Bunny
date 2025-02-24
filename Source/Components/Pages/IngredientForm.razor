@@ -69,7 +69,7 @@
     {
         if (Id.HasValue)
         {
-            ingredient = await IngredientService.GetIngredientById(Id.Value);
+            ingredient = IngredientService.GetIngredientById(Id.Value);
 
             if (ingredient == null)
             {
@@ -100,8 +100,8 @@
     try
     {
        
-        if (await IngredientService.IsIngredientNameExists(ingredient.Name) && 
-            (Id == null || ingredient.Name != await IngredientService.GetIngredientNameById(Id.Value)))
+        if (IngredientService.IsIngredientNameExists(ingredient.Name) && 
+            (Id == null || ingredient.Name != IngredientService.GetIngredientNameById(Id.Value)))
         {
             errorMessage = $"Un ingrédient avec le nom '{ingredient.Name}' existe déjà.";
             return;
@@ -109,12 +109,12 @@
 
         if (Id.HasValue)
         {
-            await IngredientService.UpdateIngredient(ingredient.Id, ingredient.Name, ingredient.QuantityRemaining,
+            IngredientService.UpdateIngredient(ingredient.Id, ingredient.Name, ingredient.QuantityRemaining,
                                                       ingredient.QuantityPerDeliveryUnit, ingredient.MinimumThresholdNotification);
         }
         else 
         {
-            await IngredientService.AddIngredient(ingredient.Name, ingredient.QuantityRemaining,
+            IngredientService.AddIngredient(ingredient.Name, ingredient.QuantityRemaining,
                                                    ingredient.QuantityPerDeliveryUnit, ingredient.MinimumThresholdNotification);
         }
 

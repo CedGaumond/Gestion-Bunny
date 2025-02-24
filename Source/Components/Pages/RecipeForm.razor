@@ -117,15 +117,15 @@
     {
         try
         {
-            var dbCategories = await RecipeService.GetCategoriesAsync();
+            var dbCategories = RecipeService.GetCategories();
             availableCategorie = dbCategories?.ToList() ?? new List<RecipeCategory>();
 
-            var dbIngredients = await IngredientService.GetAllIngredients();
+            var dbIngredients = IngredientService.GetAllIngredients();
             availableIngredients = dbIngredients?.ToList() ?? new List<Ingredient>();
 
             if (Id.HasValue)
             {
-                var existingRecipe = await RecipeService.GetRecipeByIdAsync(Id.Value);
+                var existingRecipe = RecipeService.GetRecipeById(Id.Value);
                 if (existingRecipe != null)
                 {
                     recipe = existingRecipe;
@@ -249,11 +249,11 @@ private async Task ClearFileInput()
         if (Id.HasValue)
         {
             recipeTosave.Id = Id.Value;
-            await RecipeService.UpdateRecipeAsync(recipeTosave);
+            RecipeService.UpdateRecipe(recipeTosave);
         }
         else
         {
-            await RecipeService.AddRecipeAsync(recipeTosave);
+            RecipeService.AddRecipe(recipeTosave);
         }
 
         Navigation.NavigateTo("/recipe-list");

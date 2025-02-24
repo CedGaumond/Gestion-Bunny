@@ -398,6 +398,17 @@ form-label{
     color: white !important;
 }
 
+.form-select:focus {
+    border-color: transparent !important; 
+    box-shadow: none !important;
+}
+
+.form-control:focus {
+    outline: none !important;
+    border: transparent !important;
+    box-shadow: transparent !important;
+}
+
 .custom-input {
     height: 1.8rem !important;
     padding: 0.5rem !important;
@@ -424,13 +435,6 @@ label{
     color: white !important;
 }
 
-.form-control:focus {
-    outline: none !important;
-    border: 2px solid #B5E6A8 !important;
-    box-shadow: 0 0 8px rgba(168, 230, 207, 0.6) !important;
-}
-
-
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
 }
@@ -442,6 +446,20 @@ label{
 .validation-message {
     color: #e50000;
 }
+
+.custom-validation-message {
+    color: #842029; 
+    background-color: #f8d7da; 
+    border: 1px solid #f5c2c7;
+    padding: 6px 12px; 
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 4px;
+    margin-top: 4px;
+    display: inline-block;
+    max-width: 100%;
+}
+
 
 #blazor-error-ui {
     background: lightyellow;

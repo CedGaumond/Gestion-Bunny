@@ -12,45 +12,45 @@ namespace Gestion_Bunny.Services
             _context = context;
         }
 
-        public async Task<List<Order>> GetOrdersAsync()
+        public List<Order> GetOrders()
         {
-            return await _context.Orders.ToListAsync();
+            return _context.Orders.ToList();
         }
 
-        public async Task<Order> GetOrderByIdAsync(int billProviderId)
+        public Order GetOrderById(int billProviderId)
         {
-            return await _context.Orders.FindAsync(billProviderId);
+            return _context.Orders.Find(billProviderId);
         }
 
-        public async Task AddOrderAsync(Order billProvider)
+        public void AddOrder(Order billProvider)
         {
-            await _context.Orders.AddAsync(billProvider);
-            await _context.SaveChangesAsync();
+            _context.Orders.Add(billProvider);
+            _context.SaveChanges();
         }
 
-        public async Task UpdateOrderAsync(Order billProvider)
+        public void UpdateOrder(Order billProvider)
         {
             _context.Entry(billProvider).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
         }
 
-        public async Task DeleteOrderAsync(int billProviderId)
+        public void DeleteOrder(int billProviderId)
         {
-            var billProvider = await _context.Orders.FindAsync(billProviderId);
+            var billProvider = _context.Orders.Find(billProviderId);
             if (billProvider != null)
             {
                 _context.Orders.Remove(billProvider);
-                await _context.SaveChangesAsync();
+                _context.SaveChanges();
             }
         }
 
-        public async Task UpdateOrderAsReceivedAsync(int orderId)
+        public void UpdateOrderAsReceived(int orderId)
         {
-            var billProvider = await _context.Orders.FindAsync(orderId);
+            var billProvider = _context.Orders.Find(orderId);
             if (billProvider != null)
             {
                 billProvider.IsDelivered = true;
-                await _context.SaveChangesAsync();
+                _context.SaveChanges();
             }
         }
     }
