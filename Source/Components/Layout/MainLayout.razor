@@ -4,7 +4,7 @@
 @inject PageTitleService TitleService
 @inject NavigationManager Navigation
 
-@if (AuthState.IsAuthenticated)
+@if (AuthState.IsAuthenticated && !AuthState.CurrentUser.TempPassword)
 {
     <div class="page">
     <div class="sidebar">

@@ -209,7 +209,7 @@
             }
             else
             {
-                UserService.AddUser(user);
+               await UserService.AddUser(user);
             }
 
             Navigation.NavigateTo("/employee-list");

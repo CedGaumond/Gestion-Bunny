@@ -1,6 +1,7 @@
 ﻿@page "/order-list"
 @using Gestion_Bunny.Modeles
 @using Gestion_Bunny.Services
+@using System.Diagnostics
 @inject PageTitleService TitleService
 @inject IOrderService OrderService
 @inject NavigationManager Navigation
@@ -130,6 +131,13 @@ else
     // Méthode pour gérer l'action d'impression
     private void HandlePrintAction(int orderId)
     {
-        Console.WriteLine($"Impression de la facture de la commande avec avec ID : {orderId}");
+         Modeles.Order currentOrder = ordersComplete.FirstOrDefault(b => b.Id == orderId);
+        if (currentOrder.OrderFill != null)
+        {
+              string downloadsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+              string filePath = Path.Combine(downloadsPath, $"{currentOrder.GenerateInvoiceNumber()}.pdf");
+              File.WriteAllBytes(filePath, currentOrder.OrderFill);
+              Process.Start(new ProcessStartInfo(filePath) { UseShellExecute = true });
+        }
     }
 }

@@ -1,4 +1,5 @@
 using Gestion_Bunny.Modeles;
+using Gestion_Bunny.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace Gestion_Bunny.Services;
@@ -27,24 +28,69 @@ public class UserService : IUserService
         return _context.Employees.Find(employeeId);
     }
 
-    public void ResetPassword(int userId)
+    public async Task ResetPassword(User user)
     {
-        /*TO DO*/
+        var tempPassword = PasswordGenerator.GenerateTemporaryPassword();
+        var salt = CryptographyUtil.CreateSalt();
+        user.PasswordHash = CryptographyUtil.GenerateHash(tempPassword, salt);
+        user.PasswordSalt = salt;
+        user.TempPassword = true;
+
+        _context.Entry(user).State = EntityState.Modified;
+        _context.SaveChanges();
+
+        await EmailUtil.SendEmailAsync(
+            user.Email,
+            "Bienvenue chez Bunny & co - Réinitialisation du mot de passe",
+            $"Bonjour {user.FirstName},\n\nVotre mot de passe temporaire est : {tempPassword}\n\nMerci de le changer dès votre première connexion."
+        );
     }
 
-    public void AddUser(User user)
+    public void UpdatePassword(User user, string inputPassword)
     {
+        var existingUser = _context.Users.SingleOrDefault(u => u.Id == user.Id);
+
+        if (existingUser != null)
+        {
+            _context.Entry(existingUser).State = EntityState.Detached;
+        }
+
+        var salt = CryptographyUtil.CreateSalt();
+        user.PasswordHash = CryptographyUtil.GenerateHash(inputPassword, salt);
+        user.PasswordSalt = salt;
+        user.TempPassword = false; 
+
+        _context.Users.Attach(user);
+        _context.Entry(user).State = EntityState.Modified; 
+
+        _context.SaveChanges();
+    }
+
+    public async Task AddUser(User user)
+    {
+        var tempPassword = PasswordGenerator.GenerateTemporaryPassword();
+        var salt = CryptographyUtil.CreateSalt();
+        user.PasswordHash = CryptographyUtil.GenerateHash(tempPassword, salt);
+        user.PasswordSalt = salt;
+        user.TempPassword = true;
+
         _context.Users.Add(user);
         _context.SaveChanges();
+
+        await EmailUtil.SendEmailAsync(
+            user.Email,
+            "Bienvenue chez Bunny & co - Votre mot de passe temporaire",
+            $"Bonjour {user.FirstName},\n\nVotre mot de passe temporaire est : {tempPassword}\n\nMerci de le changer dès votre première connexion."
+        );
     }
 
     public void UpdateUser(User user)
     {
         var userTemp = GetUserById(user.Id);
 
-        if (userTemp != null && userTemp.IsDeleted != user.IsDeleted) // Vérification si l'état de suppression a changé
+        if (userTemp != null && userTemp.IsDeleted != user.IsDeleted) 
         {
-            user.DeletedDate = user.IsDeleted ? DateTime.UtcNow : (DateTime?)null; // Si supprimé, on définit la date, sinon on la supprime
+            user.DeletedDate = user.IsDeleted ? DateTime.UtcNow : (DateTime?)null;
         }
 
         _context.Entry(user).State = EntityState.Modified;

@@ -142,7 +142,7 @@ INSERT INTO public.users (
     first_name, last_name, e_mail, user_role_id, employee_id, password_hash, password_salt, is_deleted, temp_password
 ) 
 SELECT 
-    'Carolande', 'Dupont', 'carolande.dupont@example.com', 1, id, '123', 'salthash1', FALSE, FALSE
+    'Carolande', 'Dupont', 'carolande.dupont@example.com', 1, id, 'JZGZcNZsijYn39GGU9XPHCrDMowcKoGt+YursgocDbU=', 'sq4oZVMkikKIGxqtxhMQ8w==', FALSE, FALSE
 FROM public.employees
 ORDER BY id DESC
 LIMIT 1;
@@ -151,7 +151,7 @@ INSERT INTO public.users (
     first_name, last_name, e_mail, user_role_id, employee_id, password_hash, password_salt, is_deleted, temp_password
 ) 
 SELECT 
-    'Cedrick', 'Lemoine', 'cedrick.lemoine@example.com', 2, id, '123', 'salthash2', FALSE, FALSE
+    'Cedrick', 'Lemoine', 'cedrick.lemoine@example.com', 2, id, 'Ps7SfOSSgVF35XMBmG2w6PGuNW8qJFTXHFNCEI6U9hM=', '46Pw8uuNdXHT/v4FHApFrg==', FALSE, FALSE
 FROM public.employees
 ORDER BY id DESC
 LIMIT 1 OFFSET 1;
@@ -160,7 +160,7 @@ INSERT INTO public.users (
     first_name, last_name, e_mail, user_role_id, employee_id, password_hash, password_salt, is_deleted, temp_password
 ) 
 SELECT 
-    'Jacob', 'Bertier', 'jacob.bertier@example.com', 3, id, '123', 'salthash3', FALSE, TRUE
+    'Jacob', 'Bertier', 'jacob.bertier@example.com', 3, id, '11hbkc9OZqX/HHRcfpZtuYpBph3baYiXMtoOjExEraY=', 'nQPM9TXaYigbPQZikybwtQ==', FALSE, TRUE
 FROM public.employees
 ORDER BY id DESC
 LIMIT 1 OFFSET 2;

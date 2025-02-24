@@ -6,8 +6,9 @@ public interface IUserService
 {
     List<User> GetUsers();
     User GetUserById(int userId);
-    void ResetPassword(int userId);
-    void AddUser(User user);
+    Task ResetPassword(User user);
+    void UpdatePassword(User user, string inputPassword);
+    Task AddUser(User user);
     void UpdateUser(User user);
     void DeleteUser(User user);
     UserRole? GetUserRoleByName(string name);
