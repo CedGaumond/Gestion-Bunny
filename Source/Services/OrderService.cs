@@ -14,7 +14,7 @@ namespace Gestion_Bunny.Services
 
         public List<Order> GetOrders()
         {
-            return _context.Orders.ToList();
+            return _context.Orders.OrderByDescending(b => b.OrderDate.Date).ToList();
         }
 
         public Order GetOrderById(int billProviderId)

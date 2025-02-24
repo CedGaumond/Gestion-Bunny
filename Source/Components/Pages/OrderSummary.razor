@@ -7,6 +7,7 @@
 @inject PageTitleService TitleService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
+@inject IPDFService PDFService
 
 <div class="container d-flex justify-content-center mt-4">
     <div class="position-fixed bottom-0 end-0 p-3 me-4">
@@ -133,6 +134,11 @@
                 return;
             }
 
+            var orderedIngredients = ingredientsInCart.Select(ingredient => new Modeles.OrderIngredient
+                    {
+                        IngredientId = ingredient.Key.Id,
+                        Quantity = ingredient.Value
+                    }).ToList();        
 
             var sousTotal = ingredientsInCart.Sum(x => x.Value * x.Key.Price);
             var tps = sousTotal * 0.05m;
@@ -145,16 +151,20 @@
                     OrderDate = DateTime.UtcNow,
                     IsDelivered = false,
                     TotalAmount = totalAvecTaxes,
-                    OrderIngredients = ingredientsInCart.Select(ingredient => new Modeles.OrderIngredient
-                    {
-                        IngredientId = ingredient.Key.Id,
-                        Quantity = ingredient.Value
-                    }).ToList()
+                    OrderIngredients = orderedIngredients
                 };
 
 
             OrderService.AddOrder(newOrder);
 
+            var orderIngredients = ingredientsInCart.Select(ingredient => 
+                (ingredient.Key, ingredient.Value)
+            ).ToList();
+
+            newOrder.OrderFill = PDFService.GenerateOrderPdf(newOrder, orderIngredients);
+
+            OrderService.UpdateOrder(newOrder);
+            
             _ = JSRuntime.InvokeVoidAsync("console.log", "Commande confirmée avec succès !");
 
             OrderCartService.ClearOrder(AuthState.CurrentUser.Id);
