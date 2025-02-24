@@ -430,6 +430,22 @@ form-label{
     padding: 0 !important;
 }
 
+    .password-rules p {
+        font-size: 16px;
+        margin-bottom: 10px; 
+    }
+
+    .password-rules ul {
+        list-style-type: none; 
+        padding-left: 0;
+    }
+
+    .password-rules li {
+        margin: 8px 0; 
+        position: relative;
+        padding-left: 25px; 
+        font-size: 14px;
+    }
 
 label{
     color: white !important;
