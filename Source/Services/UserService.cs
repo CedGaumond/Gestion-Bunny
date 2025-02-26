@@ -66,7 +66,7 @@ public class UserService : IUserService
         _context.SaveChanges();
     }
 
-    public async Task AddUser(User user)
+    public void AddUser(User user)
     {
         var tempPassword = PasswordGenerator.GenerateTemporaryPassword();
         var salt = CryptographyUtil.CreateSalt();
@@ -77,11 +77,14 @@ public class UserService : IUserService
         _context.Users.Add(user);
         _context.SaveChanges();
 
-        await EmailUtil.SendEmailAsync(
-            user.Email,
-            "Bienvenue chez Bunny & co - Votre mot de passe temporaire",
-            $"Bonjour {user.FirstName},\n\nVotre mot de passe temporaire est : {tempPassword}\n\nMerci de le changer dès votre première connexion."
-        );
+        Task.Run(async () =>
+        {
+            await EmailUtil.SendEmailAsync(
+                user.Email,
+                "Bienvenue chez Bunny & co - Votre mot de passe temporaire",
+                $"Bonjour {user.FirstName},\n\nVotre mot de passe temporaire est : {tempPassword}\n\nMerci de le changer dès votre première connexion."
+            );
+        });
     }
 
     public void UpdateUser(User user)
