@@ -34,6 +34,7 @@ public static class MauiProgram
 
 
         // Register the EmployeeService and AuthenticationService for Dependency Injection
+        builder.Services.AddScoped<IIngredientService, IngredientService>();
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IOrderService, OrderService>();
         builder.Services.AddSingleton<IOrderCartService, OrderCartService>();
@@ -42,10 +43,6 @@ public static class MauiProgram
         builder.Services.AddScoped<IRecipeService, RecipeService>();
         builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
         builder.Services.AddSingleton<PageTitleService>();
-
-
-        builder.Services.AddSingleton<IIngredientService, IngredientService>();
-
         builder.Services.AddSingleton<AuthenticationState>();
 
         // If using Debug mode, add developer tools and logging

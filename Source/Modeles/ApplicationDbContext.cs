@@ -26,10 +26,10 @@ public class ApplicationDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<OrderIngredient>()
-        .HasKey(bi => new { bi.OrderId, bi.IngredientId });
+            .HasKey(bi => new { bi.OrderId, bi.IngredientId });
 
         modelBuilder.Entity<BillRecipe>()
-       .HasKey(b => new { b.BillId, b.RecipeId });
+            .HasKey(b => new { b.BillId, b.RecipeId });
 
         modelBuilder.Entity<RecipeIngredient>()
             .HasKey(ir => new { ir.RecipeId, ir.IngredientId });
@@ -45,9 +45,6 @@ public class ApplicationDbContext : DbContext
             .WithMany(i => i.RecipeIngredients) 
             .HasForeignKey(ir => ir.RecipeId)
             .OnDelete(DeleteBehavior.Cascade);
-
-
-
     }
 }
 
