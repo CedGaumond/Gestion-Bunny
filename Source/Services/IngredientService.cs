@@ -9,6 +9,7 @@ namespace Gestion_Bunny.Services
     public class IngredientService : IIngredientService
     {
         private readonly ApplicationDbContext _context;
+        public event Action? OnIngredientUpdated;
 
         public IngredientService(ApplicationDbContext context)
         {
@@ -114,6 +115,9 @@ namespace Gestion_Bunny.Services
                  _context.SaveChanges();
             }
         }
+        public void NotifyIngredientUpdated()
+        {
+            OnIngredientUpdated?.Invoke();
+        }
     }
-
 }
