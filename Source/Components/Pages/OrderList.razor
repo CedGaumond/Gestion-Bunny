@@ -16,81 +16,81 @@
 
 @if (ordersPending == null)
 {
-    <p><em>Loading...</em></p>
+        <p><em>Loading...</em></p>
 }
 else
 {
-    <div class="table-container">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Actions</th>
-                    <th>Numéro de Commande</th>
-                    <th>Date de création</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var order in ordersPending)
-                {
+        <div class="table-container">
+            <table class="table">
+                <thead>
                     <tr>
-                        <td>
-                            <!-- Order received button -->
-                            <button class="btn btn-primary" @onclick="() => HandleOrderReceivedAction(order.Id)">
-                                Commande reçue
-                            </button>
-
-
-                        </td>
-
-                        <td>@order.GenerateInvoiceNumber()</td>
-                        <td>@order.OrderDate.ToShortDateString()</td>
-                        <td>@order.TotalAmount.ToString("F2")</td>
+                        <th>Actions</th>
+                        <th>Numéro de Commande</th>
+                        <th>Date de création</th>
+                        <th>Total</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    @foreach (var order in ordersPending)
+                    {
+                            <tr>
+                                <td>
+                                    <!-- Order received button -->
+                                    <button class="btn btn-primary" @onclick="() => HandleOrderReceivedAction(order.Id)">
+                                        Commande reçue
+                                    </button>
+
+
+                                </td>
+
+                                <td>@order.GenerateInvoiceNumber()</td>
+                                <td>@order.OrderDate.ToShortDateString()</td>
+                                <td>@order.TotalAmount.ToString("F2")</td>
+                            </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
 }
 
 <h2>Commandes complétées</h2>
 
 @if (ordersComplete == null)
 {
-    <p><em>Loading...</em></p>
+        <p><em>Loading...</em></p>
 }
 else
 {
-    <div class="table-container">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Actions</th>
-                    <th>Numéro de Commande</th>
-                    <th>Date de création</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var order in ordersComplete)
-                {
+        <div class="table-container">
+            <table class="table">
+                <thead>
                     <tr>
-                        <td>
-                            <!-- Printer icon -->
-                            <div class="icon-container" @onclick="() => HandlePrintAction(order.Id)">
-                                <img src="images/printer-fill.svg" alt="Imprimer" />
-                            </div>
-                        </td>
-
-
-                        <td>@order.GenerateInvoiceNumber()</td>
-                        <td>@order.OrderDate.ToShortDateString()</td>
-                        <td>@order.TotalAmount.ToString("F2")</td>
+                        <th>Actions</th>
+                        <th>Numéro de Commande</th>
+                        <th>Date de création</th>
+                        <th>Total</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    @foreach (var order in ordersComplete)
+                    {
+                            <tr>
+                                <td>
+                                    <!-- Printer icon -->
+                                    <div class="icon-container" @onclick="() => HandlePrintAction(order.Id)">
+                                        <img src="images/printer-fill.svg" alt="Imprimer" />
+                                    </div>
+                                </td>
+
+
+                                <td>@order.GenerateInvoiceNumber()</td>
+                                <td>@order.OrderDate.ToShortDateString()</td>
+                                <td>@order.TotalAmount.ToString("F2")</td>
+                            </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
 }
 
 @code {
@@ -127,6 +127,7 @@ else
         ordersPending = orders.Where(b => !b.IsDelivered).ToList();
         ordersComplete = orders.Where(b => b.IsDelivered).ToList();
     }
+
 
     // Méthode pour gérer l'action d'impression
     private void HandlePrintAction(int orderId)

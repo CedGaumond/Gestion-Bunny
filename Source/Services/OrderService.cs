@@ -10,6 +10,7 @@ namespace Gestion_Bunny.Services
         public OrderService(ApplicationDbContext context)
         {
             _context = context;
+
         }
 
         public List<Order> GetOrders()
@@ -50,8 +51,11 @@ namespace Gestion_Bunny.Services
             if (billProvider != null)
             {
                 billProvider.IsDelivered = true;
+                
+                _context.Database.ExecuteSqlRaw("CALL mark_order_received({0})", orderId);
                 _context.SaveChanges();
             }
+            
         }
     }
 }
