@@ -119,12 +119,9 @@ public class ScheduleService : IScheduleService
     {
         try
         {
-            string dateString = "2025-02-27 2:25:59";
-            DateTime localDateTime = DateTime.Parse(dateString);
-            DateTime utcDateTime = localDateTime.ToUniversalTime();
 
-            schedule.ShiftStart = utcDateTime;
-            schedule.ShiftEnd = utcDateTime;
+            schedule.ShiftStart = EnsureUtc(schedule.ShiftStart);
+            schedule.ShiftEnd = EnsureUtc(schedule.ShiftEnd);
 
             await _context.Schedules.AddAsync(schedule);
             await _context.SaveChangesAsync();

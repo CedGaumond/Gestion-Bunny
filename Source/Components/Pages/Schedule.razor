@@ -11,13 +11,13 @@
 <div class="calendar-container">
     <div class="calendar-header">
         <div class="month-selector">
-            <button class="nav-btn" @onclick="PreviousWeek">
+            <button class="nav-btn week-nav" @onclick="PreviousWeek">
                 <i class="fas fa-chevron-left"></i>
             </button>
             <h2 class="month-title">
                 Semaine du @CurrentWeekStart.ToString("d MMMM yyyy", new System.Globalization.CultureInfo("fr-FR"))
             </h2>
-            <button class="nav-btn" @onclick="NextWeek">
+            <button class="nav-btn week-nav" @onclick="NextWeek">
                 <i class="fas fa-chevron-right"></i>
             </button>
         </div>
@@ -30,6 +30,9 @@
                         <option value="@user.Id">@user.GetFullName()</option>
                     }
                 </select>
+                <button class="filter-btn" @onclick="ApplyFilter">
+                    <i class="fas fa-filter"></i> Filtrer
+                </button>
             </div>
             <button class="add-btn" @onclick="() => ShowAddDialog = true">
                 <i class="fas fa-plus"></i> Ajouter
@@ -56,16 +59,21 @@
                 @foreach (var time in TimeSlots)
                 {
                     var currentSlot = new DateTime(day.Year, day.Month, day.Day, time.Hour, time.Minute, 0);
-                    var shiftsInSlot = Schedules.Where(s => s.ShiftStart <= currentSlot && s.ShiftEnd > currentSlot).ToList();
+                    var shiftsInSlot = Schedules.Where(s =>
+                    s.ShiftStart.ToLocalTime() <= currentSlot &&
+                    s.ShiftEnd.ToLocalTime() > currentSlot).ToList();
                     var isCurrentTimeSlot = IsCurrentTime(currentSlot);
 
                     <div class="time-cell @(isCurrentTimeSlot ? "current-time" : "")"
                          @onclick="() => OpenAddShiftDialog(currentSlot)">
                         @foreach (var shift in shiftsInSlot)
                         {
+                            var employee = UserService.GetEmployeeById(shift.UserId);
+                            var employeeName = employee != null ? shift.User.GetFullName() : "Employé inconnu";
+
                             <div class="event-card">
                                 <div class="event-content">
-                                    <div class="event-title">@UserService.GetEmployeeById(shift.UserId)</div>
+                                    <div class="event-title">@employeeName</div>
                                     <div class="event-time">
                                         @shift.ShiftStart.ToLocalTime().ToString("HH:mm") - @shift.ShiftEnd.ToLocalTime().ToString("HH:mm")
                                     </div>
@@ -177,22 +185,76 @@
             color: #333;
         }
 
+        /* Enhanced week navigation buttons */
+        .nav-btn.week-nav {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4a6fff;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+            .nav-btn.week-nav:hover {
+                background-color: #4a6fff;
+                color: white;
+                border-color: #4a6fff;
+            }
+
     .header-actions {
         display: flex;
         align-items: center;
         gap: 15px;
     }
 
+    /* Enhanced employee filter */
+    .employee-selection {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
     .employee-select {
-        padding: 8px 15px;
+        padding: 10px 15px;
         border: 1px solid #e0e0e0;
         border-radius: 6px;
-        font-size: 0.9rem;
+        font-size: 0.95rem;
         min-width: 200px;
         outline: none;
         cursor: pointer;
-        background-color: #f9f9f9;
+        background-color: white;
+        transition: border-color 0.2s;
     }
+
+        .employee-select:hover, .employee-select:focus {
+            border-color: #4a6fff;
+        }
+
+    .filter-btn {
+        background-color: #f5f5f5;
+        color: #555;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        padding: 10px 15px;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .filter-btn:hover {
+            background-color: #4a6fff;
+            color: white;
+            border-color: #4a6fff;
+        }
 
     .add-btn {
         background-color: #4a6fff;
@@ -473,7 +535,6 @@
 
     private List<ScheduleModel> Schedules = new();
     private List<User> Users = new();
-    private Dictionary<int, string> EmployeeNames = new();
     private bool ShowAddDialog;
     private int SelectedUserId = 0;
 
@@ -499,6 +560,8 @@
     private void LoadUsers()
     {
         Users = UserService.GetUsers();
+        // Log user data for debugging
+        Console.WriteLine($"Loaded {Users.Count} users");
     }
 
     private async Task LoadSchedulesAsync()
@@ -512,6 +575,15 @@
             else
             {
                 Schedules = await ScheduleService.GetSchedulesForWeekAsync(CurrentWeekStart);
+            }
+
+            // Log loaded schedules for debugging
+            Console.WriteLine($"Loaded {Schedules.Count} schedules for week starting {CurrentWeekStart.ToShortDateString()}");
+
+            // Log first few schedules details
+            foreach (var schedule in Schedules.Take(3))
+            {
+                Console.WriteLine($"Schedule: User={schedule.UserId}, Start={schedule.ShiftStart.ToLocalTime():yyyy-MM-dd HH:mm}, End={schedule.ShiftEnd.ToLocalTime():yyyy-MM-dd HH:mm}");
             }
         }
         catch (Exception ex)
@@ -530,6 +602,12 @@
     private async Task NextWeek()
     {
         CurrentWeekStart = CurrentWeekStart.AddDays(7);
+        await LoadSchedulesAsync();
+    }
+
+    private async Task ApplyFilter()
+    {
+        // This method will apply the selected filter
         await LoadSchedulesAsync();
     }
 
@@ -555,56 +633,59 @@
         NewShift = new ScheduleModel();
     }
 
-private async Task SaveShiftAsync()
-{
+    private async Task SaveShiftAsync()
+    {
         if (NewShift.UserId != 0 && ParseTimeString(StartTimeString, out var startTime) && ParseTimeString(EndTimeString, out var endTime))
-    {
-        // Create DateTime objects with explicit DateTimeKind.Local
-        var shiftStartLocal = new DateTime(
-            SelectedDate.Year,
-            SelectedDate.Month,
-            SelectedDate.Day,
-            startTime.Hours,
-            startTime.Minutes,
-            0,
-            DateTimeKind.Local);  // Explicitly set kind to Local
-
-        var shiftEndLocal = new DateTime(
-            SelectedDate.Year,
-            SelectedDate.Month,
-            SelectedDate.Day,
-            endTime.Hours,
-            endTime.Minutes,
-            0,
-            DateTimeKind.Local);  // Explicitly set kind to Local
-
-        // Handle if end time is on the next day (e.g., night shift)
-        if (endTime < startTime)
         {
-            shiftEndLocal = shiftEndLocal.AddDays(1);
+            // Create DateTime objects with explicit DateTimeKind.Local
+            var shiftStartLocal = new DateTime(
+                SelectedDate.Year,
+                SelectedDate.Month,
+                SelectedDate.Day,
+                startTime.Hours,
+                startTime.Minutes,
+                0,
+                DateTimeKind.Local);  // Explicitly set kind to Local
+
+            var shiftEndLocal = new DateTime(
+                SelectedDate.Year,
+                SelectedDate.Month,
+                SelectedDate.Day,
+                endTime.Hours,
+                endTime.Minutes,
+                0,
+                DateTimeKind.Local);  // Explicitly set kind to Local
+
+            // Handle if end time is on the next day (e.g., night shift)
+            if (endTime < startTime)
+            {
+                shiftEndLocal = shiftEndLocal.AddDays(1);
+            }
+
+            // Convert to UTC for database storage
+            var shiftStartUtc = shiftStartLocal.ToUniversalTime();
+            var shiftEndUtc = shiftEndLocal.ToUniversalTime();
+
+            // Log for debugging
+            Console.WriteLine($"Adding shift: Local Start={shiftStartLocal:yyyy-MM-dd HH:mm}, UTC Start={shiftStartUtc:yyyy-MM-dd HH:mm}");
+            Console.WriteLine($"Adding shift: Local End={shiftEndLocal:yyyy-MM-dd HH:mm}, UTC End={shiftEndUtc:yyyy-MM-dd HH:mm}");
+
+            var scheduleToSave = new ScheduleModel
+                {
+                    UserId = NewShift.UserId,
+                    ShiftStart = shiftStartUtc,
+                    ShiftEnd = shiftEndUtc,
+                };
+
+            await ScheduleService.AddScheduleAsync(scheduleToSave);
+            await LoadSchedulesAsync();
+            CloseDialog();
         }
-
-        // Convert to UTC for database storage
-        var shiftStartUtc = shiftStartLocal.ToUniversalTime();
-        var shiftEndUtc = shiftEndLocal.ToUniversalTime();
-
-        var scheduleToSave = new ScheduleModel
+        else
         {
-            
-            UserId = NewShift.UserId,
-            ShiftStart = shiftStartUtc,
-            ShiftEnd = shiftEndUtc,
-        };
-
-        await ScheduleService.AddScheduleAsync(scheduleToSave);
-        await LoadSchedulesAsync();
-        CloseDialog();
+            Console.WriteLine("Invalid shift data. Employee must be selected and time format must be valid (HH:mm).");
+        }
     }
-    else
-    {
-        Console.WriteLine("Invalid shift data. Employee must be selected and time format must be valid (HH:mm).");
-    }
-}
 
     private bool ParseTimeString(string timeString, out TimeSpan result)
     {
