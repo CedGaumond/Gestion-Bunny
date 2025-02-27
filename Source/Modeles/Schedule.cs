@@ -20,10 +20,9 @@ namespace Gestion_Bunny.Modeles
         public DateTime ShiftEnd { get; set; }
 
         [Required]
-        [Column("employee_id")]
-        public int? EmployeeId { get; set; }
-
-        [ForeignKey("EmployeeId")]
-        public Employee? Employee { get; set; }
+        [ForeignKey("UserId")]
+        [Column("user_id")]
+        public int UserId { get; set; }
+        public User? User { get; set; }
     }
 }

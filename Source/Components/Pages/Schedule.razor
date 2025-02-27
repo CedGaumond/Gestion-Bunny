@@ -5,7 +5,7 @@
 @using ScheduleModel = Gestion_Bunny.Modeles.Schedule
 @inject PageTitleService TitleService
 @inject IScheduleService ScheduleService
-@inject IEmployeeService EmployeeService
+@inject IUserService UserService
 @inject ApplicationDbContext _context
 
 <div class="calendar-container">
@@ -23,11 +23,11 @@
         </div>
         <div class="header-actions">
             <div class="employee-selection">
-                <select @bind="SelectedEmployeeId" @bind:event="onchange" class="employee-select">
+                <select @bind="SelectedUserId" @bind:event="onchange" class="employee-select">
                     <option value="0">Tous les employés</option>
-                    @foreach (var employee in Employees)
+                    @foreach (var user in Users)
                     {
-                        <option value="@employee.Id">@EmployeeNames[employee.Id]</option>
+                        <option value="@user.Id">@user.GetFullName()</option>
                     }
                 </select>
             </div>
@@ -65,7 +65,7 @@
                         {
                             <div class="event-card">
                                 <div class="event-content">
-                                    <div class="event-title">@GetEmployeeName(shift.EmployeeId)</div>
+                                    <div class="event-title">@UserService.GetEmployeeById(shift.UserId)</div>
                                     <div class="event-time">
                                         @shift.ShiftStart.ToLocalTime().ToString("HH:mm") - @shift.ShiftEnd.ToLocalTime().ToString("HH:mm")
                                     </div>
@@ -94,11 +94,11 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Employé</label>
-                        <select @bind="NewShift.EmployeeId" class="form-control">
+                        <select @bind="NewShift.UserId" class="form-control">
                             <option value="0">Sélectionner un employé</option>
-                            @foreach (var employee in Employees)
+                            @foreach (var user in Users)
                             {
-                                <option value="@employee.Id">@EmployeeNames[employee.Id]</option>
+                                <option value="@user.Id">@user.GetFullName()</option>
                             }
                         </select>
                     </div>
@@ -472,10 +472,10 @@
         .ToList();
 
     private List<ScheduleModel> Schedules = new();
-    private List<Employee> Employees = new();
+    private List<User> Users = new();
     private Dictionary<int, string> EmployeeNames = new();
     private bool ShowAddDialog;
-    private int SelectedEmployeeId = 0;
+    private int SelectedUserId = 0;
 
     // New properties for time handling using string format
     private DateTime SelectedDate = DateTime.Today;
@@ -487,7 +487,7 @@
     protected override async Task OnInitializedAsync()
     {
         TitleService.Title = "Horaire";
-        await LoadEmployeesAsync();
+        LoadUsers();
         await LoadSchedulesAsync();
     }
 
@@ -496,28 +496,18 @@
         await LoadSchedulesAsync();
     }
 
-    private async Task LoadEmployeesAsync()
+    private void LoadUsers()
     {
-        Employees = await EmployeeService.GetEmployeesAsync();
-        var users = await _context.Users
-            .Where(u => u.EmployeeId != null)
-            .ToListAsync();
-
-        EmployeeNames = new Dictionary<int, string>();
-        foreach (var employee in Employees)
-        {
-            var matchingUser = users.FirstOrDefault(u => u.EmployeeId == employee.Id);
-            EmployeeNames[employee.Id] = matchingUser?.FirstName ?? "Unknown";
-        }
+        Users = UserService.GetUsers();
     }
 
     private async Task LoadSchedulesAsync()
     {
         try
         {
-            if (SelectedEmployeeId != 0)
+            if (SelectedUserId != 0)
             {
-                Schedules = await ScheduleService.GetEmployeeSchedulesForWeekAsync(SelectedEmployeeId, CurrentWeekStart);
+                Schedules = await ScheduleService.GetEmployeeSchedulesForWeekAsync(SelectedUserId, CurrentWeekStart);
             }
             else
             {
@@ -529,15 +519,6 @@
             Console.WriteLine($"Error loading schedules: {ex.Message}");
             Schedules = new List<ScheduleModel>();
         }
-    }
-
- private string GetEmployeeName(int? employeeId)
-    {
-        if (employeeId == null)
-        {
-            return "Unknown";
-        }
-        return EmployeeNames.TryGetValue(employeeId.Value, out var employeeName) ? employeeName : "Unknown";
     }
 
     private async Task PreviousWeek()
@@ -562,7 +543,7 @@
         // Set employee if one is selected
         NewShift = new ScheduleModel
             {
-                EmployeeId = SelectedEmployeeId != 0 ? SelectedEmployeeId : 0
+                UserId = SelectedUserId != 0 ? SelectedUserId : 0
             };
 
         ShowAddDialog = true;
@@ -576,7 +557,7 @@
 
 private async Task SaveShiftAsync()
 {
-    if (NewShift.EmployeeId != 0 && ParseTimeString(StartTimeString, out var startTime) && ParseTimeString(EndTimeString, out var endTime))
+        if (NewShift.UserId != 0 && ParseTimeString(StartTimeString, out var startTime) && ParseTimeString(EndTimeString, out var endTime))
     {
         // Create DateTime objects with explicit DateTimeKind.Local
         var shiftStartLocal = new DateTime(
@@ -610,8 +591,7 @@ private async Task SaveShiftAsync()
         var scheduleToSave = new ScheduleModel
         {
             
-            Id = 1000,
-            EmployeeId = NewShift.EmployeeId,
+            UserId = NewShift.UserId,
             ShiftStart = shiftStartUtc,
             ShiftEnd = shiftEndUtc,
         };

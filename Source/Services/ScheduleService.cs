@@ -38,7 +38,7 @@ public class ScheduleService : IScheduleService
         try
         {
             return await _context.Schedules
-                .Include(s => s.Employee) // Include the related Employee entity
+                .Include(s => s.User) // Include the related Employee entity
                 .ToListAsync();
         }
         catch (Exception ex)
@@ -57,8 +57,8 @@ public class ScheduleService : IScheduleService
         try
         {
             return await _context.Schedules
-                .Where(s => s.EmployeeId == employeeId) // Filter by EmployeeId
-                .Include(s => s.Employee) // Include the related Employee entity
+                .Where(s => s.UserId == employeeId) // Filter by EmployeeId
+                .Include(s => s.User) // Include the related Employee entity
                 .ToListAsync();
         }
         catch (Exception ex)
@@ -82,8 +82,8 @@ public class ScheduleService : IScheduleService
             var utcWeekEnd = EnsureUtc(weekEnd);
 
             return await _context.Schedules
-                .Where(s => s.EmployeeId == employeeId && s.ShiftStart >= utcWeekStart && s.ShiftStart < utcWeekEnd) // Filter by EmployeeId and week range
-                .Include(s => s.Employee) // Include the related Employee entity
+                .Where(s => s.UserId == employeeId && s.ShiftStart >= utcWeekStart && s.ShiftStart < utcWeekEnd) // Filter by EmployeeId and week range
+                .Include(s => s.User) // Include the related Employee entity
                 .OrderBy(s => s.ShiftStart) // Order by ShiftStart
                 .ToListAsync();
         }
@@ -102,7 +102,7 @@ public class ScheduleService : IScheduleService
         try
         {
             return await _context.Schedules
-                .Include(s => s.Employee) // Include the related Employee entity
+                .Include(s => s.User) // Include the related Employee entity
                 .FirstOrDefaultAsync(s => s.Id == scheduleId);
         }
         catch (Exception ex)
@@ -193,7 +193,7 @@ public class ScheduleService : IScheduleService
 
             return await _context.Schedules
                 .Where(s => s.ShiftStart >= utcWeekStart && s.ShiftStart < utcWeekEnd) // Filter by the week range
-                .Include(s => s.Employee) // Include the related Employee entity
+                .Include(s => s.User) // Include the related Employee entity
                 .OrderBy(s => s.ShiftStart) // Order by ShiftStart
                 .ToListAsync();
         }

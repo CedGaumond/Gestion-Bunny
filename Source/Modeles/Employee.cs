@@ -37,8 +37,6 @@ namespace Gestion_Bunny.Modeles
         [Column("pic")]
         public byte[]? Pic { get; set; }
 
-        public ICollection<Schedule> Schedules { get; set; } = new List<Schedule>(); // Relation One-to-Many
-
         public static ValidationResult ValidateBirthDate(DateTime? birthDate, ValidationContext context)
         {
             DateTime minDate = DateTime.Now.AddYears(-150);
