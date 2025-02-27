@@ -9,9 +9,6 @@
     <div class="card p-4 shadow" style="max-width: 500px; width: 100%;">
         <h3 class="text-center">@(Id != null ? "Modifier un ingrédient" : "Ajouter un ingrédient")</h3>
 
-
-
-
         <EditForm Model="ingredient" OnValidSubmit="Save">
             <DataAnnotationsValidator />
 
@@ -36,6 +33,11 @@
                 <label for="minimumThresholdNotification" class="form-label">Seuil minimum de notification</label>
                 <InputNumber id="minimumThresholdNotification" class="form-control"
                     @bind-Value="ingredient.MinimumThresholdNotification" required />
+            </div>
+
+            <div class="mb-3">
+                <label for="price" class="form-label">Prix</label>
+                <InputNumber id="price" class="form-control" @bind-Value="ingredient.Price" required />
             </div>
 
             <div class="mb-3">
@@ -96,35 +98,38 @@
     }
 
     private async Task Save()
-{
-    try
     {
-       
-        if (IngredientService.IsIngredientNameExists(ingredient.Name) && 
-            (Id == null || ingredient.Name != IngredientService.GetIngredientNameById(Id.Value)))
+        try
         {
-            errorMessage = $"Un ingrédient avec le nom '{ingredient.Name}' existe déjà.";
-            return;
-        }
+            if (IngredientService.IsIngredientNameExists(ingredient.Name) && 
+                (Id == null || ingredient.Name != IngredientService.GetIngredientNameById(Id.Value)))
+            {
+                errorMessage = $"Un ingrédient avec le nom '{ingredient.Name}' existe déjà.";
+                return;
+            }
 
-        if (Id.HasValue)
-        {
-            IngredientService.UpdateIngredient(ingredient.Id, ingredient.Name, ingredient.QuantityRemaining,
-                                                      ingredient.QuantityPerDeliveryUnit, ingredient.MinimumThresholdNotification);
-        }
-        else 
-        {
-            IngredientService.AddIngredient(ingredient.Name, ingredient.QuantityRemaining,
-                                                   ingredient.QuantityPerDeliveryUnit, ingredient.MinimumThresholdNotification);
-        }
+            if (Id.HasValue)
+            {
+                IngredientService.UpdateIngredient(ingredient.Id, ingredient.Name, ingredient.QuantityRemaining,
+                                                ingredient.QuantityPerDeliveryUnit, 
+                                                ingredient.MinimumThresholdNotification,
+                                                ingredient.Price);
+            }
+            else 
+            {
+                IngredientService.AddIngredient(ingredient.Name, ingredient.QuantityRemaining,
+                                            ingredient.QuantityPerDeliveryUnit, 
+                                            ingredient.MinimumThresholdNotification,
+                                            ingredient.Price);
+            }
 
-        Navigation.NavigateTo("/ingredient-list");
+            Navigation.NavigateTo("/ingredient-list");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
     }
-    catch (Exception ex)
-    {
-        errorMessage = ex.Message;
-    }
-}
 
 
 

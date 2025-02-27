@@ -33,7 +33,9 @@ namespace Gestion_Bunny.Services
             return _context.Ingredients.FirstOrDefault(i => i.Id == id && !i.IsDeleted);
         }
 
-        public void AddIngredient(string name, decimal quantityRemaining, decimal quantityPerDeliveryUnit, decimal minimumThresholdNotification)
+      
+        public void AddIngredient(string name, decimal quantityRemaining, decimal quantityPerDeliveryUnit, 
+                                decimal minimumThresholdNotification, decimal price)
         {
             var existingIngredient = _context.Ingredients
                 .FirstOrDefault(i => i.Name.ToLower() == name.ToLower() && !i.IsDeleted);
@@ -49,6 +51,7 @@ namespace Gestion_Bunny.Services
                 QuantityRemaining = quantityRemaining,
                 QuantityPerDeliveryUnit = quantityPerDeliveryUnit,
                 MinimumThresholdNotification = minimumThresholdNotification,
+                Price = price,
                 DeletedDate = null,
                 IsDeleted = false
             };
@@ -57,25 +60,14 @@ namespace Gestion_Bunny.Services
             _context.SaveChangesAsync();
         }
 
-        public string GetIngredientNameById(int id)
-        {
-            var ingredient = _context.Ingredients
-                .FirstOrDefault(i => i.Id == id && !i.IsDeleted);
-
-            if (ingredient == null)
-            {
-                throw new KeyNotFoundException($"Ingredient with ID {id} not found.");
-            }
-
-            return ingredient.Name;
-        }
-        public void UpdateIngredient(int id, string name = null, decimal? quantityRemaining = null, decimal? quantityPerDeliveryUnit = null, decimal? minimumThresholdNotification = null)
+        public void UpdateIngredient(int id, string name = null, decimal? quantityRemaining = null, 
+                                    decimal? quantityPerDeliveryUnit = null, decimal? minimumThresholdNotification = null,
+                                    decimal? price = null)
         {
             var ingredient = _context.Ingredients.FirstOrDefault(i => i.Id == id && !i.IsDeleted);
 
             if (ingredient != null)
             {
-
                 if (name != null && !name.Equals(ingredient.Name, StringComparison.OrdinalIgnoreCase))
                 {
                     var existingIngredient = _context.Ingredients
@@ -92,10 +84,25 @@ namespace Gestion_Bunny.Services
                 if (quantityRemaining.HasValue) ingredient.QuantityRemaining = quantityRemaining.Value;
                 if (quantityPerDeliveryUnit.HasValue) ingredient.QuantityPerDeliveryUnit = quantityPerDeliveryUnit.Value;
                 if (minimumThresholdNotification.HasValue) ingredient.MinimumThresholdNotification = minimumThresholdNotification.Value;
+                if (price.HasValue) ingredient.Price = price.Value;
 
                 _context.SaveChanges();
             }
         }
+
+        public string GetIngredientNameById(int id)
+        {
+            var ingredient = _context.Ingredients
+                .FirstOrDefault(i => i.Id == id && !i.IsDeleted);
+
+            if (ingredient == null)
+            {
+                throw new KeyNotFoundException($"Ingredient with ID {id} not found.");
+            }
+
+            return ingredient.Name;
+        }
+       
         public bool IsIngredientUsedInItemRecipe(int ingredientId)
         {
             return _context.RecipeIngredients
