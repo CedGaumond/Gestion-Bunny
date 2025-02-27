@@ -24,12 +24,13 @@ public static class MauiProgram
 
         string connectionString = DatabaseConfiguration.GetConnectionString();
 
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseNpgsql(connectionString) 
-                   .EnableDetailedErrors() 
-                   .EnableSensitiveDataLogging() 
-                   .LogTo(Console.WriteLine, LogLevel.Information) 
+        options.UseNpgsql(connectionString)
+                   .EnableDetailedErrors()
+                   .EnableSensitiveDataLogging()
+                   .LogTo(Console.WriteLine, LogLevel.Information)
         );
 
 
@@ -43,6 +44,7 @@ public static class MauiProgram
         builder.Services.AddScoped<IRecipeService, RecipeService>();
         builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
         builder.Services.AddSingleton<PageTitleService>();
+        builder.Services.AddSingleton<IScheduleService, ScheduleService>();
         builder.Services.AddSingleton<AuthenticationState>();
 
         // If using Debug mode, add developer tools and logging
