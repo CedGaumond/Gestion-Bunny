@@ -2,62 +2,76 @@
 @using Gestion_Bunny.Modeles
 @using Gestion_Bunny.Services
 @using Microsoft.EntityFrameworkCore
+@using ScheduleModel = Gestion_Bunny.Modeles.Schedule
 @inject PageTitleService TitleService
 @inject IScheduleService ScheduleService
 @inject IEmployeeService EmployeeService
 @inject ApplicationDbContext _context
 
-<div class="schedule-page">
-    <div class="schedule-header">
-        <div class="week-navigation">
-            <button class="btn btn-outline-primary" @onclick="PreviousWeek">
+<div class="calendar-container">
+    <div class="calendar-header">
+        <div class="month-selector">
+            <button class="nav-btn" @onclick="PreviousWeek">
                 <i class="fas fa-chevron-left"></i>
             </button>
-            <h2 class="week-title">
+            <h2 class="month-title">
                 Semaine du @CurrentWeekStart.ToString("d MMMM yyyy", new System.Globalization.CultureInfo("fr-FR"))
             </h2>
-            <button class="btn btn-outline-primary" @onclick="NextWeek">
+            <button class="nav-btn" @onclick="NextWeek">
                 <i class="fas fa-chevron-right"></i>
             </button>
         </div>
-        <button class="btn btn-primary" @onclick="() => ShowAddDialog = true">
-            <i class="fas fa-plus"></i> Ajouter un horaire
-        </button>
+        <div class="header-actions">
+            <div class="employee-selection">
+                <select @bind="SelectedEmployeeId" @bind:event="onchange" class="employee-select">
+                    <option value="0">Tous les employés</option>
+                    @foreach (var employee in Employees)
+                    {
+                        <option value="@employee.Id">@EmployeeNames[employee.Id]</option>
+                    }
+                </select>
+            </div>
+            <button class="add-btn" @onclick="() => ShowAddDialog = true">
+                <i class="fas fa-plus"></i> Ajouter
+            </button>
+        </div>
     </div>
 
-    <div class="schedule-grid">
+    <div class="calendar-body">
         <div class="time-column">
-            <div class="grid-header">Heures</div>
+            <div class="day-header"></div>
             @foreach (var time in TimeSlots)
             {
-                <div class="time-slot">@time.ToString("HH:mm")</div>
+                <div class="time-cell">@time.ToString("HH:mm")</div>
             }
         </div>
 
         @foreach (var day in WeekDays)
         {
             <div class="day-column">
-                <div class="grid-header">@day.ToString("dddd", new System.Globalization.CultureInfo("fr-FR"))<br/>@day.ToString("dd/MM")</div>
+                <div class="day-header @(day.Date == DateTime.Today ? "today" : "")">
+                    <div class="day-name">@day.ToString("ddd", new System.Globalization.CultureInfo("fr-FR"))</div>
+                    <div class="day-number">@day.Day</div>
+                </div>
                 @foreach (var time in TimeSlots)
                 {
                     var currentSlot = new DateTime(day.Year, day.Month, day.Day, time.Hour, time.Minute, 0);
                     var shiftsInSlot = Schedules.Where(s => s.ShiftStart <= currentSlot && s.ShiftEnd > currentSlot).ToList();
+                    var isCurrentTimeSlot = IsCurrentTime(currentSlot);
 
-                    <div class="time-slot @(IsCurrentTime(currentSlot) ? "current-time" : "")"
+                    <div class="time-cell @(isCurrentTimeSlot ? "current-time" : "")"
                          @onclick="() => OpenAddShiftDialog(currentSlot)">
                         @foreach (var shift in shiftsInSlot)
                         {
-                            <div class="shift-card">
-                                <div class="shift-info">
-                                    <span class="employee-name">@GetEmployeeName(shift.EmployeeId)</span>
-                                    <span class="shift-time">
+                            <div class="event-card">
+                                <div class="event-content">
+                                    <div class="event-title">@GetEmployeeName(shift.EmployeeId)</div>
+                                    <div class="event-time">
                                         @shift.ShiftStart.ToLocalTime().ToString("HH:mm") - @shift.ShiftEnd.ToLocalTime().ToString("HH:mm")
-                                    </span>
+                                    </div>
                                 </div>
-                                <button class="btn btn-link btn-sm delete-btn" 
-                                        @onclick:stopPropagation="true"
-                                        @onclick="() => DeleteShiftAsync(shift.Id)">
-                                    <i class="fas fa-trash-alt"></i>
+                                <button class="delete-event" @onclick:stopPropagation="true" @onclick="() => DeleteShiftAsync(shift.Id)">
+                                    <i class="fas fa-times"></i>
                                 </button>
                             </div>
                         }
@@ -69,42 +83,384 @@
 
     @if (ShowAddDialog)
     {
-        <div class="modal-backdrop" @onclick="CloseDialog">
-            <div class="modal-dialog" @onclick:stopPropagation="true">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Ajouter un horaire</h5>
-                        <button type="button" class="btn-close" @onclick="CloseDialog"></button>
+        <div class="modal-overlay" @onclick="CloseDialog">
+            <div class="modal-container" @onclick:stopPropagation="true">
+                <div class="modal-header">
+                    <h3>Ajouter un horaire</h3>
+                    <button class="close-btn" @onclick="CloseDialog">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Employé</label>
+                        <select @bind="NewShift.EmployeeId" class="form-control">
+                            <option value="0">Sélectionner un employé</option>
+                            @foreach (var employee in Employees)
+                            {
+                                <option value="@employee.Id">@EmployeeNames[employee.Id]</option>
+                            }
+                        </select>
                     </div>
-                    <div class="modal-body">
-                        <div class="form-group mb-3">
-                            <label>Employé:</label>
-                            <select @bind="NewShift.EmployeeId" class="form-select">
-                                <option value="0">Sélectionner un employé</option>
-                                @foreach (var employee in Employees)
-                                {
-                                    <option value="@employee.Id">@EmployeeNames[employee.Id]</option>
-                                }
-                            </select>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label>Début:</label>
-                            <input type="datetime-local" @bind="NewShift.ShiftStart" class="form-control" />
-                        </div>
-                        <div class="form-group mb-3">
-                            <label>Fin:</label>
-                            <input type="datetime-local" @bind="NewShift.ShiftEnd" class="form-control" />
-                        </div>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" @bind="SelectedDate" class="form-control" />
                     </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-secondary" @onclick="CloseDialog">Annuler</button>
-                        <button class="btn btn-primary" @onclick="SaveShiftAsync">Enregistrer</button>
+                    <div class="form-group">
+                        <label>Heure de début (24h)</label>
+                        <input type="text" @bind="StartTimeString" class="form-control" placeholder="HH:mm" />
                     </div>
+                    <div class="form-group">
+                        <label>Heure de fin (24h)</label>
+                        <input type="text" @bind="EndTimeString" class="form-control" placeholder="HH:mm" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="cancel-btn" @onclick="CloseDialog">Annuler</button>
+                    <button class="save-btn" @onclick="SaveShiftAsync">Enregistrer</button>
                 </div>
             </div>
         </div>
     }
 </div>
+
+<style>
+    /* Main Container */
+    .calendar-container {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin: 20px 0;
+    }
+
+    /* Calendar Header */
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .month-selector {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .month-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0;
+        color: #333;
+    }
+
+    .nav-btn {
+        background-color: transparent;
+        border: 1px solid #e0e0e0;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .nav-btn:hover {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .employee-select {
+        padding: 8px 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        min-width: 200px;
+        outline: none;
+        cursor: pointer;
+        background-color: #f9f9f9;
+    }
+
+    .add-btn {
+        background-color: #4a6fff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .add-btn:hover {
+            background-color: #3a5eff;
+        }
+
+    /* Calendar Body */
+    .calendar-body {
+        display: grid;
+        grid-template-columns: 70px repeat(7, 1fr);
+        gap: 1px;
+        background-color: #f5f5f5;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .time-column, .day-column {
+        display: flex;
+        flex-direction: column;
+        background-color: white;
+    }
+
+    .day-header {
+        height: 60px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-bottom: 1px solid #f0f0f0;
+        padding: 10px;
+        background-color: #f9f9f9;
+    }
+
+        .day-header.today {
+            background-color: #e8f0ff;
+        }
+
+    .day-name {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #666;
+        text-transform: uppercase;
+    }
+
+    .day-number {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .time-cell {
+        height: 60px;
+        padding: 5px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        color: #666;
+        font-size: 0.85rem;
+        position: relative;
+        background-color: white;
+        cursor: pointer;
+    }
+
+        .time-cell:hover {
+            background-color: #f9f9f9;
+        }
+
+    .current-time {
+        background-color: rgba(74, 111, 255, 0.05);
+    }
+
+    /* Event Cards */
+    .event-card {
+        background-color: #e3eaff;
+        border-left: 3px solid #4a6fff;
+        border-radius: 4px;
+        padding: 4px 6px;
+        margin-bottom: 2px;
+        font-size: 0.75rem;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+
+    .event-title {
+        font-weight: 500;
+        color: #333;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .event-time {
+        color: #666;
+        font-size: 0.7rem;
+    }
+
+    .delete-event {
+        background: none;
+        border: none;
+        color: #aaa;
+        cursor: pointer;
+        font-size: 0.7rem;
+        padding: 0;
+        margin: 0;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    .event-card:hover .delete-event {
+        opacity: 1;
+    }
+
+    .delete-event:hover {
+        color: #ff4d4d;
+    }
+
+    /* Modal */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .modal-container {
+        background-color: white;
+        border-radius: 10px;
+        width: 100%;
+        max-width: 450px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        overflow: hidden;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+    .close-btn {
+        background: none;
+        border: none;
+        font-size: 1rem;
+        color: #888;
+        cursor: pointer;
+    }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+    .modal-body {
+        padding: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 0.95rem;
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 15px 20px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .cancel-btn {
+        background-color: transparent;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        color: #666;
+    }
+
+    .save-btn {
+        background-color: #4a6fff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+
+        .save-btn:hover {
+            background-color: #3a5eff;
+        }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .calendar-header
+
+    {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .header-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .calendar-body {
+        grid-template-columns: 50px repeat(7, 1fr);
+        font-size: 0.85rem;
+    }
+
+    .day-header {
+        height: 50px;
+    }
+
+    .time-cell {
+        height: 50px;
+    }
+
+    }
+</style>
 
 @code {
     private DateTime CurrentWeekStart = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek);
@@ -114,30 +470,30 @@
     private List<DateTime> TimeSlots => Enumerable.Range(8, 14)
         .Select(i => DateTime.Today.AddHours(i))
         .ToList();
-    
-    private List<ScheduleModel> Schedules = new(); // Updated to ScheduleModel
+
+    private List<ScheduleModel> Schedules = new();
     private List<Employee> Employees = new();
     private Dictionary<int, string> EmployeeNames = new();
     private bool ShowAddDialog;
-    private ScheduleModel NewShift = new(); // Updated to ScheduleModel
+    private int SelectedEmployeeId = 0;
+
+    // New properties for time handling using string format
+    private DateTime SelectedDate = DateTime.Today;
+    private string StartTimeString = "09:00";
+    private string EndTimeString = "17:00";
+
+    private ScheduleModel NewShift = new();
 
     protected override async Task OnInitializedAsync()
     {
         TitleService.Title = "Horaire";
-        await LoadDataAsync();
+        await LoadEmployeesAsync();
+        await LoadSchedulesAsync();
     }
 
-    private async Task LoadDataAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        await Task.WhenAll(
-            LoadSchedulesAsync(),
-            LoadEmployeesAsync()
-        );
-    }
-
-    private async Task LoadSchedulesAsync()
-    {
-        Schedules = await ScheduleService.GetSchedulesForWeekAsync(CurrentWeekStart); // Updated to ScheduleModel
+        await LoadSchedulesAsync();
     }
 
     private async Task LoadEmployeesAsync()
@@ -146,7 +502,7 @@
         var users = await _context.Users
             .Where(u => u.EmployeeId != null)
             .ToListAsync();
-        
+
         EmployeeNames = new Dictionary<int, string>();
         foreach (var employee in Employees)
         {
@@ -155,76 +511,147 @@
         }
     }
 
-    private string GetEmployeeName(int employeeId)
+    private async Task LoadSchedulesAsync()
     {
-        return EmployeeNames.TryGetValue(employeeId, out var employeeName) ? employeeName : "Unknown";
+        try
+        {
+            if (SelectedEmployeeId != 0)
+            {
+                Schedules = await ScheduleService.GetEmployeeSchedulesForWeekAsync(SelectedEmployeeId, CurrentWeekStart);
+            }
+            else
+            {
+                Schedules = await ScheduleService.GetSchedulesForWeekAsync(CurrentWeekStart);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading schedules: {ex.Message}");
+            Schedules = new List<ScheduleModel>();
+        }
+    }
+
+ private string GetEmployeeName(int? employeeId)
+    {
+        if (employeeId == null)
+        {
+            return "Unknown";
+        }
+        return EmployeeNames.TryGetValue(employeeId.Value, out var employeeName) ? employeeName : "Unknown";
     }
 
     private async Task PreviousWeek()
     {
         CurrentWeekStart = CurrentWeekStart.AddDays(-7);
-        await LoadDataAsync();
-        StateHasChanged();
+        await LoadSchedulesAsync();
     }
 
     private async Task NextWeek()
     {
         CurrentWeekStart = CurrentWeekStart.AddDays(7);
-        await LoadDataAsync();
-        StateHasChanged();
+        await LoadSchedulesAsync();
     }
 
-    private async Task OpenAddShiftDialog(DateTime startTime)
+    private void OpenAddShiftDialog(DateTime startTime)
     {
-        var defaultEmployee = Employees.FirstOrDefault();
-        if (defaultEmployee != null)
-        {
-            NewShift = new ScheduleModel
-                {
-                    // Convert to UTC when initializing
-                    ShiftStart = startTime.ToUniversalTime(),
-                    ShiftEnd = startTime.AddHours(8).ToUniversalTime(),
-                    EmployeeId = defaultEmployee.Id
-                };
-            ShowAddDialog = true;
-            StateHasChanged();
-        }
+        // Initialize with the selected time cell
+        SelectedDate = startTime.Date;
+        StartTimeString = startTime.ToString("HH:mm");
+        EndTimeString = startTime.AddHours(8).ToString("HH:mm");
+
+        // Set employee if one is selected
+        NewShift = new ScheduleModel
+            {
+                EmployeeId = SelectedEmployeeId != 0 ? SelectedEmployeeId : 0
+            };
+
+        ShowAddDialog = true;
     }
 
     private void CloseDialog()
     {
         ShowAddDialog = false;
-        NewShift = null;
-        StateHasChanged();
+        NewShift = new ScheduleModel();
     }
 
-    private async Task SaveShiftAsync()
+private async Task SaveShiftAsync()
+{
+    if (NewShift.EmployeeId != 0 && ParseTimeString(StartTimeString, out var startTime) && ParseTimeString(EndTimeString, out var endTime))
     {
-        if (NewShift != null && NewShift.EmployeeId != 0 && NewShift.ShiftEnd > NewShift.ShiftStart)
+        // Create DateTime objects with explicit DateTimeKind.Local
+        var shiftStartLocal = new DateTime(
+            SelectedDate.Year,
+            SelectedDate.Month,
+            SelectedDate.Day,
+            startTime.Hours,
+            startTime.Minutes,
+            0,
+            DateTimeKind.Local);  // Explicitly set kind to Local
+
+        var shiftEndLocal = new DateTime(
+            SelectedDate.Year,
+            SelectedDate.Month,
+            SelectedDate.Day,
+            endTime.Hours,
+            endTime.Minutes,
+            0,
+            DateTimeKind.Local);  // Explicitly set kind to Local
+
+        // Handle if end time is on the next day (e.g., night shift)
+        if (endTime < startTime)
         {
-            try
+            shiftEndLocal = shiftEndLocal.AddDays(1);
+        }
+
+        // Convert to UTC for database storage
+        var shiftStartUtc = shiftStartLocal.ToUniversalTime();
+        var shiftEndUtc = shiftEndLocal.ToUniversalTime();
+
+        var scheduleToSave = new ScheduleModel
+        {
+            
+            Id = 1000,
+            EmployeeId = NewShift.EmployeeId,
+            ShiftStart = shiftStartUtc,
+            ShiftEnd = shiftEndUtc,
+        };
+
+        await ScheduleService.AddScheduleAsync(scheduleToSave);
+        await LoadSchedulesAsync();
+        CloseDialog();
+    }
+    else
+    {
+        Console.WriteLine("Invalid shift data. Employee must be selected and time format must be valid (HH:mm).");
+    }
+}
+
+    private bool ParseTimeString(string timeString, out TimeSpan result)
+    {
+        // Parse time in 24-hour format (HH:mm)
+        if (timeString != null && timeString.Length == 5 && timeString[2] == ':')
+        {
+            if (int.TryParse(timeString.Substring(0, 2), out int hours) &&
+                int.TryParse(timeString.Substring(3, 2), out int minutes))
             {
-                // Convert to UTC before saving
-                NewShift.ShiftStart = NewShift.ShiftStart.ToUniversalTime();
-                NewShift.ShiftEnd = NewShift.ShiftEnd.ToUniversalTime();
-                await ScheduleService.AddScheduleAsync(NewShift);
-                await LoadDataAsync();
-                CloseDialog();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error saving shift: {ex.Message}");
+                if (hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60)
+                {
+                    result = new TimeSpan(hours, minutes, 0);
+                    return true;
+                }
             }
         }
+
+        result = TimeSpan.Zero;
+        return false;
     }
 
     private async Task DeleteShiftAsync(int shiftId)
     {
         try
         {
-            await ScheduleService.DeleteScheduleAsync(shiftId); // Updated to ScheduleModel
-            await LoadDataAsync();
-            StateHasChanged();
+            await ScheduleService.DeleteScheduleAsync(shiftId);
+            await LoadSchedulesAsync();
         }
         catch (Exception ex)
         {

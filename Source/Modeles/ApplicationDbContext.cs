@@ -5,6 +5,7 @@ public class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
+       
     }
 
     public DbSet<RestaurantProfile> RestaurantProfiles { get; set; }
@@ -45,6 +46,14 @@ public class ApplicationDbContext : DbContext
             .WithMany(i => i.RecipeIngredients) 
             .HasForeignKey(ir => ir.RecipeId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Schedule>(entity =>
+        {
+            entity.Property(e => e.ShiftStart)
+                  .HasColumnType("timestamp with time zone");
+            entity.Property(e => e.ShiftEnd)
+                  .HasColumnType("timestamp with time zone");
+        });
 
 
 

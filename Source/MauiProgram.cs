@@ -24,6 +24,7 @@ public static class MauiProgram
 
         string connectionString = DatabaseConfiguration.GetConnectionString();
 
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseNpgsql(connectionString)

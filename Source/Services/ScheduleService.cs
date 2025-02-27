@@ -1,6 +1,5 @@
 using Gestion_Bunny.Modeles;
 using Microsoft.EntityFrameworkCore;
-using Gestion_Bunny.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,88 +14,194 @@ public class ScheduleService : IScheduleService
         _context = context;
     }
 
-    public async Task<List<ScheduleModel>> GetSchedulesAsync()
+    private DateTime EnsureUtc(DateTime dateTime)
     {
-        return await _context.Schedules // Use "Schedules" here
-            .Include(s => s.Employee)
-            .ToListAsync();
-    }
-
-    public async Task<List<ScheduleModel>> GetEmployeeSchedulesAsync(int employeeId)
-    {
-        return await _context.Schedules // Use "Schedules" here
-            .Where(s => s.EmployeeId == employeeId)
-            .Include(s => s.Employee)
-            .ToListAsync();
-    }
-
-    public async Task<ScheduleModel> GetScheduleByIdAsync(int scheduleId)
-    {
-        return await _context.Schedules
-            .Include(s => s.Employee)
-            .FirstOrDefaultAsync(s => s.Id == scheduleId);
-    }
-
-    public async Task AddScheduleAsync(ScheduleModel schedule)
-    {
-        // Ensure that the ShiftStart and ShiftEnd are in UTC before saving
-        if (schedule.ShiftStart.Kind == DateTimeKind.Local)
+        if (dateTime.Kind == DateTimeKind.Unspecified)
         {
-            schedule.ShiftStart = schedule.ShiftStart.ToUniversalTime();  
+            // Assume the input is in the server's local time zone
+            return DateTime.SpecifyKind(dateTime, DateTimeKind.Local).ToUniversalTime();
+        }
+        else if (dateTime.Kind == DateTimeKind.Local)
+        {
+            return dateTime.ToUniversalTime();
         }
 
-        if (schedule.ShiftEnd.Kind == DateTimeKind.Local)
-        {
-            schedule.ShiftEnd = schedule.ShiftEnd.ToUniversalTime(); 
-        }
-
-        await _context.Schedules.AddAsync(schedule);
-        await _context.SaveChangesAsync();
+        // Already UTC
+        return dateTime;
     }
 
-
-    public async Task UpdateScheduleAsync(ScheduleModel schedule)
+    /// <summary>
+    /// Retrieves all schedules from the database, including related employee data.
+    /// </summary>
+    public async Task<List<Schedule>> GetSchedulesAsync()
     {
-        // Ensure that the ShiftStart and ShiftEnd are in UTC before saving
-        if (schedule.ShiftStart.Kind == DateTimeKind.Local)
+        try
         {
-            schedule.ShiftStart = schedule.ShiftStart.ToUniversalTime();  // Convert to UTC
+            return await _context.Schedules
+                .Include(s => s.Employee) // Include the related Employee entity
+                .ToListAsync();
         }
-
-        if (schedule.ShiftEnd.Kind == DateTimeKind.Local)
+        catch (Exception ex)
         {
-            schedule.ShiftEnd = schedule.ShiftEnd.ToUniversalTime();      // Convert to UTC
+            // Log the exception (e.g., using a logging framework)
+            Console.WriteLine($"Error retrieving schedules: {ex.Message}");
+            throw; // Re-throw the exception to be handled by the caller
         }
-
-        _context.Entry(schedule).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
     }
 
-
-    public async Task DeleteScheduleAsync(int scheduleId)
+    /// <summary>
+    /// Retrieves schedules for a specific employee, including related employee data.
+    /// </summary>
+    public async Task<List<Schedule>> GetEmployeeSchedulesAsync(int employeeId)
     {
-        var schedule = await _context.Schedules.FindAsync(scheduleId);
-        if (schedule != null)
+        try
         {
-            _context.Schedules.Remove(schedule);
+            return await _context.Schedules
+                .Where(s => s.EmployeeId == employeeId) // Filter by EmployeeId
+                .Include(s => s.Employee) // Include the related Employee entity
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error retrieving schedules for employee {employeeId}: {ex.Message}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Retrieves schedules for a specific employee and week, including related employee data.
+    /// </summary>
+    public async Task<List<Schedule>> GetEmployeeSchedulesForWeekAsync(int employeeId, DateTime weekStart)
+    {
+        try
+        {
+            var weekEnd = weekStart.AddDays(7); // Calculate the end of the week
+
+            // Ensure weekStart and weekEnd are in UTC
+            var utcWeekStart = EnsureUtc(weekStart);
+            var utcWeekEnd = EnsureUtc(weekEnd);
+
+            return await _context.Schedules
+                .Where(s => s.EmployeeId == employeeId && s.ShiftStart >= utcWeekStart && s.ShiftStart < utcWeekEnd) // Filter by EmployeeId and week range
+                .Include(s => s.Employee) // Include the related Employee entity
+                .OrderBy(s => s.ShiftStart) // Order by ShiftStart
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error retrieving schedules for employee {employeeId} and week starting {weekStart}: {ex.Message}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Retrieves a specific schedule by its ID, including related employee data.
+    /// </summary>
+    public async Task<Schedule> GetScheduleByIdAsync(int scheduleId)
+    {
+        try
+        {
+            return await _context.Schedules
+                .Include(s => s.Employee) // Include the related Employee entity
+                .FirstOrDefaultAsync(s => s.Id == scheduleId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error retrieving schedule with ID {scheduleId}: {ex.Message}");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Adds a new schedule to the database. Converts ShiftStart and ShiftEnd to UTC if they are in local time.
+    /// </summary>
+    public async Task AddScheduleAsync(Schedule schedule)
+    {
+        try
+        {
+            string dateString = "2025-02-27 2:25:59";
+            DateTime localDateTime = DateTime.Parse(dateString);
+            DateTime utcDateTime = localDateTime.ToUniversalTime();
+
+            schedule.ShiftStart = utcDateTime;
+            schedule.ShiftEnd = utcDateTime;
+
+            await _context.Schedules.AddAsync(schedule);
             await _context.SaveChangesAsync();
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error adding schedule: {ex.Message}");
+            throw;
+        }
     }
 
-    public async Task<List<ScheduleModel>> GetSchedulesForWeekAsync(DateTime weekStart)
+    /// <summary>
+    /// Updates an existing schedule in the database. Converts ShiftStart and ShiftEnd to UTC if they are in local time.
+    /// </summary>
+    public async Task UpdateScheduleAsync(Schedule schedule)
     {
-        var weekEnd = weekStart.AddDays(7); // Calculate the end of the week
+        try
+        {
+            // Ensure ShiftStart and ShiftEnd are in UTC
+            schedule.ShiftStart = EnsureUtc(schedule.ShiftStart);
+            schedule.ShiftEnd = EnsureUtc(schedule.ShiftEnd);
 
-        // Ensure weekStart and weekEnd are in UTC
-        var utcWeekStart = weekStart.ToUniversalTime();
-        var utcWeekEnd = weekEnd.ToUniversalTime();
+            _context.Entry(schedule).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating schedule with ID {schedule.Id}: {ex.Message}");
+            throw;
+        }
+    }
 
-        var schedules = await _context.Schedules
-            .Where(s => s.ShiftStart >= utcWeekStart && s.ShiftStart < utcWeekEnd)
-            .Include(s => s.Employee)  // Include related employee
-            .OrderBy(s => s.ShiftStart)
-            .ToListAsync();
+    /// <summary>
+    /// Deletes a schedule from the database by its ID.
+    /// </summary>
+    public async Task DeleteScheduleAsync(int scheduleId)
+    {
+        try
+        {
+            var schedule = await _context.Schedules.FindAsync(scheduleId);
+            if (schedule != null)
+            {
+                _context.Schedules.Remove(schedule);
+                await _context.SaveChangesAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting schedule with ID {scheduleId}: {ex.Message}");
+            throw;
+        }
+    }
 
-        return schedules;
+    /// <summary>
+    /// Retrieves schedules for a specific week, starting from the provided weekStart date.
+    /// </summary>
+    public async Task<List<Schedule>> GetSchedulesForWeekAsync(DateTime weekStart)
+    {
+        try
+        {
+            var weekEnd = weekStart.AddDays(7); // Calculate the end of the week
+
+            // Ensure weekStart and weekEnd are in UTC
+            var utcWeekStart = EnsureUtc(weekStart);
+            var utcWeekEnd = EnsureUtc(weekEnd);
+
+            return await _context.Schedules
+                .Where(s => s.ShiftStart >= utcWeekStart && s.ShiftStart < utcWeekEnd) // Filter by the week range
+                .Include(s => s.Employee) // Include the related Employee entity
+                .OrderBy(s => s.ShiftStart) // Order by ShiftStart
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error retrieving schedules for week starting {weekStart}: {ex.Message}");
+            throw;
+        }
     }
 }
+
