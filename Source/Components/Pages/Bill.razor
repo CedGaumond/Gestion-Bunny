@@ -4,77 +4,76 @@
 @inject PageTitleService PageTitleService
 @inject IRecipeService RecipeService
 @inject IBillService BillService
+@inject IIngredientValidationService IngredientService
 @inject IPDFService PDFService
 @inject AuthenticationState AuthState
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
+@implements IDisposable
 
 <div class="container-fluid">
     <div class="row">
-
         <!-- Left Column: Recipe Categories and List -->
         <div class="col-8 pe-4">
-
             <div class="d-flex justify-content-center gap-4 mb-4">
                 @if (categories == null || !categories.Any())
                 {
-                    <p>Chargement des catégories...</p>
+                        <p>Chargement des catégories...</p>
                 }
                 else
                 {
                     @foreach (var category in categories)
                     {
-                        <div class="category-item" @onclick="() => SelectCategory(category.Id)" style="cursor: pointer;">
-                            <span>@category.Name</span>
-                            <div class="category-underline @(selectedCategoryId == category.Id ? "active" : "")"></div>
-                        </div>
+                                <div class="category-item" @onclick="() => SelectCategory(category.Id)" style="cursor: pointer;">
+                                    <span>@category.Name</span>
+                                    <div class="category-underline @(selectedCategoryId == category.Id ? "active" : "")"></div>
+                                </div>
                     }
                 }
             </div>
 
-            @if (true)
+            @if (recipes_filter != null && recipes_filter.Any())
             {
-                <div class="row g-4">
+                    <div class="row g-4">
                     @foreach (var recipe in recipes_filter)
                     {
-                        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
-                            <div class="card mx-auto d-flex h-100" @onclick="() => HandleAddAction(recipe.Id)">
+                                <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+                                    <div class="card mx-auto d-flex h-100" @onclick="() => HandleAddAction(recipe.Id)">
                                 @if (recipe.Pic != null && recipe.Pic.Length > 0)
                                 {
-                                    <!-- Convert byte[] to Base64 string -->
-                                    <img src="data:image/jpeg;base64,@Convert.ToBase64String(recipe.Pic)" class="card-img-top" alt="Image de la recette" />
+                                                <!-- Convert byte[] to Base64 string -->
+                                                <img src="data:image/jpeg;base64,@Convert.ToBase64String(recipe.Pic)" class="card-img-top" alt="Image de la recette" />
                                 }
                                 else if (!string.IsNullOrEmpty(recipe.Pic?.ToString()))
                                 {
-                                    <!-- URL image rendering -->
-                                    <img src="@recipe.Pic" class="card-img-top" alt="Image de la recette" />
+                                                <!-- URL image rendering -->
+                                                <img src="@recipe.Pic" class="card-img-top" alt="Image de la recette" />
                                 }
                                 else
                                 {
-                                    <!-- Fallback image rendering -->
-                                    <img src="images/default-recipe-image.jpg" class="card-img-top" alt="Image de la recette" />
+                                                <!-- Fallback image rendering -->
+                                                <img src="images/default-recipe-image.jpg" class="card-img-top" alt="Image de la recette" />
                                 }
 
-                                <div class="card-body">
-                                    <h4 class="card-title mt-2">@recipe.Name</h4>
+                                        <div class="card-body">
+                                            <h4 class="card-title mt-2">@recipe.Name</h4>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
                     }
-                </div>
+                    </div>
             }
             else
             {
-                <p class="text-center">Aucune recette trouvée</p>
+                    <p class="text-center">Aucune recette trouvée</p>
             }
         </div>
 
         <!-- Right Column: Order Summary -->
-        <div class="card col-4 bg-darkdark p-3 mt-3  text-light">
+        <div class="card col-4 bg-darkdark p-3 mt-3 text-light">
             <h4 class="text-center mb-3">Commande #@currentBill.GenerateInvoiceNumber()</h4>
 
             <div class="order-summary">
-
                 <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
                     <div>
                         <span class="fw-bold">Item</span>
@@ -88,48 +87,70 @@
                 {
                     @foreach (var item in currentOrder.Recipes)
                     {
-                        <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
-                            <div class="d-flex align-items-center">
-                                <img src="@item.ImageUrl" class="me-2" style="width: 50px; height: 50px; object-fit: cover;" />
-                                <div>
-                                    <span>@item.Name</span>
-                                    <small class="d-block">@item.Price.ToString("C")</small>
+                                <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+                                    <div class="d-flex align-items-center">
+                                        <img src="@item.ImageUrl" class="me-2" style="width: 50px; height: 50px; object-fit: cover;" />
+                                        <div>
+                                            <span>@item.Name</span>
+                                            <small class="d-block">@item.Price.ToString("C")</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <button class="btn btn-sm btn-add-color me-2 fw-bold" @onclick="() => HandleAddAction(item.Id)">+</button>
+                                        <span>@item.Quantity</span>
+                                        <button class="btn btn-sm btn-remove-color ms-2 fw-bold" @onclick="() => HandleRemoveAction(item.Id)">-</button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <button class="btn btn-sm btn-add-color me-2 fw-bold" @onclick="() => HandleAddAction(item.Id)">+</button>
-                                <span>@item.Quantity</span>
-                                <button class="btn btn-sm btn-remove-color ms-2 fw-bold" @onclick="() => HandleRemoveAction(item.Id)">-</button>
-                            </div>
-                        </div>
                     }
 
-                    <div class="d-flex justify-content-between mt-3">
-                        <strong>Sous-total</strong>
-                        <span>@currentOrder.Subtotal.ToString("C")</span>
-                    </div>
-                    <div class="d-flex justify-content-between mt-2">
-                        <strong>TVQ + TVS</strong>
-                        <span>@currentOrder.Tax.ToString("C")</span>
-                    </div>
-                    <div class="d-flex justify-content-between mt-2">
-                        <strong>Total</strong>
-                        <span>@currentOrder.Total.ToString("C")</span>
-                    </div>
+                        <div class="d-flex justify-content-between mt-3">
+                            <strong>Sous-total</strong>
+                            <span>@currentOrder.Subtotal.ToString("C")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <strong>TVQ + TVS</strong>
+                            <span>@currentOrder.Tax.ToString("C")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <strong>Total</strong>
+                            <span>@currentOrder.Total.ToString("C")</span>
+                        </div>
 
-                    <div class="mt-3 d-grid gap-2">
-                        <button class="btn btn-secondary" @onclick="HandleBreakAction">Mettre en attente</button>
-                        <button class="btn btn-primary"  @onclick="HandleCloseAction">Fermer facture</button>
-                    </div>
+                        <div class="mt-3 d-grid gap-2">
+                            <button class="btn btn-secondary" @onclick="HandleBreakAction">Mettre en attente</button>
+                            <button class="btn btn-primary" @onclick="HandleCloseAction">Fermer facture</button>
+                        </div>
                 }
                 else
                 {
-                    <p class="text-center mb-3">Aucun article dans la commande</p>
+                        <p class="text-center mb-3">Aucun article dans la commande</p>
                 }
             </div>
         </div>
     </div>
 </div>
+
+@if (showErrorMessage)
+{
+    <div class="modal-backdrop fade show"></div>
+        <div class="modal fade show" style="display: block;" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">Ingrédients insuffisants</h5>
+                        <button type="button" class="btn-close" @onclick="CloseErrorModal"></button>
+                    </div>
+                    <div class="modal-body">
+                            <p>Le plat suivant :  @foreach (var item in unavailableItems)
+                        {
+                                                   <strong> @item</strong>
+                        } ne peut pas être préparé en raison d'ingrédients insuffisants</p>
+                       <button type="button" class="btn btn-primary" @onclick="CloseErrorModal">Fermer</button>
+                    </div>
+                    </div>
+            </div>
+        </div>
+}
 
 @code {
     private int selectedCategoryId = 1;
@@ -139,6 +160,9 @@
     private List<RecipeCategory> categories = new List<RecipeCategory>();
     private CurrentOrder currentOrder = new CurrentOrder();
     private Modeles.Bill currentBill = new Modeles.Bill();
+    private bool showErrorMessage = false;
+    private List<string> unavailableItems = new List<string>();
+    private bool isNavigatingAway = false;
 
     [Parameter]
     public int billId { get; set; }
@@ -152,7 +176,6 @@
     protected override void OnInitialized()
     {
         PageTitleService.Title = "Facture";
-
     }
 
     protected override async Task OnInitializedAsync()
@@ -162,19 +185,54 @@
             categories = RecipeService.GetCategories();
             recipes = RecipeService.GetRecipes();
 
-            if (billId !=0){
+            if (billId != 0)
+            {
                 currentBill = BillService.GetBillById(billId);
                 recipes_order = BillService.GetBillRecipesById(billId);
                 foreach (var (recipe, quantity) in recipes_order){
                     HandleAddAction(recipe.Id, quantity);
                 }
+                foreach (var (recipe, quantity) in recipes_order)
+                {
+                    currentOrder.Recipes.Add(new OrderItem
+                        {
+                            Id = recipe.Id,
+                            Name = recipe.Name,
+                            Price = recipe.Price,
+                            Quantity = quantity,
+                            ImageUrl = recipe.Pic != null && recipe.Pic.Length > 0
+                                ? $"data:image/jpeg;base64,{Convert.ToBase64String(recipe.Pic)}"
+                                : "images/default-recipe-image.jpg"
+                        });
+                }
             }
+            else
+            {
+                if (AuthState?.CurrentUser != null)
+                {
+                currentBill = new Modeles.Bill
+                    {
+
+                        OrderDate = DateTime.UtcNow,
+
+                        UserId = AuthState.CurrentUser.Id
+                    };
+                }
+            }
+
             SelectCategory(1);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Erreur lors de l'initialisation: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("console.error", $"Erreur lors de l'initialisation: {ex.Message}");
         }
+    }
+
+    private void CloseErrorModal()
+    {
+        showErrorMessage = false;
+        unavailableItems.Clear();
     }
 
     private class Category
@@ -186,7 +244,7 @@
     private class CurrentOrder
     {
         public List<OrderItem> Recipes { get; set; } = new List<OrderItem>();
-        public decimal Subtotal => Recipes.Sum(item => (decimal)item.Price * item.Quantity);
+        public decimal Subtotal => Recipes.Sum(item => item.Price * item.Quantity);
         public decimal Tax => decimal.Round(Subtotal * 0.15m, 2);
         public decimal Total => Subtotal + Tax;
     }
@@ -200,154 +258,287 @@
         public required string ImageUrl { get; set; }
     }
 
-    private void HandleAddAction(int recipeId, int quantity = 1)
+    private async Task HandleAddAction(int recipeId, int quantity = 1)
     {
-        // TODO: Vérifier si les ingrédients sont disponibles
-        if (currentOrder.Recipes.Any(item => item.Name == recipes.First(r => r.Id == recipeId).Name))
+        try
         {
-            currentOrder.Recipes.First(item => item.Name == recipes.First(r => r.Id == recipeId).Name).Quantity++;
-        }
-        else
-        {
-            currentOrder.Recipes.Add(new OrderItem
-            {
-                Id = recipeId,
-                Name = recipes.First(r => r.Id == recipeId).Name,
-                Price = recipes.First(r => r.Id == recipeId).Price,
-                Quantity = quantity,
-                ImageUrl = recipes.First(r => r.Id == recipeId).Pic != null && recipes.First(r => r.Id == recipeId).Pic.Length > 0
-                    ? $"data:image/jpeg;base64,{Convert.ToBase64String(recipes.First(r => r.Id == recipeId).Pic)}"
-                    : "images/default-recipe-image.jpg"
-            });
-        }
-    }
+            var (isAvailable, unavailableRecipes) = await IngredientService.CheckAndReserveIngredientsForRecipe(recipeId, quantity);
 
-    private void HandleRemoveAction(int recipeId)
-    {
-        _ = JSRuntime.InvokeVoidAsync("console.log", "Bill added successfully.");
-        if (currentOrder.Recipes.Any(item => item.Name == recipes.First(r => r.Id == recipeId).Name))
-        {
-            var item = currentOrder.Recipes.First(item => item.Name == recipes.First(r => r.Id == recipeId).Name);
-            if (item.Quantity > 1)
+            if (!isAvailable)
             {
-                item.Quantity--;
+                unavailableItems = unavailableRecipes;
+                showErrorMessage = true;
+                return;
+            }
+
+            if (currentOrder.Recipes.Any(item => item.Id == recipeId))
+            {
+                currentOrder.Recipes.First(item => item.Id == recipeId).Quantity += quantity;
             }
             else
             {
-                currentOrder.Recipes.Remove(item);
+                var recipe = recipes.First(r => r.Id == recipeId);
+                currentOrder.Recipes.Add(new OrderItem
+                    {
+                        Id = recipeId,
+                        Name = recipe.Name,
+                        Price = recipe.Price,
+                        Quantity = quantity,
+                        ImageUrl = recipe.Pic != null && recipe.Pic.Length > 0
+                            ? $"data:image/jpeg;base64,{Convert.ToBase64String(recipe.Pic)}"
+                            : "images/default-recipe-image.jpg"
+                    });
             }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de l'ajout du plat: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("console.error", $"Erreur lors de l'ajout du plat: {ex.Message}");
+        }
+    }
+
+    private async Task HandleRemoveAction(int recipeId)
+    {
+        try
+        {
+            if (currentOrder.Recipes.Any(item => item.Id == recipeId))
+            {
+                var item = currentOrder.Recipes.First(item => item.Id == recipeId);
+
+                await IngredientService.ReleaseIngredientsForRecipe(recipeId, 1);
+
+                if (item.Quantity > 1)
+                {
+                    item.Quantity--;
+                }
+                else
+                {
+                    currentOrder.Recipes.Remove(item);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de la suppression du plat: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("console.error", $"Erreur lors de la suppression du plat: {ex.Message}");
         }
     }
 
     private async Task HandleBreakAction()
+{
+    try
     {
-        if (billId != 0)
-        {
-            currentBill.TotalAmount = currentOrder.Total;
-            currentBill.OrderDate = DateTime.UtcNow;
-
-            var newBillRecipes = currentOrder.Recipes.Select(recipe => new BillRecipe
-                {
-                    BillId = currentBill.Id, 
-                    RecipeId = recipe.Id,
-                    Quantity = recipe.Quantity
-                }).ToList();
-
-            BillService.UpdateBill(currentBill, newBillRecipes);
-
-            Navigation.NavigateTo("/bill-list");
-        }
-        else
-        {
-            try
-            {
-                Modeles.Bill bill = new Modeles.Bill
-                {
-                    UserId = AuthState.CurrentUser.Id,
-                    OrderDate = DateTime.UtcNow,
-                    TotalAmount = currentOrder.Total,
-                    BillRecipes = currentOrder.Recipes.Select(recipe => new BillRecipe
-                    {
-                        RecipeId = recipe.Id,
-                        Quantity = recipe.Quantity
-                    }).ToList()
-                };
-
-                BillService.AddBill(bill);
-                Console.WriteLine("Bill added successfully.");
-                await JSRuntime.InvokeVoidAsync("console.log", "Bill added successfully.");
-
-
-                Navigation.NavigateTo("/bill-list");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error adding bill: {ex.Message}");
-                await JSRuntime.InvokeVoidAsync("console.error", $"Error adding bill: {ex.Message}");
-            }
-        }
-    }
-    
-     private async Task HandleCloseAction()
-    {
-        // Convert order items to the format expected by PDFService
-        var orderItems = currentOrder.Recipes.Select(item => 
-            (recipes.First(r => r.Id == item.Id), item.Quantity)
-        ).ToList();
-        
         if (billId != 0)
         {
             currentBill.TotalAmount = currentOrder.Total;
             currentBill.OrderDate = DateTime.UtcNow;
             
-            // Generate PDF
-            currentBill.BillFile = PDFService.GenerateInvoicePdf(currentBill, orderItems);
-
+            var existingBillRecipesData = BillService.GetBillRecipesById(billId);
+            var existingBillRecipes = existingBillRecipesData
+                .Select(br => br.Recipe.Id)
+                .ToList();
+                
             var newBillRecipes = currentOrder.Recipes.Select(recipe => new BillRecipe
-                {
-                    BillId = currentBill.Id, 
-                    RecipeId = recipe.Id,
-                    Quantity = recipe.Quantity
-                }).ToList();
+            {
+                BillId = currentBill.Id,
+                RecipeId = recipe.Id,
+                Quantity = recipe.Quantity,
+                QuantityDeleted = 0
+            }).ToList();
+            
+            var recipeIdsToKeep = currentOrder.Recipes.Select(r => r.Id).ToList();
+            var recipeIdsToRemove = existingBillRecipes.Except(recipeIdsToKeep).ToList();
 
-            BillService.UpdateBill(currentBill, newBillRecipes);
-
+            try {
+                BillService.UpdateBillWithRemovedItems(currentBill, newBillRecipes, recipeIdsToRemove);
+            }
+            catch (Exception ex) {
+                await JSRuntime.InvokeVoidAsync("console.error", $"Error updating bill: {ex.Message}");
+                throw;
+            }
+        
+            isNavigatingAway = true;
             Navigation.NavigateTo("/bill-list");
         }
         else
         {
-            try
+            Modeles.Bill bill = new Modeles.Bill
+            {
+                UserId = AuthState.CurrentUser.Id,
+                OrderDate = DateTime.UtcNow,
+                TotalAmount = currentOrder.Total,
+                BillRecipes = currentOrder.Recipes.Select(recipe => new BillRecipe
+                {
+                    RecipeId = recipe.Id,
+                    Quantity = recipe.Quantity,
+                    QuantityDeleted = 0
+                }).ToList()
+            };
+            
+            try {
+                BillService.AddBill(bill);
+            }
+            catch (Exception ex) {
+                await JSRuntime.InvokeVoidAsync("console.error", $"Error adding bill: {ex.Message}");
+                throw;
+            }
+            
+            try {
+                await IngredientService.FinalizeOrderIngredients(bill.Id);
+            }
+            catch (Exception ex) {
+                await JSRuntime.InvokeVoidAsync("console.error", $"Error finalizing ingredients: {ex.Message}");
+                throw;
+            }
+            
+            isNavigatingAway = true;
+            Navigation.NavigateTo("/bill-list");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error in HandleBreakAction: {ex.Message}");
+        await JSRuntime.InvokeVoidAsync("console.error", $"Error in HandleBreakAction: {ex.Message}");
+        
+        if (ex.InnerException != null) {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Inner exception: {ex.InnerException.Message}");
+        }
+    }
+}
+
+    private async Task HandleCloseAction()
+    {
+        try
+        {
+            var orderItems = currentOrder.Recipes.Select(item =>
+                (recipes.First(r => r.Id == item.Id), item.Quantity)
+            ).ToList();
+
+            if (billId != 0)
+            {
+                currentBill.TotalAmount = currentOrder.Total;
+                currentBill.OrderDate = DateTime.UtcNow;
+
+                currentBill.BillFile = PDFService.GenerateInvoicePdf(currentBill, orderItems);
+
+                var newBillRecipes = currentOrder.Recipes.Select(recipe => new BillRecipe
+                    {
+                        BillId = currentBill.Id,
+                        RecipeId = recipe.Id,
+                        Quantity = recipe.Quantity,
+                        QuantityDeleted = 0
+                    }).ToList();
+
+                await IngredientService.FinalizeOrderIngredients(billId);
+
+                BillService.UpdateBill(currentBill, newBillRecipes);
+
+                isNavigatingAway = true;
+                Navigation.NavigateTo("/bill-list");
+            }
+            else
             {
                 Modeles.Bill bill = new Modeles.Bill
-                {
-                    UserId = AuthState.CurrentUser.Id,
-                    OrderDate = DateTime.UtcNow,
-                    TotalAmount = currentOrder.Total,
-                    BillRecipes = currentOrder.Recipes.Select(recipe => new BillRecipe
                     {
-                        RecipeId = recipe.Id,
-                        Quantity = recipe.Quantity
-                    }).ToList()
-                };
+                        UserId = AuthState.CurrentUser.Id,
+                        OrderDate = DateTime.UtcNow,
+                        TotalAmount = currentOrder.Total,
+                        BillRecipes = currentOrder.Recipes.Select(recipe => new BillRecipe
+                        {
+                            RecipeId = recipe.Id,
+                            Quantity = recipe.Quantity,
+                            QuantityDeleted = 0
+                        }).ToList()
+                    };
 
                 BillService.AddBill(bill);
-                
-                // Generate PDF with the saved bill data
+
                 bill.BillFile = PDFService.GenerateInvoicePdf(bill, orderItems);
-                
-                // Update bill with PDF file
+
+                await IngredientService.FinalizeOrderIngredients(bill.Id);
+
                 BillService.UpdateBill(bill, bill.BillRecipes.ToList());
-                
+
                 Console.WriteLine("Bill added successfully with PDF.");
                 await JSRuntime.InvokeVoidAsync("console.log", "Bill added successfully with PDF.");
 
+                isNavigatingAway = true;
                 Navigation.NavigateTo("/bill-list");
             }
-            catch (Exception ex)
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error closing bill: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error closing bill: {ex.Message}");
+        }
+    }
+
+  
+    public void Dispose()
+    {
+        if (isNavigatingAway)
+        {
+            return;
+        }
+
+        try
+        {
+            if (AuthState?.CurrentUser == null)
             {
-                Console.WriteLine($"Error adding bill: {ex.Message}");
-                await JSRuntime.InvokeVoidAsync("console.error", $"Error adding bill: {ex.Message}");
+                return;
             }
+            
+            if (billId != 0)
+            {
+                if (recipes_order != null && recipes_order.Any())
+                {
+                    var originalRecipeQuantities = recipes_order
+                        .ToDictionary(r => r.Recipe.Id, r => r.Quantity);
+
+                    if (currentOrder?.Recipes != null && currentOrder.Recipes.Any())
+                    {
+                        var currentRecipeQuantities = currentOrder.Recipes
+                            .ToDictionary(r => r.Id, r => r.Quantity);
+
+                        var itemsToRelease = new List<(int recipeId, int quantity)>();
+
+                        foreach (var item in currentRecipeQuantities)
+                        {
+                            if (originalRecipeQuantities.ContainsKey(item.Key))
+                            {
+                                if (item.Value > originalRecipeQuantities[item.Key])
+                                {
+                                    int quantityToRelease = item.Value - originalRecipeQuantities[item.Key];
+                                    itemsToRelease.Add((item.Key, quantityToRelease));
+                                }
+                            }
+                            else
+                            {
+                                itemsToRelease.Add((item.Key, item.Value));
+                            }
+                        }
+
+                        if (itemsToRelease.Any())
+                        {
+                            _ = IngredientService.CancelOrderAndReleaseIngredients(itemsToRelease);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (currentOrder?.Recipes != null && currentOrder.Recipes.Any())
+                {
+                    var orderItems = currentOrder.Recipes
+                        .Select(r => (r.Id, r.Quantity))
+                        .ToList();
+                    _ = IngredientService.CancelOrderAndReleaseIngredients(orderItems);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in Dispose: {ex.Message}");
         }
     }
 }

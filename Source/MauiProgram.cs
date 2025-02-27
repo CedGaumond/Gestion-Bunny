@@ -43,6 +43,9 @@ public static class MauiProgram
         builder.Services.AddScoped<IRecipeService, RecipeService>();
         builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
         builder.Services.AddSingleton<PageTitleService>();
+
+
+        builder.Services.AddSingleton<IIngredientValidationService, IngredientValidationService>();
         builder.Services.AddSingleton<AuthenticationState>();
 
         // If using Debug mode, add developer tools and logging

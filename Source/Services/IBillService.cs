@@ -1,4 +1,4 @@
-﻿using Gestion_Bunny.Modeles;
+using Gestion_Bunny.Modeles;
 
 namespace Gestion_Bunny.Services
 {
@@ -13,5 +13,6 @@ namespace Gestion_Bunny.Services
         void DeleteBill(int billId);
         List<(Recipe Recipe, int Quantity)> GetBillRecipesById(int billId);
         int GetTotalRecipeQuantityInBill(int billId);
+        void UpdateBillWithRemovedItems(Bill bill, List<BillRecipe> newBillRecipes, List<int> recipeIdsToRemove);
     }
 }
