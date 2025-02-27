@@ -1,13 +1,441 @@
 ﻿@page "/schedule"
+@using Gestion_Bunny.Modeles
 @using Gestion_Bunny.Services
+@using Microsoft.EntityFrameworkCore
+@using ScheduleModel = Gestion_Bunny.Modeles.Schedule
 @inject PageTitleService TitleService
+@inject IScheduleService ScheduleService
+@inject IUserService UserService
+@inject ApplicationDbContext _context
 
+<div class="calendar-container">
+    <div class="calendar-header">
+        <div class="month-selector">
+            <button class="nav-btn week-nav" @onclick="PreviousWeek">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <h2 class="month-title">
+                Semaine du @CurrentWeekStart.ToString("d MMMM yyyy", new System.Globalization.CultureInfo("fr-FR"))
+            </h2>
+            <button class="nav-btn week-nav" @onclick="NextWeek">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+        <div class="header-actions">
+            <div class="employee-selection">
+                <select @bind="SelectedUserId" @bind:event="onchange" class="employee-select">
+                    <option value="0">Tous les employés</option>
+                    @foreach (var user in Users)
+                    {
+                            <option value="@user.Id">@user.GetFullName()</option>
+                    }
+                </select>
+                <button class="filter-btn" @onclick="ApplyFilter">
+                    <i class="fas fa-filter"></i> Filtrer
+                </button>
+            </div>
+            <button class="add-btn" @onclick="() => ShowAddDialog = true">
+                <i class="fas fa-plus"></i> Ajouter
+            </button>
+        </div>
+    </div>
 
+    <div class="calendar-body">
+        @foreach (var day in WeekDays)
+        {
+                <div class="day-column">
+                    <div class="day-header @(day.Date == DateTime.Today ? "today" : "")">
+                        <div class="day-name">@day.ToString("ddd", new System.Globalization.CultureInfo("fr-FR"))</div>
+                        <div class="day-number">@day.Day</div>
+                    </div>
+                    @foreach (var time in TimeSlots)
+                    {
+                            var currentSlot = new DateTime(day.Year, day.Month, day.Day, time.Hour, time.Minute, 0);
+                            var isCurrentTimeSlot = IsCurrentTime(currentSlot);
+
+                            <div class="time-cell @(isCurrentTimeSlot ? "current-time" : "")"
+                                @onclick="() => OpenAddShiftDialog(currentSlot)">
+                                @{
+                                        // Find shifts that START in this time slot
+                                        var shiftsStartingInSlot = Schedules.Where(s =>
+                                                s.ShiftStart.ToLocalTime().Year == currentSlot.Year &&
+                                                s.ShiftStart.ToLocalTime().Month == currentSlot.Month &&
+                                                s.ShiftStart.ToLocalTime().Day == currentSlot.Day &&
+                                                s.ShiftStart.ToLocalTime().Hour == currentSlot.Hour).ToList();
+                            
+                                        foreach (var shift in shiftsStartingInSlot)
+                                        {
+                                                var employee = UserService.GetEmployeeById(shift.UserId);
+                                                var employeeName = employee != null ? shift.User.GetFullName() : "Employé inconnu";
+                                
+                                                // Calculate height based on shift duration
+                                                var durationInHours = (shift.ShiftEnd - shift.ShiftStart).TotalHours;
+                                                var heightClass = durationInHours <= 1 ? "shift-1h" :
+                                                                                  durationInHours <= 2 ? "shift-2h" :
+                                                                                  durationInHours <= 4 ? "shift-4h" : "shift-8h";
+
+                                                <div class="event-card @heightClass @(ShowConfirmDelete && SelectedShiftId == shift.Id ? "highlight-delete" : "")"
+                                                    @onclick:stopPropagation="true" @onclick="() => HandleShiftClick(shift.Id)">
+                                                    <div class="event-content">
+                                                        <div class="event-title">@employeeName</div>
+                                                        <div class="event-time">
+                                                            @shift.ShiftStart.ToLocalTime().ToString("HH:mm") -
+                                                            @shift.ShiftEnd.ToLocalTime().ToString("HH:mm")
+                                                        </div>
+                                                    </div>
+                                                    <button class="delete-event" @onclick:stopPropagation="true"
+                                                        @onclick="() => DeleteShiftAsync(shift.Id)">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                        }
+                                }
+                            </div>
+                    }
+                </div>
+        }
+    </div>
+
+    @if (ShowAddDialog)
+    {
+            <div class="modal-overlay" @onclick="CloseDialog">
+                <div class="modal-container" @onclick:stopPropagation="true">
+                    <div class="modal-header">
+                        <h3>Ajouter un horaire</h3>
+                        <button class="close-btn" @onclick="CloseDialog">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Employé</label>
+                            <select @bind="NewShift.UserId" class="form-control">
+                                <option value="0">Sélectionner un employé</option>
+                                @foreach (var user in Users)
+                                {
+                                        <option value="@user.Id">@user.GetFullName()</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" @bind="SelectedDate" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label>Heure de début (24h)</label>
+                            <input type="text" @bind="StartTimeString" class="form-control" placeholder="HH:mm" />
+                        </div>
+                        <div class="form-group">
+                            <label>Heure de fin (24h)</label>
+                            <input type="text" @bind="EndTimeString" class="form-control" placeholder="HH:mm" />
+                        </div>
+                        @if (ShowConflictError)
+                        {
+                                <div class="error-message">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Cet employé a déjà un horaire programmé pendant cette période.
+                                </div>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button class="cancel-btn" @onclick="CloseDialog">Annuler</button>
+                        <button class="save-btn" @onclick="SaveShiftAsync">Enregistrer</button>
+                    </div>
+                </div>
+            </div>
+    }
+
+    @if (ShowConfirmDelete)
+    {
+            <div class="modal-overlay" @onclick="CancelDelete">
+                <div class="modal-container confirm-delete" @onclick:stopPropagation="true">
+                    <div class="modal-header">
+                        <h3>Supprimer l'horaire</h3>
+                        <button class="close-btn" @onclick="CancelDelete">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Êtes-vous sûr de vouloir supprimer cet horaire?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="cancel-btn" @onclick="CancelDelete">Annuler</button>
+                        <button class="delete-btn" @onclick="ConfirmDeleteShift">Supprimer</button>
+                    </div>
+                </div>
+            </div>
+    }
+</div>
+
+<style>
+   
+@@media(max - width: 768px) {
+    .calendar-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+        .header-actions {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .calendar-body {
+            grid-template-columns: repeat(7, 1fr);
+            font-size: 0.85rem;
+        }
+
+        .day-header {
+            height: 50px;
+        }
+
+        .time-cell {
+            height: 50px;
+        }
+    }
+    </style>
 
 @code {
+    private DateTime CurrentWeekStart = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek);
+    private List<DateTime> WeekDays => Enumerable.Range(0, 7)
+    .Select(i => CurrentWeekStart.AddDays(i))
+    .ToList();
+    private List<DateTime> TimeSlots => Enumerable.Range(8, 14)
+    .Select(i => DateTime.Today.AddHours(i))
+    .ToList();
 
-    protected override void OnInitialized()
+    private List<ScheduleModel> Schedules = new();
+    private List<User> Users = new();
+    private bool ShowAddDialog;
+    private bool ShowConfirmDelete;
+    private bool ShowConflictError;
+    private int SelectedUserId = 0;
+    private int SelectedShiftId = 0;
+
+    
+    private DateTime SelectedDate = DateTime.Today;
+    private string StartTimeString = "09:00";
+    private string EndTimeString = "17:00";
+
+    private ScheduleModel NewShift = new();
+
+    protected override async Task OnInitializedAsync()
     {
         TitleService.Title = "Horaire";
+        LoadUsers();
+        await LoadSchedulesAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadSchedulesAsync();
+    }
+
+    private void LoadUsers()
+    {
+        Users = UserService.GetUsers();
+
+        var tmpAdminRole = UserService.GetUserRoleByName("Admin");
+
+        Users.RemoveAll(u => u.UserRoleId != null && u.UserRole == tmpAdminRole);
+    }
+
+    private async Task LoadSchedulesAsync()
+    {
+        try
+        {
+            if (SelectedUserId != 0)
+            {
+                Schedules = await ScheduleService.GetEmployeeSchedulesForWeekAsync(SelectedUserId, CurrentWeekStart);
+            }
+            else
+            {
+                Schedules = await ScheduleService.GetSchedulesForWeekAsync(CurrentWeekStart);
+            }
+
+            
+            Console.WriteLine($"Loaded {Schedules.Count} schedules for week starting {CurrentWeekStart.ToShortDateString()}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading schedules: {ex.Message}");
+            Schedules = new List<ScheduleModel>();
+        }
+    }
+
+    private async Task PreviousWeek()
+    {
+        CurrentWeekStart = CurrentWeekStart.AddDays(-7);
+        await LoadSchedulesAsync();
+    }
+
+    private async Task NextWeek()
+    {
+        CurrentWeekStart = CurrentWeekStart.AddDays(7);
+        await LoadSchedulesAsync();
+    }
+
+    private async Task ApplyFilter()
+    {
+        
+        await LoadSchedulesAsync();
+    }
+
+    private void OpenAddShiftDialog(DateTime startTime)
+    {
+        SelectedDate = startTime.Date;
+        StartTimeString = startTime.ToString("HH:mm");
+        EndTimeString = startTime.AddHours(8).ToString("HH:mm");
+
+        NewShift = new ScheduleModel
+        {
+            UserId = SelectedUserId != 0 ? SelectedUserId : 0
+        };
+
+        ShowConflictError = false;
+        ShowAddDialog = true;
+    }
+
+    private void CloseDialog()
+    {
+        ShowAddDialog = false;
+        ShowConflictError = false;
+        NewShift = new ScheduleModel();
+    }
+
+    private void HandleShiftClick(int shiftId)
+    {
+        SelectedShiftId = shiftId;
+        ShowConfirmDelete = true;
+    }
+
+    private void CancelDelete()
+    {
+        ShowConfirmDelete = false;
+        SelectedShiftId = 0;
+    }
+
+    private async Task ConfirmDeleteShift()
+    {
+        await DeleteShiftAsync(SelectedShiftId);
+        ShowConfirmDelete = false;
+        SelectedShiftId = 0;
+    }
+
+    private async Task SaveShiftAsync()
+    {
+        if (NewShift.UserId != 0 && ParseTimeString(StartTimeString, out var startTime) && ParseTimeString(EndTimeString, out
+        var endTime))
+        {
+            var shiftStartLocal = new DateTime(
+            SelectedDate.Year,
+            SelectedDate.Month,
+            SelectedDate.Day,
+            startTime.Hours,
+            startTime.Minutes,
+            0,
+            DateTimeKind.Local);
+
+            var shiftEndLocal = new DateTime(
+            SelectedDate.Year,
+            SelectedDate.Month,
+            SelectedDate.Day,
+            endTime.Hours,
+            endTime.Minutes,
+            0,
+            DateTimeKind.Local);
+
+            
+            if (endTime < startTime)
+            {
+                shiftEndLocal = shiftEndLocal.AddDays(1);
+            }
+
+           
+            if (HasScheduleConflict(NewShift.UserId, shiftStartLocal, shiftEndLocal))
+            {
+                ShowConflictError = true;
+                return;
+            }
+
+            
+            var shiftStartUtc = shiftStartLocal.ToUniversalTime();
+            var shiftEndUtc = shiftEndLocal.ToUniversalTime();
+
+            var scheduleToSave = new ScheduleModel
+            {
+                UserId = NewShift.UserId,
+                ShiftStart = shiftStartUtc,
+                ShiftEnd = shiftEndUtc,
+            };
+
+            await ScheduleService.AddScheduleAsync(scheduleToSave);
+            await LoadSchedulesAsync();
+            CloseDialog();
+        }
+        else
+        {
+            Console.WriteLine("Invalid shift data. Employee must be selected and time format must be valid (HH:mm).");
+        }
+    }
+
+    private bool HasScheduleConflict(int userId, DateTime startTime, DateTime endTime)
+    {
+        
+        var employeeShifts = Schedules.Where(s => s.UserId == userId).ToList();
+        
+        foreach (var shift in employeeShifts)
+        {
+            var existingStart = shift.ShiftStart.ToLocalTime();
+            var existingEnd = shift.ShiftEnd.ToLocalTime();
+            
+            if ((startTime >= existingStart && startTime < existingEnd) ||
+                (endTime > existingStart && endTime <= existingEnd) ||
+                (startTime <= existingStart && endTime >= existingEnd))
+            {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    private bool ParseTimeString(string timeString, out TimeSpan result)
+    {
+
+        if (timeString != null && timeString.Length == 5 && timeString[2] == ':')
+        {
+            if (int.TryParse(timeString.Substring(0, 2), out int hours) &&
+            int.TryParse(timeString.Substring(3, 2), out int minutes))
+            {
+                if (hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60)
+                {
+                    result = new TimeSpan(hours, minutes, 0);
+                    return true;
+                }
+            }
+        }
+
+        result = TimeSpan.Zero;
+        return false;
+    }
+
+    private async Task DeleteShiftAsync(int shiftId)
+    {
+        try
+        {
+            await ScheduleService.DeleteScheduleAsync(shiftId);
+            await LoadSchedulesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting shift: {ex.Message}");
+        }
+    }
+
+    private bool IsCurrentTime(DateTime time)
+    {
+        return DateTime.Now.Date == time.Date && DateTime.Now.Hour == time.Hour;
     }
 }

@@ -38,9 +38,9 @@ CREATE TABLE IF NOT EXISTS public.users (
 
 CREATE TABLE IF NOT EXISTS public.schedule (
     id SERIAL PRIMARY KEY,
-    shift_start TIMESTAMP,
-    shift_end TIMESTAMP,
-    employee_id INT REFERENCES employees(id)
+    shift_start TIMESTAMP WITH TIME ZONE,
+    shift_end TIMESTAMP  WITH TIME ZONE,
+    user_id INT REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS public.bills (
