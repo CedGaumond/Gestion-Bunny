@@ -262,7 +262,7 @@
     {
         try
         {
-            var (isAvailable, unavailableRecipes) = await IngredientService.CheckAndReserveIngredientsForRecipe(recipeId, quantity);
+            var (isAvailable, unavailableRecipes) = IngredientService.CheckAndReserveIngredientsForRecipe(recipeId, quantity);
 
             if (!isAvailable)
             {
@@ -305,7 +305,7 @@
             {
                 var item = currentOrder.Recipes.First(item => item.Id == recipeId);
 
-                await IngredientService.ReleaseIngredientsForRecipe(recipeId, 1);
+                IngredientService.ReleaseIngredientsForRecipe(recipeId, 1);
 
                 if (item.Quantity > 1)
                 {
@@ -383,14 +383,6 @@
                 throw;
             }
             
-            try {
-                await IngredientService.FinalizeOrderIngredients(bill.Id);
-            }
-            catch (Exception ex) {
-                await JSRuntime.InvokeVoidAsync("console.error", $"Error finalizing ingredients: {ex.Message}");
-                throw;
-            }
-            
             isNavigatingAway = true;
             Navigation.NavigateTo("/bill-list");
         }
@@ -429,8 +421,6 @@
                         QuantityDeleted = 0
                     }).ToList();
 
-                await IngredientService.FinalizeOrderIngredients(billId);
-
                 BillService.UpdateBill(currentBill, newBillRecipes);
 
                 isNavigatingAway = true;
@@ -454,8 +444,6 @@
                 BillService.AddBill(bill);
 
                 bill.BillFile = PDFService.GenerateInvoicePdf(bill, orderItems);
-
-                await IngredientService.FinalizeOrderIngredients(bill.Id);
 
                 BillService.UpdateBill(bill, bill.BillRecipes.ToList());
 
@@ -520,7 +508,7 @@
 
                         if (itemsToRelease.Any())
                         {
-                            _ = IngredientService.CancelOrderAndReleaseIngredients(itemsToRelease);
+                            IngredientService.CancelOrderAndReleaseIngredients(itemsToRelease);
                         }
                     }
                 }
@@ -532,7 +520,7 @@
                     var orderItems = currentOrder.Recipes
                         .Select(r => (r.Id, r.Quantity))
                         .ToList();
-                    _ = IngredientService.CancelOrderAndReleaseIngredients(orderItems);
+                    IngredientService.CancelOrderAndReleaseIngredients(orderItems);
                 }
             }
         }

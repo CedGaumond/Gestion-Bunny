@@ -5,7 +5,6 @@ namespace Gestion_Bunny.Services
 {
     public interface IIngredientService
     {
-        public event Action? OnIngredientUpdated;
         List<Ingredient> GetAllIngredients();
         Ingredient GetIngredientById(int id);
         void AddIngredient(string name, decimal quantityRemaining, decimal quantityPerDeliveryUnit, decimal minimumThresholdNotification);
@@ -14,6 +13,5 @@ namespace Gestion_Bunny.Services
         bool IsIngredientUsedInItemRecipe(int ingredientId);
         bool IsIngredientNameExists(string name);
         string GetIngredientNameById(int id);
-        public void NotifyIngredientUpdated();
     }
 }

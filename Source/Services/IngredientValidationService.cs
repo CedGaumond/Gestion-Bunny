@@ -1,30 +1,29 @@
-using Gestion_Bunny.Modeles;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
 
 namespace Gestion_Bunny.Services
 {
     public class IngredientValidationService : IIngredientValidationService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IIngredientService _ingredientService;
 
-        public IngredientValidationService(ApplicationDbContext context)
+        public IngredientValidationService(ApplicationDbContext context, IIngredientService ingredientService)
         {
             _context = context;
+            _ingredientService = ingredientService;
         }
 
-        public async Task<(bool isAvailable, List<string> unavailableItems)> CheckAndReserveIngredientsForRecipe(int recipeId, int quantity)
+        public (bool isAvailable, List<string> unavailableItems) CheckAndReserveIngredientsForRecipe(int recipeId, int quantity)
         {
             List<string> unavailableItems = new List<string>();
             bool isAvailable = true;
 
-            var recipe = await _context.Recipes
+            var recipe = _context.Recipes
                 .Include(r => r.RecipeIngredients)
                 .ThenInclude(ri => ri.Ingredient)
-                .FirstOrDefaultAsync(r => r.Id == recipeId);
+                .FirstOrDefault(r => r.Id == recipeId);
 
             if (recipe == null)
             {
@@ -50,25 +49,24 @@ namespace Gestion_Bunny.Services
             {
                 foreach (var recipeIngredient in recipe.RecipeIngredients)
                 {
-                    var ingredient = recipeIngredient.Ingredient;
+                    var ingredient = _context.Ingredients.FirstOrDefault(i => i.Id == recipeIngredient.IngredientId && !i.IsDeleted);
                     var requiredQuantity = recipeIngredient.Quantity * quantity;
 
                     ingredient.QuantityRemaining -= requiredQuantity;
                     _context.Ingredients.Update(ingredient);
+                    _context.SaveChanges();
                 }
-
-                await _context.SaveChangesAsync();
             }
 
             return (isAvailable, unavailableItems);
         }
 
-        public async Task ReleaseIngredientsForRecipe(int recipeId, int quantity)
+        public void ReleaseIngredientsForRecipe(int recipeId, int quantity)
         {
-            var recipe = await _context.Recipes
+            var recipe = _context.Recipes
                 .Include(r => r.RecipeIngredients)
                 .ThenInclude(ri => ri.Ingredient)
-                .FirstOrDefaultAsync(r => r.Id == recipeId);
+                .FirstOrDefault(r => r.Id == recipeId);
 
             if (recipe == null)
             {
@@ -82,21 +80,16 @@ namespace Gestion_Bunny.Services
 
                 ingredient.QuantityRemaining += quantityToRelease;
                 _context.Ingredients.Update(ingredient);
+                _context.Entry(ingredient).Reload();
             }
-
-            await _context.SaveChangesAsync();
+            //_ingredientService.NotifyIngredientUpdated();
+            _context.SaveChanges();
         }
-
-        public async Task FinalizeOrderIngredients(int billId)
-        {
-            await Task.CompletedTask;
-        }
-
-        public async Task CancelOrderAndReleaseIngredients(List<(int recipeId, int quantity)> orderItems)
+        public void CancelOrderAndReleaseIngredients(List<(int recipeId, int quantity)> orderItems)
         {
             foreach (var (recipeId, quantity) in orderItems)
             {
-                await ReleaseIngredientsForRecipe(recipeId, quantity);
+                ReleaseIngredientsForRecipe(recipeId, quantity);
             }
         }
     }

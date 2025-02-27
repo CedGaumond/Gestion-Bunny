@@ -6,12 +6,10 @@ namespace Gestion_Bunny.Services
     public class OrderService : IOrderService
     {
         private readonly ApplicationDbContext _context;
-        private readonly IIngredientService _ingredientService;
 
-        public OrderService(ApplicationDbContext context, IIngredientService ingredientService)
+        public OrderService(ApplicationDbContext context)
         {
             _context = context;
-            _ingredientService = ingredientService;
         }
 
         public List<Order> GetOrders()
@@ -68,7 +66,6 @@ namespace Gestion_Bunny.Services
                 {
                     _context.Entry(ingredient).Reload();
                 }
-                _ingredientService.NotifyIngredientUpdated();
             }
         }
     }

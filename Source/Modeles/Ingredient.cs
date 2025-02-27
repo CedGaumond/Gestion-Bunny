@@ -43,8 +43,8 @@ namespace Gestion_Bunny.Modeles
         [Column("price")]
         public decimal Price { get; set; }
 
-        public ICollection<RecipeIngredient> RecipeIngredients { get; set; } = new List<RecipeIngredient>();
+        public ICollection<RecipeIngredient>? RecipeIngredients { get; set; }
 
-        public ICollection<OrderIngredient> OrderIngredients { get; set; } = new List<OrderIngredient>();
+        public ICollection<OrderIngredient>? OrderIngredients { get; set; }
     }
 }

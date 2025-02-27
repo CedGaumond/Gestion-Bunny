@@ -106,12 +106,12 @@ else
     protected override void OnInitialized()
     {
         TitleService.Title = "Liste d'ingrédients";
-        IngredientService.OnIngredientUpdated += LoadIngredients;
+        //IngredientService.OnIngredientUpdated += LoadIngredients;
     }
 
     public void Dispose()
     {
-        IngredientService.OnIngredientUpdated -= LoadIngredients;
+       //IngredientService.OnIngredientUpdated -= LoadIngredients;
     }
 
     protected override async Task OnInitializedAsync()

@@ -9,7 +9,6 @@ namespace Gestion_Bunny.Services
     public class IngredientService : IIngredientService
     {
         private readonly ApplicationDbContext _context;
-        public event Action? OnIngredientUpdated;
 
         public IngredientService(ApplicationDbContext context)
         {
@@ -18,7 +17,7 @@ namespace Gestion_Bunny.Services
 
         public List<Ingredient> GetAllIngredients()
         {
-            return _context.Ingredients.Where(i => !i.IsDeleted).ToList();
+            return _context.Ingredients.Where(i => !i.IsDeleted).AsNoTracking().ToList();
         }
 
         public bool IsIngredientNameExists(string name)
@@ -30,7 +29,7 @@ namespace Gestion_Bunny.Services
 
         public Ingredient GetIngredientById(int id)
         {
-            return _context.Ingredients.FirstOrDefault(i => i.Id == id && !i.IsDeleted);
+            return _context.Ingredients.AsNoTracking().FirstOrDefault(i => i.Id == id && !i.IsDeleted);
         }
 
         public void AddIngredient(string name, decimal quantityRemaining, decimal quantityPerDeliveryUnit, decimal minimumThresholdNotification)
@@ -115,9 +114,19 @@ namespace Gestion_Bunny.Services
                  _context.SaveChanges();
             }
         }
-        public void NotifyIngredientUpdated()
-        {
-            OnIngredientUpdated?.Invoke();
-        }
+
+       public void UpdateIngredientQuantityForBill(List<RecipeIngredient> recipeIngredients, int quantity)
+       {
+
+            foreach (var recipeIngredient in recipeIngredients)
+            {
+                var ingredient = _context.Ingredients.FirstOrDefault(i => i.Id == recipeIngredient.IngredientId && !i.IsDeleted);
+                var requiredQuantity = recipeIngredient.Quantity * quantity;
+
+                ingredient.QuantityRemaining -= requiredQuantity;
+                _context.Ingredients.Update(ingredient);
+                _context.SaveChanges();
+            }
+       }
     }
 }
