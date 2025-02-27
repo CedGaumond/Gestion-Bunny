@@ -97,5 +97,36 @@ namespace Gestion_Bunny.Services
                 .Where(br => br.BillId == billId)
                 .Sum(br => br.Quantity);
         }
+
+        public void UpdateBillWithRemovedItems(Bill bill, List<BillRecipe> newBillRecipes, List<int> recipeIdsToRemove)
+        {
+                _context.Bills.Update(bill);
+
+                var billRecipesToRemove = _context.BillRecipes
+                    .Where(br => br.BillId == bill.Id && recipeIdsToRemove.Contains(br.RecipeId))
+                    .ToList();
+
+                _context.BillRecipes.RemoveRange(billRecipesToRemove);
+
+                foreach (var newBillRecipe in newBillRecipes)
+                {
+                    var existingBillRecipe = _context.BillRecipes
+                        .FirstOrDefault(br => br.BillId == bill.Id && br.RecipeId == newBillRecipe.RecipeId);
+
+                    if (existingBillRecipe != null)
+                    {
+                        existingBillRecipe.Quantity = newBillRecipe.Quantity;
+                        existingBillRecipe.QuantityDeleted = newBillRecipe.QuantityDeleted;
+                        _context.BillRecipes.Update(existingBillRecipe);
+                    }
+                    else
+                    {
+                        _context.BillRecipes.Add(newBillRecipe);
+                    }
+                }
+
+                _context.SaveChanges();
+
+            }
+        }
     }
-}
