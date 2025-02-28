@@ -60,7 +60,7 @@ namespace Gestion_Bunny.Services
 
                 // Remove existing relationships
                 _context.RecipeIngredients.RemoveRange(existingRecipe.RecipeIngredients);
-                _context.SaveChangesAsync();
+                _context.SaveChanges();
 
                 // Add new relationships
                 var newItemRecipes = recipe.RecipeIngredients.Select(ir => new RecipeIngredient
