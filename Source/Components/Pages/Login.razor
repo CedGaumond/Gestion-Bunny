@@ -52,7 +52,15 @@
             } 
             else
             {
-                Navigation.NavigateTo("/home");
+                if (AuthState.GetCurrentUserRole().RoleName == "Admin" || AuthState.GetCurrentUserRole().RoleName == "Gérant")
+                {
+                    Navigation.NavigateTo("/home");
+                }
+                else
+                {
+                    Navigation.NavigateTo("/bill-list");
+                }
+
             }
         }
         else

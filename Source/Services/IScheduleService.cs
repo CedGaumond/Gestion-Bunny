@@ -8,40 +8,40 @@ public interface IScheduleService
     /// <summary>
     /// Retrieves all schedules from the database.
     /// </summary>
-    Task<List<Schedule>> GetSchedulesAsync();
+    List<Schedule> GetSchedules();
 
     /// <summary>
     /// Retrieves schedules for a specific employee.
     /// </summary>
-    Task<List<Schedule>> GetEmployeeSchedulesAsync(int employeeId);
+    List<Schedule> GetEmployeeSchedules(int employeeId);
 
     /// <summary>
     /// Retrieves schedules for a specific employee and week.
     /// </summary>
-    Task<List<Schedule>> GetEmployeeSchedulesForWeekAsync(int employeeId, DateTime weekStart);
+    List<Schedule> GetEmployeeSchedulesForWeek(int employeeId, DateTime weekStart);
 
     /// <summary>
     /// Retrieves a specific schedule by its ID.
     /// </summary>
-    Task<Schedule> GetScheduleByIdAsync(int scheduleId);
+    Schedule GetScheduleById(int scheduleId);
 
     /// <summary>
     /// Adds a new schedule to the database.
     /// </summary>
-    Task AddScheduleAsync(Schedule schedule);
+    void AddSchedule(Schedule schedule);
 
     /// <summary>
     /// Updates an existing schedule in the database.
     /// </summary>
-    Task UpdateScheduleAsync(Schedule schedule);
+    void UpdateSchedule(Schedule schedule);
 
     /// <summary>
     /// Deletes a schedule from the database by its ID.
     /// </summary>
-    Task DeleteScheduleAsync(int scheduleId);
+    void DeleteSchedule(int scheduleId);
 
     /// <summary>
     /// Retrieves schedules for a specific week.
     /// </summary>
-    Task<List<Schedule>> GetSchedulesForWeekAsync(DateTime weekStart);
+    List<Schedule> GetSchedulesForWeek(DateTime weekStart);
 }

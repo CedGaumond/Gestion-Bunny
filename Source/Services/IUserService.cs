@@ -14,5 +14,6 @@ public interface IUserService
     UserRole? GetUserRoleByName(string name);
     bool IsEmailExists(string email);
     List<UserRole> GetUserRoles();
+    UserRole? GetUserRoleById(int id);
     Employee GetEmployeeById(int employeeId);
 }
