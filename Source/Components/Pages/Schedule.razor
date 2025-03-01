@@ -84,7 +84,7 @@
                                                         </div>
                                                     </div>
                                                     <button class="delete-event" @onclick:stopPropagation="true"
-                                                        @onclick="() => DeleteShiftAsync(shift.Id)">
+                                                        @onclick="() => DeleteShift(shift.Id)">
                                                         <i class="fas fa-times"></i>
                                                     </button>
                                                 </div>
@@ -139,7 +139,7 @@
                     </div>
                     <div class="modal-footer">
                         <button class="cancel-btn" @onclick="CloseDialog">Annuler</button>
-                        <button class="save-btn" @onclick="SaveShiftAsync">Enregistrer</button>
+                        <button class="save-btn" @onclick="SaveShift">Enregistrer</button>
                     </div>
                 </div>
             </div>
@@ -224,12 +224,12 @@
     {
         TitleService.Title = "Horaire";
         LoadUsers();
-        await LoadSchedulesAsync();
+        LoadSchedules();
     }
 
     protected override async Task OnParametersSetAsync()
     {
-        await LoadSchedulesAsync();
+        LoadSchedules();
     }
 
     private void LoadUsers()
@@ -241,17 +241,17 @@
         Users.RemoveAll(u => u.UserRoleId != null && u.UserRole == tmpAdminRole);
     }
 
-    private async Task LoadSchedulesAsync()
+    private void LoadSchedules()
     {
         try
         {
             if (SelectedUserId != 0)
             {
-                Schedules = await ScheduleService.GetEmployeeSchedulesForWeekAsync(SelectedUserId, CurrentWeekStart);
+                Schedules = ScheduleService.GetEmployeeSchedulesForWeek(SelectedUserId, CurrentWeekStart);
             }
             else
             {
-                Schedules = await ScheduleService.GetSchedulesForWeekAsync(CurrentWeekStart);
+                Schedules = ScheduleService.GetSchedulesForWeek(CurrentWeekStart);
             }
 
             
@@ -264,22 +264,21 @@
         }
     }
 
-    private async Task PreviousWeek()
+    private void PreviousWeek()
     {
         CurrentWeekStart = CurrentWeekStart.AddDays(-7);
-        await LoadSchedulesAsync();
+        LoadSchedules();
     }
 
-    private async Task NextWeek()
+    private void NextWeek()
     {
         CurrentWeekStart = CurrentWeekStart.AddDays(7);
-        await LoadSchedulesAsync();
+        LoadSchedules();
     }
 
-    private async Task ApplyFilter()
+    private void ApplyFilter()
     {
-        
-        await LoadSchedulesAsync();
+        LoadSchedules();
     }
 
     private void OpenAddShiftDialog(DateTime startTime)
@@ -316,14 +315,14 @@
         SelectedShiftId = 0;
     }
 
-    private async Task ConfirmDeleteShift()
+    private void ConfirmDeleteShift()
     {
-        await DeleteShiftAsync(SelectedShiftId);
+        DeleteShift(SelectedShiftId);
         ShowConfirmDelete = false;
         SelectedShiftId = 0;
     }
 
-    private async Task SaveShiftAsync()
+    private void SaveShift()
     {
         if (NewShift.UserId != 0 && ParseTimeString(StartTimeString, out var startTime) && ParseTimeString(EndTimeString, out
         var endTime))
@@ -370,8 +369,8 @@
                 ShiftEnd = shiftEndUtc,
             };
 
-            await ScheduleService.AddScheduleAsync(scheduleToSave);
-            await LoadSchedulesAsync();
+            ScheduleService.AddSchedule(scheduleToSave);
+            LoadSchedules();
             CloseDialog();
         }
         else
@@ -421,12 +420,12 @@
         return false;
     }
 
-    private async Task DeleteShiftAsync(int shiftId)
+    private void DeleteShift(int shiftId)
     {
         try
         {
-            await ScheduleService.DeleteScheduleAsync(shiftId);
-            await LoadSchedulesAsync();
+            ScheduleService.DeleteSchedule(shiftId);
+            LoadSchedules();
         }
         catch (Exception ex)
         {

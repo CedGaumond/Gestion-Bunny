@@ -1,9 +1,5 @@
 using Gestion_Bunny.Modeles;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 public class ScheduleService : IScheduleService
 {
@@ -33,33 +29,32 @@ public class ScheduleService : IScheduleService
     /// <summary>
     /// Retrieves all schedules from the database, including related employee data.
     /// </summary>
-    public async Task<List<Schedule>> GetSchedulesAsync()
+    public List<Schedule> GetSchedules()
     {
         try
         {
-            return await _context.Schedules
-                .Include(s => s.User) // Include the related Employee entity
-                .ToListAsync();
+            return _context.Schedules
+                .Include(s => s.User)
+                .ToList();
         }
         catch (Exception ex)
         {
-            // Log the exception (e.g., using a logging framework)
             Console.WriteLine($"Error retrieving schedules: {ex.Message}");
-            throw; // Re-throw the exception to be handled by the caller
+            throw;
         }
     }
 
     /// <summary>
     /// Retrieves schedules for a specific employee, including related employee data.
     /// </summary>
-    public async Task<List<Schedule>> GetEmployeeSchedulesAsync(int employeeId)
+    public List<Schedule> GetEmployeeSchedules(int employeeId)
     {
         try
         {
-            return await _context.Schedules
-                .Where(s => s.UserId == employeeId) // Filter by EmployeeId
-                .Include(s => s.User) // Include the related Employee entity
-                .ToListAsync();
+            return _context.Schedules
+                .Where(s => s.UserId == employeeId)
+                .Include(s => s.User)
+                .ToList();
         }
         catch (Exception ex)
         {
@@ -71,7 +66,7 @@ public class ScheduleService : IScheduleService
     /// <summary>
     /// Retrieves schedules for a specific employee and week, including related employee data.
     /// </summary>
-    public async Task<List<Schedule>> GetEmployeeSchedulesForWeekAsync(int employeeId, DateTime weekStart)
+    public List<Schedule> GetEmployeeSchedulesForWeek(int employeeId, DateTime weekStart)
     {
         try
         {
@@ -81,11 +76,11 @@ public class ScheduleService : IScheduleService
             var utcWeekStart = EnsureUtc(weekStart);
             var utcWeekEnd = EnsureUtc(weekEnd);
 
-            return await _context.Schedules
-                .Where(s => s.UserId == employeeId && s.ShiftStart >= utcWeekStart && s.ShiftStart < utcWeekEnd) // Filter by EmployeeId and week range
-                .Include(s => s.User) // Include the related Employee entity
-                .OrderBy(s => s.ShiftStart) // Order by ShiftStart
-                .ToListAsync();
+            return _context.Schedules
+                .Where(s => s.UserId == employeeId && s.ShiftStart >= utcWeekStart && s.ShiftStart < utcWeekEnd)
+                .Include(s => s.User) 
+                .OrderBy(s => s.ShiftStart) 
+                .ToList();
         }
         catch (Exception ex)
         {
@@ -97,13 +92,13 @@ public class ScheduleService : IScheduleService
     /// <summary>
     /// Retrieves a specific schedule by its ID, including related employee data.
     /// </summary>
-    public async Task<Schedule> GetScheduleByIdAsync(int scheduleId)
+    public Schedule GetScheduleById(int scheduleId)
     {
         try
         {
-            return await _context.Schedules
-                .Include(s => s.User) // Include the related Employee entity
-                .FirstOrDefaultAsync(s => s.Id == scheduleId);
+            return _context.Schedules
+                .Include(s => s.User)
+                .FirstOrDefault(s => s.Id == scheduleId);
         }
         catch (Exception ex)
         {
@@ -115,16 +110,15 @@ public class ScheduleService : IScheduleService
     /// <summary>
     /// Adds a new schedule to the database. Converts ShiftStart and ShiftEnd to UTC if they are in local time.
     /// </summary>
-    public async Task AddScheduleAsync(Schedule schedule)
+    public void AddSchedule(Schedule schedule)
     {
         try
         {
-
             schedule.ShiftStart = EnsureUtc(schedule.ShiftStart);
             schedule.ShiftEnd = EnsureUtc(schedule.ShiftEnd);
 
-            await _context.Schedules.AddAsync(schedule);
-            await _context.SaveChangesAsync();
+            _context.Schedules.Add(schedule);
+            _context.SaveChanges();
         }
         catch (Exception ex)
         {
@@ -136,7 +130,7 @@ public class ScheduleService : IScheduleService
     /// <summary>
     /// Updates an existing schedule in the database. Converts ShiftStart and ShiftEnd to UTC if they are in local time.
     /// </summary>
-    public async Task UpdateScheduleAsync(Schedule schedule)
+    public void UpdateSchedule(Schedule schedule)
     {
         try
         {
@@ -145,7 +139,7 @@ public class ScheduleService : IScheduleService
             schedule.ShiftEnd = EnsureUtc(schedule.ShiftEnd);
 
             _context.Entry(schedule).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
         }
         catch (Exception ex)
         {
@@ -157,15 +151,15 @@ public class ScheduleService : IScheduleService
     /// <summary>
     /// Deletes a schedule from the database by its ID.
     /// </summary>
-    public async Task DeleteScheduleAsync(int scheduleId)
+    public void DeleteSchedule(int scheduleId)
     {
         try
         {
-            var schedule = await _context.Schedules.FindAsync(scheduleId);
+            var schedule = _context.Schedules.Find(scheduleId);
             if (schedule != null)
             {
                 _context.Schedules.Remove(schedule);
-                await _context.SaveChangesAsync();
+                _context.SaveChanges();
             }
         }
         catch (Exception ex)
@@ -178,7 +172,7 @@ public class ScheduleService : IScheduleService
     /// <summary>
     /// Retrieves schedules for a specific week, starting from the provided weekStart date.
     /// </summary>
-    public async Task<List<Schedule>> GetSchedulesForWeekAsync(DateTime weekStart)
+    public List<Schedule> GetSchedulesForWeek(DateTime weekStart)
     {
         try
         {
@@ -188,11 +182,11 @@ public class ScheduleService : IScheduleService
             var utcWeekStart = EnsureUtc(weekStart);
             var utcWeekEnd = EnsureUtc(weekEnd);
 
-            return await _context.Schedules
-                .Where(s => s.ShiftStart >= utcWeekStart && s.ShiftStart < utcWeekEnd) // Filter by the week range
-                .Include(s => s.User) // Include the related Employee entity
-                .OrderBy(s => s.ShiftStart) // Order by ShiftStart
-                .ToListAsync();
+            return _context.Schedules
+                .Where(s => s.ShiftStart >= utcWeekStart && s.ShiftStart < utcWeekEnd) 
+                .Include(s => s.User)
+                .OrderBy(s => s.ShiftStart)
+                .ToList();
         }
         catch (Exception ex)
         {

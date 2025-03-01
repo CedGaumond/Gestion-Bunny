@@ -26,7 +26,7 @@
                         @if (AuthState.CurrentUser != null)
                         {
                             <div class="user-name"> @(AuthState.CurrentUser.FirstName + " " + AuthState.CurrentUser.LastName) </div>
-                            <div class="user-position">@AuthState.CurrentUser.UserRole</div>        
+                            <div class="user-position">@AuthState.GetCurrentUserRole().RoleName</div>        
                         }
                         else
                         {
@@ -48,14 +48,16 @@
 
                 <!-- Icons -->
                 <div class="icons">
-                    <a href="#"><img src="images/gear.svg" alt="Paramètre" class="img-icon" /></a>
-                    <a href="#"><img src="images/bell.svg" alt="Notifications" class="img-icon" /></a>
+                    @if (AuthState.GetCurrentUserRole().RoleName == "Admin" || AuthState.GetCurrentUserRole().RoleName == "Gérant")
+                    {
+                        <a href="#"><img src="images/gear.svg" alt="Paramètre" class="img-icon" /></a>
+                        <a href="#"><img src="images/bell.svg" alt="Notifications" class="img-icon" /></a>
+                    }
                     <!-- Logout Button -->
                     <a href="#" @onclick="Logout">
                         <img src="images/box-arrow-right.svg" alt="Déconnexion" class="img-icon" />
                     </a>
                 </div>
-
             </div>
         </div>
 

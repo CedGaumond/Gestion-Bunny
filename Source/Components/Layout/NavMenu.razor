@@ -1,4 +1,7 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using Gestion_Bunny.Services
+@inject AuthenticationState AuthState
+
+<div class="top-row ps-3 navbar navbar-dark">
         <img src="images/logo_horizontal.png" alt=""/>
 </div>
 
@@ -6,40 +9,52 @@
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/home" Match="NavLinkMatch.All">
-                <img src="images/home.svg" alt="Accueil" style="width: 20px; height: 20px;" class="me-3" /> Accueil
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="bill-list">
-                <img src="images/cash.svg" alt="Factures" style="width: 20px; height: 20px;" class="me-3" /> Factures
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="schedule">
-                <img src="images/schedule.svg" alt="Horaire" style="width: 20px; height: 20px;" class="me-3" /> Horaire
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="order-list">
-                <img src="images/truck.svg" alt="Commandes" style="width: 20px; height: 20px;" class="me-3" /> Commandes
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="employee-list">
-                <img src="images/users.svg" alt="Employés" style="width: 20px; height: 20px;" class="me-3" /> Employés
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="ingredient-list">
-                <img src="images/basket.svg" alt="Ingrédients" style="width: 20px; height: 20px;" class="me-3" /> Ingrédients
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="recipe-list">
-                <img src="images/book.svg" alt="Recettes" style="width: 20px; height: 20px;" class="me-3" /> Recettes
-            </NavLink>
-        </div>
+        @if (AuthState.GetCurrentUserRole().RoleName == "Admin" || AuthState.GetCurrentUserRole().RoleName == "Gérant")
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/home" Match="NavLinkMatch.All">
+                    <img src="images/home.svg" alt="Accueil" style="width: 20px; height: 20px;" class="me-3" /> Accueil
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="bill-list">
+                    <img src="images/cash.svg" alt="Factures" style="width: 20px; height: 20px;" class="me-3" /> Factures
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="schedule">
+                    <img src="images/schedule.svg" alt="Horaire" style="width: 20px; height: 20px;" class="me-3" /> Horaire
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="order-list">
+                    <img src="images/truck.svg" alt="Commandes" style="width: 20px; height: 20px;" class="me-3" /> Commandes
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="employee-list">
+                    <img src="images/users.svg" alt="Employés" style="width: 20px; height: 20px;" class="me-3" /> Employés
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="ingredient-list">
+                    <img src="images/basket.svg" alt="Ingrédients" style="width: 20px; height: 20px;" class="me-3" /> Ingrédients
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="recipe-list">
+                    <img src="images/book.svg" alt="Recettes" style="width: 20px; height: 20px;" class="me-3" /> Recettes
+                </NavLink>
+            </div>
+        }
+        else
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="bill-list">
+                    <img src="images/cash.svg" alt="Factures" style="width: 20px; height: 20px;" class="me-3" /> Factures
+                </NavLink>
+            </div>
+        }
+
     </nav>
 </div>

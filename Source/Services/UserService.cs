@@ -116,6 +116,11 @@ public class UserService : IUserService
         return _context.UserRoles.FirstOrDefault(ur => ur.RoleName == name);
     }
 
+    public UserRole? GetUserRoleById(int id)
+    {
+        return _context.UserRoles.FirstOrDefault(ur => ur.Id == id);
+    }
+
     public List<UserRole> GetUserRoles()
     {
         return _context.UserRoles.ToList();
