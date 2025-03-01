@@ -192,19 +192,6 @@
                 foreach (var (recipe, quantity) in recipes_order){
                     HandleAddAction(recipe.Id, quantity);
                 }
-                foreach (var (recipe, quantity) in recipes_order)
-                {
-                    currentOrder.Recipes.Add(new OrderItem
-                        {
-                            Id = recipe.Id,
-                            Name = recipe.Name,
-                            Price = recipe.Price,
-                            Quantity = quantity,
-                            ImageUrl = recipe.Pic != null && recipe.Pic.Length > 0
-                                ? $"data:image/jpeg;base64,{Convert.ToBase64String(recipe.Pic)}"
-                                : "images/default-recipe-image.jpg"
-                        });
-                }
             }
             else
             {
