@@ -140,10 +140,11 @@ else
             var existingQuantities = OrderCartService.GetOrderQuantitiesForEmployee(AuthState.CurrentUser.Id);
             foreach (var ingredient in filteredIngredients)
             {
+                var existingIngredient = existingQuantities.Keys.FirstOrDefault(i => i.Name == ingredient.Name);
 
-                if (existingQuantities.ContainsKey(ingredient))
+                if (existingIngredient != null)
                 {
-                    ingredientQuantities[ingredient.Id] = existingQuantities[ingredient];
+                    ingredientQuantities[ingredient.Id] = existingQuantities[existingIngredient];
                 }
                 else
                 {
