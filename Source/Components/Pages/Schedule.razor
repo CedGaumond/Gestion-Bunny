@@ -10,6 +10,9 @@
 
 <div class="calendar-container">
     <div class="calendar-header">
+        <button class="btn btn-primary" @onclick="SendScheduleByEmail">
+    <i class="fas fa-envelope"></i> Envoyer l'horaire
+    </button>
         <div class="month-selector">
             <button class="nav-btn week-nav" @onclick="PreviousWeek">
                 <i class="fas fa-chevron-left"></i>
@@ -437,4 +440,12 @@
     {
         return DateTime.Now.Date == time.Date && DateTime.Now.Hour == time.Hour;
     }
+
+    private void SendScheduleByEmail()
+    {
+        
+        ScheduleService.SendScheduleEmail(CurrentWeekStart);
+            
+    }
+
 }

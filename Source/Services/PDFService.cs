@@ -6,57 +6,50 @@ using Gestion_Bunny.Modeles;
 using System.IO;
 using QuestPDF.Previewer;
 using QuestPDF.Companion;
+using Microsoft.EntityFrameworkCore;
 
 namespace Gestion_Bunny.Services
 {
-   
+
     public class PDFService : IPDFService
     {
         private readonly string _logoPath;
+        private readonly ApplicationDbContext _context;
 
-        public PDFService(string logoPath = "wwwroot/images/logo.png")
+        public PDFService(ApplicationDbContext context, string logoPath = "wwwroot/images/logo.png")
         {
             _logoPath = logoPath;
+            _context = context;
         }
 
         public byte[] GenerateInvoicePdf(Bill bill, List<(Recipe Recipe, int Quantity)> items)
         {
             QuestPDF.Settings.License = LicenseType.Community;
 
-            // Create invoice model
             var model = CreateInvoiceModel(bill, items);
-            
-            // Create document
+
             var document = new InvoiceDocument(model, _logoPath);
-            
-            // Generate PDF as byte array
+
             using (var stream = new MemoryStream())
             {
                 document.GeneratePdf(stream);
                 return stream.ToArray();
             }
-
-            
         }
 
         public byte[] GenerateOrderPdf(Order order, List<(Ingredient ingredient, int Quantity)> items)
         {
             QuestPDF.Settings.License = LicenseType.Community;
 
-            // Create Order model
             var model = CreateOrderModel(order, items);
-            
-            // Create document
+
             var document = new OrderDocument(model, _logoPath);
-            
-            // Generate PDF as byte array
+
             using (var stream = new MemoryStream())
             {
                 document.GeneratePdf(stream);
                 return stream.ToArray();
             }
-
-            
         }
 
         private InvoiceModel CreateInvoiceModel(Bill bill, List<(Recipe Recipe, int Quantity)> items)
@@ -74,7 +67,7 @@ namespace Gestion_Bunny.Services
                 IssueDate = bill.OrderDate,
                 Items = orderItems,
                 Comments = "",
-                
+
                 // These could be populated from your actual data
                 SellerAddress = new Address
                 {
@@ -86,7 +79,7 @@ namespace Gestion_Bunny.Services
             };
         }
 
-        private OrderModel CreateOrderModel(Order order,List<(Ingredient ingredient, int Quantity)> items)
+        private OrderModel CreateOrderModel(Order order, List<(Ingredient ingredient, int Quantity)> items)
         {
             var orderItems = items.Select(item => new OrderItem
             {
@@ -102,7 +95,7 @@ namespace Gestion_Bunny.Services
                 IssueDate = order.OrderDate,
                 Items = orderItems,
                 Comments = "",
-                
+
                 // These could be populated from your actual data
                 SellerAddress = new Address
                 {
@@ -113,6 +106,59 @@ namespace Gestion_Bunny.Services
                 }
             };
         }
+
+        public byte[] GenerateSchedulePdf(DateTime weekStart)
+        {
+            QuestPDF.Settings.License = LicenseType.Community;
+
+            // Créer le modèle pour l'horaire
+            var model = CreateScheduleModel(weekStart);
+
+            // Créer le document PDF
+            var document = new ScheduleDocument(model, _logoPath);
+
+            // Générer le PDF sous forme de tableau d'octets
+            using (var stream = new MemoryStream())
+            {
+                document.GeneratePdf(stream);
+                return stream.ToArray();
+            }
+        }
+
+
+        private ScheduleModel CreateScheduleModel(DateTime weekStart)
+        {
+            DateTime weekEnd = weekStart.AddDays(7); // Fin de la semaine
+
+            // Récupérer les horaires de la semaine avec les employés associés
+            var schedules = _context.Schedules
+                .Where(s => s.ShiftStart >= weekStart && s.ShiftStart < weekEnd)
+                .Include(s => s.User)
+                .ToList();
+
+            // Grouper par employé
+            var employees = schedules
+                .GroupBy(s => s.User)
+                .Select(group => new EmployeeSchedule
+                {
+                    Name = group.Key.GetFullName(),
+                    Shifts = group.Select(s => new Shift
+                    {
+                        Date = s.ShiftStart.Date,
+                        StartTime = s.ShiftStart.TimeOfDay,
+                        EndTime = s.ShiftEnd.TimeOfDay
+                    }).ToList()
+                })
+                .ToList();
+
+            return new ScheduleModel
+            {
+                Title = $"Horaire de la semaine du {weekStart:dd/MM/yyyy} au {weekStart.AddDays(6):dd/MM/yyyy}",
+                WeekStart = weekStart,
+                Employees = employees
+            };
+        }
+
     }
 
     public class InvoiceDocument : IDocument
@@ -136,7 +182,7 @@ namespace Gestion_Bunny.Services
                 {
                     page.Margin(57);
                     page.MarginHorizontal(40);
-                
+
                     page.Header().Element(ComposeHeader);
                     page.Content().Element(ComposeContent);
 
@@ -164,22 +210,22 @@ namespace Gestion_Bunny.Services
                         text.Span("Date d'achat: ").SemiBold();
                         text.Span($"{Model.IssueDate:d}");
                     });
-                    
+
                     column.Spacing(5);
                     column.Item().Height(5);
-                    
+
                     column.Item().Text(text =>
                     {
                         text.Span($"{Model.SellerAddress.CompanyName}");
                     });
-                     column.Item().Text(text =>
-                    {
-                        text.Span($"{Model.SellerAddress.Street}");
-                    });
-                     column.Item().Text(text =>
-                    {
-                        text.Span($"{Model.SellerAddress.City}, {Model.SellerAddress.State}");
-                    });
+                    column.Item().Text(text =>
+                   {
+                       text.Span($"{Model.SellerAddress.Street}");
+                   });
+                    column.Item().Text(text =>
+                   {
+                       text.Span($"{Model.SellerAddress.City}, {Model.SellerAddress.State}");
+                   });
                 });
 
                 // Only try to load the logo if file exists
@@ -280,7 +326,7 @@ namespace Gestion_Bunny.Services
                 {
                     page.Margin(57);
                     page.MarginHorizontal(40);
-                
+
                     page.Header().Element(ComposeHeader);
                     page.Content().Element(ComposeContent);
 
@@ -308,22 +354,22 @@ namespace Gestion_Bunny.Services
                         text.Span("Date d'achat: ").SemiBold();
                         text.Span($"{Model.IssueDate:d}");
                     });
-                    
+
                     column.Spacing(5);
                     column.Item().Height(5);
-                    
+
                     column.Item().Text(text =>
                     {
                         text.Span($"{Model.SellerAddress.CompanyName}");
                     });
-                     column.Item().Text(text =>
-                    {
-                        text.Span($"{Model.SellerAddress.Street}");
-                    });
-                     column.Item().Text(text =>
-                    {
-                        text.Span($"{Model.SellerAddress.City}, {Model.SellerAddress.State}");
-                    });
+                    column.Item().Text(text =>
+                   {
+                       text.Span($"{Model.SellerAddress.Street}");
+                   });
+                    column.Item().Text(text =>
+                   {
+                       text.Span($"{Model.SellerAddress.City}, {Model.SellerAddress.State}");
+                   });
                 });
 
                 // Only try to load the logo if file exists
@@ -406,6 +452,112 @@ namespace Gestion_Bunny.Services
         }
     }
 
+    public class ScheduleDocument : IDocument
+    {
+        public ScheduleModel Model { get; }
+        private readonly string _logoPath;
+
+        public ScheduleDocument(ScheduleModel model, string logoPath)
+        {
+            Model = model;
+            _logoPath = logoPath;
+        }
+
+        public DocumentMetadata GetMetadata() => DocumentMetadata.Default;
+        public DocumentSettings GetSettings() => DocumentSettings.Default;
+
+        public void Compose(IDocumentContainer container)
+        {
+            container
+                .Page(page =>
+                {
+                    page.Size(PageSizes.A4.Landscape());
+                    page.Margin(40);
+                    page.MarginHorizontal(30);
+
+                    page.Header().Element(ComposeHeader);
+                    page.Content().Element(ComposeContent);
+
+                    page.Footer().AlignCenter().Height(50).PaddingBottom(10).Text(x =>
+                    {
+                        x.CurrentPageNumber();
+                        x.Span(" / ");
+                        x.TotalPages();
+                    });
+                });
+        }
+
+        void ComposeHeader(QuestPDF.Infrastructure.IContainer container)
+        {
+            container.Row(row =>
+            {
+                row.RelativeItem().Text($"{Model.Title}")
+                    .FontSize(20).SemiBold().FontColor(QuestPDF.Helpers.Colors.Blue.Medium);
+            });
+        }
+
+        void ComposeContent(QuestPDF.Infrastructure.IContainer container)
+        {
+            container.PaddingVertical(20).Column(column =>
+            {
+                column.Spacing(10);
+
+                column.Item().Table(table =>
+                {
+                    table.ColumnsDefinition(columns =>
+                    {
+                        columns.ConstantColumn(150); 
+                        for (int i = 0; i < 7; i++)
+                        {
+                            columns.RelativeColumn();
+                        }
+                    });
+                  
+                    table.Header(header =>
+                    {
+                        header.Cell().Border(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten2)
+                            .Padding(5).Text("Employé").SemiBold().FontSize(12);
+
+                        for (int i = 0; i < 7; i++)
+                        {
+                            var day = Model.WeekStart.AddDays(i).ToString("ddd dd MMM");
+                            header.Cell().Border(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten2)
+                                .Padding(5).Text(day).SemiBold().FontSize(12);
+                        }
+                    });
+
+                    // Lignes pour chaque employé
+                    foreach (var employee in Model.Employees)
+                    {
+                        table.Cell().Border(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten2)
+                            .Padding(5).Text(employee.Name).FontSize(11);
+
+                        for (int i = 0; i < 7; i++)
+                        {
+                            var day = Model.WeekStart.AddDays(i).Date;
+                            var shift = employee.Shifts.FirstOrDefault(s => s.Date.Date == day);
+
+                            if (shift != null)
+                            {
+                                table.Cell().Border(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten2)
+                                    .Padding(5)
+                                    .Text($"{shift.StartTime:hh\\:mm} - {shift.EndTime:hh\\:mm}")
+                                    .FontSize(11).FontColor(QuestPDF.Helpers.Colors.Blue.Medium);
+                            }
+                            else
+                            {
+                                table.Cell().Border(1).BorderColor(QuestPDF.Helpers.Colors.Grey.Lighten2)
+                                    .Padding(5)
+                                    .Text("-")
+                                    .FontSize(11).AlignCenter();
+                            }
+                        }
+                    }
+                });
+            });
+        }
+    }
+
     public class InvoiceModel
     {
         public String InvoiceNumber { get; set; }
@@ -440,4 +592,25 @@ namespace Gestion_Bunny.Services
         public string City { get; set; }
         public string State { get; set; }
     }
+
+    public class ScheduleModel
+    {
+        public string Title { get; set; }
+        public DateTime WeekStart { get; set; }
+        public List<EmployeeSchedule> Employees { get; set; } = new();
+    }
+
+    public class EmployeeSchedule
+    {
+        public string Name { get; set; }
+        public List<Shift> Shifts { get; set; } = new();
+    }
+
+    public class Shift
+    {
+        public DateTime Date { get; set; }
+        public TimeSpan StartTime { get; set; }
+        public TimeSpan EndTime { get; set; }
+    }
+
 }
