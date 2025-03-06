@@ -43,6 +43,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IPDFService, PDFService>();
         builder.Services.AddScoped<IRecipeService, RecipeService>();
         builder.Services.AddSingleton<IAuthenticationService, AuthenticationService>();
+        builder.Services.AddScoped<INotificationService, NotificationService>();
         builder.Services.AddSingleton<PageTitleService>();
 
 

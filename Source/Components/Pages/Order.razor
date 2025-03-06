@@ -7,115 +7,263 @@
 @inject IIngredientService IngredientService
 @inject IOrderCartService OrderCartService
 @inject IOrderService OrderService
+@inject INotificationService NotificationService
 @inject IJSRuntime JSRuntime
 
-<div class="row mb-3 mt-3 align-items-center">
-    <div class="col-md-4">
-        <label for="filter" class="form-label">Filtrer par nom</label>
-        <div class="input-group">
-            <input type="text" id="filter" class="custom-input-filter form-control"
-                   placeholder="Rechercher un ingrédient"
-                   @bind-value="filterText"
-                   @bind-value:event="oninput"
-                   @onkeyup="OnFilterChanged" />
-            @if (!string.IsNullOrEmpty(filterText))
-            {
-                <button class="btn btn-outline-secondary btn-sm" type="button" @onclick="ClearFilter">
-                    ✕
-                </button>
-            }
-        </div>
-    </div>
-
-    <div class="col-md-4">
-        <label class="form-label" for="sortColumn">Trier par</label>
-        <div class="d-flex align-items-center">
-            <select id="sortColumn" class="form-select form-select-sm" @onchange="OnSortColumnChanged">
-                <option value="Name">Nom</option>
-                <option value="QuantityRemaining">Quantité restante</option>
-                <option value="MinimumThresholdNotification">Seuil minimum</option>
-            </select>
-
-            <button class="btn btn-outline-secondary btn-sm ms-2" @onclick="ToggleSortDirection">
-                @(sortAscending ? "▲" : "▼")
-            </button>
-        </div>
-    </div>
-
-    <div class="col-md-4 d-flex justify-content-end align-items-center">
-        <div class="d-flex gap-2 pt-4">
-            <button class="btn btn-primary" @onclick="OnConfirmOrder">
-                Commander
-            </button>
-            <button class="btn btn-secondary" @onclick="OnReinitialize">
-                Réinitialiser
-            </button>
-        </div>
-    </div>
-</div>
-
-
-
-
-@if (isLoading)
-{
-    <p><em>Chargement des ingrédients...</em></p>
-}
-else if (!filteredIngredients.Any())
-{
-    <p><em>Aucun ingrédient trouvé.</em></p>
-}
-else
-{
-    <div class="d-flex flex-column mt-4 mb-4">
-        <div class="table-responsive flex-grow-1 d-flex flex-column">
-            <table class="table" style="flex-grow: 1; overflow-y: auto;">
-                <thead>
-                    <tr>
-                        <th>Actions</th>
-                        <th>Nom</th>
-                        <th>Quantité restante</th>
-                        <th>Qté/unité livraison</th>
-                        <th>Prix Unitaire</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var ingredient in filteredIngredients)
+<div class="d-flex">
+    <div class="order-content flex-grow-1 pe-3">
+        <div class="row mb-3 mt-3 align-items-center">
+            <div class="col-md-4">
+                <label for="filter" class="form-label">Filtrer par nom</label>
+                <div class="input-group">
+                    <input type="text" id="filter" class="custom-input-filter form-control"
+                           placeholder="Rechercher un ingrédient"
+                           @bind-value="filterText"
+                           @bind-value:event="oninput"
+                           @onkeyup="OnFilterChanged" />
+                    @if (!string.IsNullOrEmpty(filterText))
                     {
-                        <tr>
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <button class="btn btn-sm btn-add-color me-2 fw-bold custom-btn" @onclick="() => HandleAddAction(ingredient)">
-                                        <i class="bi bi-plus"></i>
-                                    </button>
-                                    <input type="number" class="form-control custom-input"
-                                           placeholder="0"
-                                           min="0"
-                                           step="1"
-                                           value="@ingredientQuantities.GetValueOrDefault(ingredient.Id, 0)"
-                                           @oninput="(e) => UpdateOrderIngredient(ingredient, e.Value?.ToString())" />
-                                    <button class="btn btn-sm btn-remove-color ms-2 fw-bold custom-btn" @onclick="() => HandleRemAction(ingredient)">
+                        <button class="btn btn-outline-secondary btn-sm" type="button" @onclick="ClearFilter">
+                            ✕
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label" for="sortColumn">Trier par</label>
+                <div class="d-flex align-items-center">
+                    <select id="sortColumn" class="form-select form-select-sm" @onchange="OnSortColumnChanged">
+                        <option value="Name">Nom</option>
+                        <option value="QuantityRemaining">Quantité restante</option>
+                        <option value="MinimumThresholdNotification">Seuil minimum</option>
+                    </select>
+
+                    <button class="btn btn-outline-secondary btn-sm ms-2" @onclick="ToggleSortDirection">
+                        @(sortAscending ? "▲" : "▼")
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-md-4 d-flex justify-content-end align-items-center">
+                <div class="d-flex gap-2 pt-4">
+                    <button class="btn btn-primary" @onclick="OnConfirmOrder">
+                        Commander
+                    </button>
+                    <button class="btn btn-secondary" @onclick="OnReinitialize">
+                        Réinitialiser
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        @if (isLoading)
+        {
+            <p><em>Chargement des ingrédients...</em></p>
+        }
+        else if (!filteredIngredients.Any())
+        {
+            <p><em>Aucun ingrédient trouvé.</em></p>
+        }
+        else
+        {
+            <div class="d-flex flex-column mt-4 mb-4">
+                <div class="table-responsive flex-grow-1 d-flex flex-column">
+                    <table class="table" style="flex-grow: 1;">
+                        <thead>
+                            <tr>
+                                <th>Actions</th>
+                                <th>Nom</th>
+                                <th>Quantité restante</th>
+                                <th>Qté/unité livraison</th>
+                                <th>Prix Unitaire</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ingredient in filteredIngredients)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <button class="btn btn-sm btn-add-color me-2 fw-bold custom-btn" @onclick="() => HandleAddAction(ingredient)">
+                                                <i class="bi bi-plus"></i>
+                                            </button>
+                                            <input type="number" class="form-control custom-input"
+                                                   placeholder="0"
+                                                   min="0"
+                                                   step="1"
+                                                   value="@ingredientQuantities.GetValueOrDefault(ingredient.Id, 0)"
+                                                   @oninput="(e) => UpdateOrderIngredient(ingredient, e.Value?.ToString())" />
+                                            <button class="btn btn-sm btn-remove-color ms-2 fw-bold custom-btn" @onclick="() => HandleRemAction(ingredient)">
+                                                <i class="bi bi-dash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td>@ingredient.Name</td>
+                                    <td>@ingredient.QuantityRemaining</td>
+                                    <td>@ingredient.QuantityPerDeliveryUnit</td>
+                                    <td>@ingredient.Price $</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (lowStockIngredients.Any())
+    {
+        <div class="notification-panel mt-3">
+            <div class="notification-header">
+                <div class="notification-title">
+                    Alerte de stock
+                </div>
+                <div class="notification-count">
+                    @lowStockIngredients.Count ingrédient(s)
+                </div>
+            </div>
+
+            <div class="notification-body">
+                @foreach (var ingredient in lowStockIngredients)
+                {
+                    <div class="notification-item @(ingredient.QuantityRemaining <= ingredient.MinimumThresholdNotification * 0.5m ? "critical" : "")">
+                        <div class="ingredient-info">
+                            <div class="ingredient-name">@ingredient.Name</div>
+                            <div class="ingredient-details">
+                                <span class="quantity">Stock: @ingredient.QuantityRemaining</span>
+                                <span class="threshold">Seuil: @ingredient.MinimumThresholdNotification</span>
+                            </div>
+                            <div class="order-actions d-flex align-items-center mt-2">
+                                <div class="ordered-quantity me-2">
+                                    @if (ingredientQuantities.TryGetValue(ingredient.Id, out int qty) && qty > 0)
+                                    {
+                                        <span class="badge bg-primary">@qty commandé(s)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Non commandé</span>
+                                    }
+                                </div>
+                                <div class="action-buttons">
+                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => HandleRemAction(ingredient)" 
+                                            disabled="@(!ingredientQuantities.TryGetValue(ingredient.Id, out int q) || q <= 0)">
                                         <i class="bi bi-dash"></i>
                                     </button>
+                                    <button class="btn btn-sm btn-outline-success ms-2" @onclick="() => HandleAddAction(ingredient)">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
                                 </div>
-                            </td>
-                            <td>@ingredient.Name</td>
-                            <td>@ingredient.QuantityRemaining</td>
-                            <td>@ingredient.QuantityPerDeliveryUnit</td>
-                            <td>@ingredient.Price $</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
-    </div>
-}
+    }
+</div>
+
+<style>
+    .notification-panel {
+        width: 300px;
+        background-color: #333333;
+        border-radius: 6px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        margin-left: 15px;
+        height: fit-content;
+        position: sticky;
+        top: 20px;
+    }
+
+    .notification-header {
+        display: flex;
+        align-items: center;
+        background-color: #2a2f36;
+        padding: 15px;
+        border-bottom: 1px solid #555555;
+    }
+
+    .notification-title {
+        font-weight: 600;
+        color: #ffffff;
+        flex-grow: 1;
+    }
+
+    .notification-count {
+        background-color: #666666;
+        color: white;
+        border-radius: 12px;
+        padding: 4px 8px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .notification-body {
+        max-height: 500px;
+    }
+
+    .notification-item {
+        padding: 12px 15px;
+        border-bottom: 1px solid #444444;
+        transition: background-color 0.2s;
+        background-color: #3a3a3a;
+    }
+
+    .notification-item:last-child {
+        border-bottom: none;
+    }
+
+    .notification-item:hover {
+        background-color: #454545;
+    }
+
+    .notification-item.critical {
+        background-color: #2a2f36;
+    }
+
+    .notification-item.critical:hover {
+        background-color: #505050;
+    }
+
+    .ingredient-info {
+        flex-grow: 1;
+    }
+
+    .ingredient-name {
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: #ffffff;
+    }
+
+    .ingredient-details {
+        display: flex;
+        font-size: 0.85rem;
+        color: #cccccc;
+    }
+
+    .quantity {
+        margin-right: 12px;
+        color: #e0e0e0;
+    }
+
+    .threshold {
+        color: #aaaaaa;
+    }
+
+    .action-buttons {
+        margin-left: auto;
+    }
+
+    .order-content {
+        max-width: calc(100% - 315px);
+    }
+</style>
 
 @code {
     private List<Ingredient>? ingredients;
     private List<Ingredient> filteredIngredients = new List<Ingredient>();
     private Dictionary<int, int> ingredientQuantities = new();
-
+    private List<Ingredient> lowStockIngredients = new List<Ingredient>();
 
     [Parameter, SupplyParameterFromQuery] public int id { get; set; }
 
@@ -136,6 +284,7 @@ else
         {
             ingredients = IngredientService.GetAllIngredients();
             filteredIngredients = ingredients ?? new List<Ingredient>();
+            lowStockIngredients = NotificationService.GetLowStockIngredients();
 
             var existingQuantities = OrderCartService.GetOrderQuantitiesForEmployee(AuthState.CurrentUser.Id);
             foreach (var ingredient in filteredIngredients)
@@ -253,6 +402,7 @@ else
             }
 
             OnFilterChanged();
+            StateHasChanged(); // Ensure UI updates after changing quantities
         }
         catch (Exception ex)
         {
@@ -282,13 +432,13 @@ else
             }
 
             OnFilterChanged();
+            StateHasChanged(); // Ensure UI updates after changing quantities
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Erreur lors de la suppression de l'ingrédient: {ex.Message}");
         }
     }
-
 
     private void UpdateOrderIngredient(Ingredient ingredient, string? value)
     {
@@ -304,6 +454,8 @@ else
                 ingredientQuantities[ingredient.Id] = 0;
                 OrderCartService.RemoveIngredient(AuthState.CurrentUser.Id, ingredient);
             }
+            
+            StateHasChanged();
         }
     }
 
@@ -313,5 +465,4 @@ else
         ingredientQuantities = new();
         OnFilterChanged();
     }
-
 }
