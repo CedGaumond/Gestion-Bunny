@@ -48,6 +48,7 @@ public static class MauiProgram
 
         builder.Services.AddSingleton<IIngredientValidationService, IngredientValidationService>();
         builder.Services.AddSingleton<IScheduleService, ScheduleService>();
+        builder.Services.AddSingleton<IProfileService, ProfileService>();
         builder.Services.AddSingleton<AuthenticationState>();
 
         // If using Debug mode, add developer tools and logging

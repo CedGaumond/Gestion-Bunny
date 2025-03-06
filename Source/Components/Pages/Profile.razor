@@ -1,0 +1,128 @@
+@page "/profile"
+@using Gestion_Bunny.Modeles
+@using Gestion_Bunny.Services
+@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@inject PageTitleService TitleService
+@inject IProfileService ProfileService
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="p-4 shadow-lg rounded bg-custom">
+                <h3 class="text-center">@(profile.Id > 0 ? "Modifier le profil du restaurant" : "Créer le profil du restaurant")</h3>
+                @if (success)
+                    {
+                        <div class="alert alert-success mt-3">Le profil du restaurant à bien été mis à jour!</div>
+                    }
+                <EditForm Model="profile" OnValidSubmit="Save">
+                    <DataAnnotationsValidator />
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label for="restaurantName" class="form-label">Nom</label>
+                                <InputText id="restaurantName" class="form-control" @bind-Value="profile.RestaurantName" required />
+                                <ValidationMessage For="@(() => profile.RestaurantName)" class="text-danger" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="restaurantAddress" class="form-label">Adresse</label>
+                                <InputText id="restaurantAddress" class="form-control" @bind-Value="profile.RestaurantAddress" required />
+                                <ValidationMessage For="@(() => profile.RestaurantAddress)" class="text-danger" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="openingHours" class="form-label">Heures d'ouverture</label>
+                                <InputTextArea id="openingHours" class="form-control" @bind-Value="profile.OpeningHours" rows="4" />
+                                <ValidationMessage For="@(() => profile.OpeningHours)" class="text-danger" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-center mt-4">
+                        <button type="submit" class="btn btn-primary">@(profile.Id > 0 ? "Mettre à jour" : "Créer le profil")</button>
+                    </div>
+                    
+                    @if (formError)
+                    {
+                        <div class="alert alert-danger mt-3">@errorMessage</div>
+                    }
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private RestaurantProfile profile = new RestaurantProfile{
+                RestaurantName = "",
+                RestaurantAddress = "",
+                OpeningHours = ""
+            };
+    private bool formError = false;
+    private bool success = false;
+    private string errorMessage = "";
+
+    protected override void OnInitialized()
+    {
+        TitleService.Title = "Profil du Restaurant";
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            profile = ProfileService.GetProfile() ?? new RestaurantProfile
+            {
+                RestaurantName = "",
+                RestaurantAddress = "",
+                OpeningHours = ""
+            };
+        }
+        catch (Exception ex)
+        {
+            formError = true;
+            errorMessage = $"Erreur lors du chargement des données: {ex.Message}";
+        }
+    }
+
+    private async Task Save()
+    {
+        formError = false;
+         success = false;
+        
+        try
+        {
+            if (string.IsNullOrWhiteSpace(profile.RestaurantName))
+            {
+                formError = true;
+                errorMessage = "Le nom du restaurant est requis.";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(profile.RestaurantAddress))
+            {
+                formError = true;
+                errorMessage = "L'adresse du restaurant est requise.";
+                return;
+            }
+
+            if (profile.Id > 0)
+            {
+                ProfileService.UpdateProfile(profile);
+            }
+            else
+            {
+                ProfileService.AddProfile(profile);
+            }
+
+            success = true;
+        }
+        catch (Exception ex)
+        {
+            formError = true;
+            errorMessage = ex.InnerException?.Message ?? ex.Message;
+        }
+    }
+}

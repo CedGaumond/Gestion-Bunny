@@ -9,14 +9,15 @@ using QuestPDF.Companion;
 
 namespace Gestion_Bunny.Services
 {
-   
     public class PDFService : IPDFService
     {
         private readonly string _logoPath;
+        private readonly IProfileService _profileService;
 
-        public PDFService(string logoPath = "wwwroot/images/logo.png")
+        public PDFService(IProfileService profileService, string logoPath = "wwwroot/images/logo.png")
         {
             _logoPath = logoPath;
+            _profileService = profileService;
         }
 
         public byte[] GenerateInvoicePdf(Bill bill, List<(Recipe Recipe, int Quantity)> items)
@@ -35,8 +36,6 @@ namespace Gestion_Bunny.Services
                 document.GeneratePdf(stream);
                 return stream.ToArray();
             }
-
-            
         }
 
         public byte[] GenerateOrderPdf(Order order, List<(Ingredient ingredient, int Quantity)> items)
@@ -55,8 +54,6 @@ namespace Gestion_Bunny.Services
                 document.GeneratePdf(stream);
                 return stream.ToArray();
             }
-
-            
         }
 
         private InvoiceModel CreateInvoiceModel(Bill bill, List<(Recipe Recipe, int Quantity)> items)
@@ -68,6 +65,8 @@ namespace Gestion_Bunny.Services
                 Quantity = item.Quantity
             }).ToList();
 
+            var profile = _profileService.GetProfile();
+
             return new InvoiceModel
             {
                 InvoiceNumber = bill.GenerateInvoiceNumber(),
@@ -78,15 +77,15 @@ namespace Gestion_Bunny.Services
                 // These could be populated from your actual data
                 SellerAddress = new Address
                 {
-                    CompanyName = "Bunny&Co Joliette",
-                    Street = "123 Rue Principale",
+                    CompanyName = profile.RestaurantName,
+                    Street = profile.RestaurantAddress,
                     City = "Joliette",
                     State = "QC"
                 }
             };
         }
 
-        private OrderModel CreateOrderModel(Order order,List<(Ingredient ingredient, int Quantity)> items)
+        private OrderModel CreateOrderModel(Order order, List<(Ingredient ingredient, int Quantity)> items)
         {
             var orderItems = items.Select(item => new OrderItem
             {
@@ -95,19 +94,19 @@ namespace Gestion_Bunny.Services
                 Quantity = item.Quantity,
                 QuantityPerDeliveryUnit = item.ingredient.QuantityPerDeliveryUnit
             }).ToList();
-
+            
+            var profile = _profileService.GetProfile();
+            
             return new OrderModel
             {
                 InvoiceNumber = order.GenerateInvoiceNumber(),
                 IssueDate = order.OrderDate,
                 Items = orderItems,
                 Comments = "",
-                
-                // These could be populated from your actual data
                 SellerAddress = new Address
                 {
-                    CompanyName = "Bunny&Co Joliette",
-                    Street = "123 Rue Principale",
+                    CompanyName = profile.RestaurantName,
+                    Street = profile.RestaurantAddress,
                     City = "Joliette",
                     State = "QC"
                 }

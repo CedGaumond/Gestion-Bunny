@@ -50,7 +50,7 @@
                 <div class="icons">
                     @if (AuthState.GetCurrentUserRole().RoleName == "Admin" || AuthState.GetCurrentUserRole().RoleName == "Gérant")
                     {
-                        <a href="#"><img src="images/gear.svg" alt="Paramètre" class="img-icon" /></a>
+                        <a href="#"  @onclick="Profile" ><img src="images/gear.svg" alt="Paramètre" class="img-icon" /></a>
                         <a href="#"><img src="images/bell.svg" alt="Notifications" class="img-icon" /></a>
                     }
                     <!-- Logout Button -->
@@ -108,5 +108,10 @@ else
         AuthState.SetUnauthenticated();
         Navigation.NavigateTo("/");
 
+    }
+
+    private void Profile()
+    {
+        Navigation.NavigateTo("/profile");
     }
 }
