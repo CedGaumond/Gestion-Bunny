@@ -101,7 +101,7 @@
                     <!-- Picture -->
                     <div class="col-md-12 mb-3">
                         <label for="pic" class="form-label">Photo</label>
-                        <InputFile class="form-control" OnChange="HandleFileSelected" accept="image/*" />
+                        <InputFile class="form-control" OnChange="HandleFileSelected" accept=".jpg, .jpeg, .png, .gif" />
                         @if (user.Employee.Pic != null)
                         {
                             <img src="data:image/jpeg;base64,@Convert.ToBase64String(user.Employee.Pic)" alt="Preview" class="img-fluid mt-2 rounded" style="max-height: 150px;" />

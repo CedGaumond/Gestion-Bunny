@@ -44,4 +44,6 @@ public interface IScheduleService
     /// Retrieves schedules for a specific week.
     /// </summary>
     List<Schedule> GetSchedulesForWeek(DateTime weekStart);
+    Task SendScheduleEmail(DateTime weekStart);
+
 }

@@ -1,13 +1,18 @@
 using Gestion_Bunny.Modeles;
+using Gestion_Bunny.Services;
+using Gestion_Bunny.Utils;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 public class ScheduleService : IScheduleService
 {
     private readonly ApplicationDbContext _context;
+    private IPDFService pdfService;
 
-    public ScheduleService(ApplicationDbContext context)
+    public ScheduleService(ApplicationDbContext context, IPDFService pdfService)
     {
         _context = context;
+        this.pdfService = pdfService;
     }
 
     private DateTime EnsureUtc(DateTime dateTime)
@@ -194,5 +199,62 @@ public class ScheduleService : IScheduleService
             throw;
         }
     }
+
+    public List<string> GetEmailsForWeek(DateTime weekStart)
+    {
+        DateTime weekEnd = weekStart.AddDays(7);
+
+        return _context.Schedules
+            .Where(s => s.ShiftStart >= weekStart && s.ShiftStart < weekEnd)
+            .Select(s => s.User.Email)
+            .Distinct()
+            .ToList();
+    }
+
+    public async Task SendScheduleEmail(DateTime weekStart)
+    {
+        List<string> emails = GetEmailsForWeek(weekStart);
+        if (!emails.Any()) return;
+
+        byte[] pdfContent = pdfService.GenerateSchedulePdf(weekStart);
+        string tempPath = Path.Combine(FileSystem.CacheDirectory, "horaire.pdf");
+
+        await File.WriteAllBytesAsync(tempPath, pdfContent); 
+
+        string emailBody = $@"
+Bonjour,
+
+Voici l'horaire de la semaine débutant le {weekStart:dd MMMM yyyy}.
+Cordialement,
+Bunny & Co.";
+
+        try
+        {
+            await EmailUtil.SendEmailAsync(
+                emails,
+                $"Bunny & Co - Horaire de la semaine {weekStart:dd MMMM yyyy}",
+                emailBody,
+                tempPath
+            );
+        }
+        finally
+        {
+
+            await Task.Delay(500);
+
+            if (File.Exists(tempPath))
+            {
+                try
+                {
+                    File.Delete(tempPath);
+                }
+                catch (IOException ex)
+                {
+                    Console.WriteLine($"Impossible de supprimer le fichier : {ex.Message}");
+                }
+            }
+        }
+    }
+
 }
 
