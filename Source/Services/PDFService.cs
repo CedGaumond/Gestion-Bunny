@@ -111,13 +111,10 @@ namespace Gestion_Bunny.Services
         {
             QuestPDF.Settings.License = LicenseType.Community;
 
-            // Créer le modèle pour l'horaire
             var model = CreateScheduleModel(weekStart);
 
-            // Créer le document PDF
             var document = new ScheduleDocument(model, _logoPath);
 
-            // Générer le PDF sous forme de tableau d'octets
             using (var stream = new MemoryStream())
             {
                 document.GeneratePdf(stream);
@@ -128,15 +125,13 @@ namespace Gestion_Bunny.Services
 
         private ScheduleModel CreateScheduleModel(DateTime weekStart)
         {
-            DateTime weekEnd = weekStart.AddDays(7); // Fin de la semaine
+            DateTime weekEnd = weekStart.AddDays(7); 
 
-            // Récupérer les horaires de la semaine avec les employés associés
             var schedules = _context.Schedules
                 .Where(s => s.ShiftStart >= weekStart && s.ShiftStart < weekEnd)
                 .Include(s => s.User)
                 .ToList();
 
-            // Grouper par employé
             var employees = schedules
                 .GroupBy(s => s.User)
                 .Select(group => new EmployeeSchedule

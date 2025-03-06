@@ -41,7 +41,7 @@
                             <small class="d-block">@item.Key.Price.ToString("C")</small>
                         </div>
                         <div class="d-flex flex-column" style="flex: 3; text-align: center;">
-                            <span class="fw-bold">@item.Value</span>
+                            <span class="fw-bold">@item.Value x @item.Key.QuantityPerDeliveryUnit</span>
                         </div>
                         <div class="d-flex flex-column" style="flex: 5; text-align: end;">
                             <span class="fw-bold">@((item.Key.Price * item.Value).ToString("C"))</span>
