@@ -15,7 +15,7 @@
                 <div class="d-flex justify-content-center mb-4">
                     @if (user.Employee?.Pic != null && user.Employee.Pic.Length > 0)
                     {
-                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(user.Employee.Pic)"
+                        <img src="@GetImageSource(user.Employee)"
                              class="rounded-circle border border-light"
                              alt="Photo de profil"
                              style="width: 150px; height: 150px; object-fit: cover;" />
@@ -108,6 +108,22 @@
         {
             await UserService.ResetPassword(user);
             Navigation.NavigateTo("/employee-list");
+        }
+    }
+
+    private string GetImageSource(Employee employee)
+    {
+        if (employee.Pic != null && employee.Pic.Length > 0)
+        {
+            return $"data:image/jpeg;base64,{Convert.ToBase64String(employee.Pic)}";
+        }
+        else if (!string.IsNullOrEmpty(employee.Pic?.ToString()))
+        {
+            return employee.Pic.ToString();
+        }
+        else
+        {
+            return "images/default-employee-image.jpg";
         }
     }
 }

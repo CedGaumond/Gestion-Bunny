@@ -36,44 +36,31 @@
         </div>
 
        @foreach (var recipe in recipes_filter)
-{
-    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
-        <div class="card mx-auto h-100 d-flex flex-column">
-            @if (recipe.Pic != null && recipe.Pic.Length > 0)
-            {
-                <!-- Convert byte[] to Base64 string -->
-                <img src="data:image/jpeg;base64,@Convert.ToBase64String(recipe.Pic)" class="card-img-top" alt="Image de la recette" />
-            }
-            else if (!string.IsNullOrEmpty(recipe.Pic?.ToString())) 
-            {
-                <!-- URL image rendering -->
-                <img src="@recipe.Pic" class="card-img-top" alt="Image de la recette" />
-            }
-            else
-            {
-                <!-- Fallback image rendering -->
-                <img src="images/default-recipe-image.jpg" class="card-img-top" alt="Image de la recette" />
-            }
+       {
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+            <div class="card mx-auto h-100 d-flex flex-column">
+                    <img class="card-img-top"
+                         src="@GetImageSource(recipe)"
+                         alt="Image de la recette"
+                         onerror="this.onerror=null; this.src='images/default-recipe-image.jpg'" />
 
-            <div class="card-body">
-                <h5 class="card-title">@recipe.Name</h5>
-                <p class="card-text">Prix : @recipe.Price.ToString()</p>
+                <div class="card-body">
+                    <h5 class="card-title">@recipe.Name</h5>
+                    <p class="card-text">Prix : @recipe.Price.ToString()</p>
 
-                <div class="d-flex justify-content-center align-items-center gap-3">
-                    <div class="icon-container" @onclick="@(() => Navigation.NavigateTo($"/recipe/{recipe.Id}"))">
-                        <img src="images/pencil-square.svg" alt="Modifier" class="action-icon" />
-                    </div>
+                    <div class="d-flex justify-content-center align-items-center gap-3">
+                        <div class="icon-container" @onclick="@(() => Navigation.NavigateTo($"/recipe/{recipe.Id}"))">
+                            <img src="images/pencil-square.svg" alt="Modifier" class="action-icon" />
+                        </div>
 
-                    <div class="icon-container" @onclick="() => HandleDeleteAction(recipe.Id)">
-                        <img src="images/trash.svg" alt="Supprimer" class="action-icon" />
+                        <div class="icon-container" @onclick="() => HandleDeleteAction(recipe.Id)">
+                            <img src="images/trash.svg" alt="Supprimer" class="action-icon" />
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-}
-
-
+        }
 
     </div>
 }
@@ -123,6 +110,22 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error while deleting the recipe: {ex.Message}");
+        }
+    }
+
+    private string GetImageSource(Recipe recipe)
+    {
+        if (recipe.Pic != null && recipe.Pic.Length > 0)
+        {
+            return $"data:image/jpeg;base64,{Convert.ToBase64String(recipe.Pic)}";
+        }
+        else if (!string.IsNullOrEmpty(recipe.Pic?.ToString()))
+        {
+            return recipe.Pic.ToString();
+        }
+        else
+        {
+            return "images/default-recipe-image.png";
         }
     }
 }
