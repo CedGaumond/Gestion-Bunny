@@ -115,6 +115,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        TitleService.Title = "Formulaire de gestion des recettes";
         try
         {
             var dbCategories = RecipeService.GetCategories();

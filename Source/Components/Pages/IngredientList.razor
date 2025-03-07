@@ -106,12 +106,6 @@ else
     protected override void OnInitialized()
     {
         TitleService.Title = "Liste d'ingrédients";
-        //IngredientService.OnIngredientUpdated += LoadIngredients;
-    }
-
-    public void Dispose()
-    {
-       //IngredientService.OnIngredientUpdated -= LoadIngredients;
     }
 
     protected override async Task OnInitializedAsync()
@@ -134,7 +128,7 @@ else
         finally
         {
             isLoading = false;
-            StateHasChanged(); // Force la mise à jour de l'UI
+            StateHasChanged(); 
         }
     }
 

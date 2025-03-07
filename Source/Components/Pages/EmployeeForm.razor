@@ -141,6 +141,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        TitleService.Title = "Formulaire de gestion des employés";
         var dbUserRoles = UserService.GetUserRoles();
 
         if(dbUserRoles != null)
