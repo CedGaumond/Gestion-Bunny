@@ -60,8 +60,7 @@ public class UserService : IUserService
         user.PasswordSalt = salt;
         user.TempPassword = false; 
 
-        _context.Users.Attach(user);
-        _context.Entry(user).State = EntityState.Modified; 
+        _context.Entry(existingUser).State = EntityState.Modified; 
 
         _context.SaveChanges();
     }
@@ -102,7 +101,7 @@ public class UserService : IUserService
 
     public void DeleteUser(User user)
     {
-        if(user.IsDeleted = false)
+        if(user.IsDeleted == false)
         {
             user.IsDeleted = true;
             user.DeletedDate = DateTime.UtcNow;
