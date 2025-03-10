@@ -167,7 +167,7 @@
                     <button class="cancel-btn" @onclick="CloseDialog">
                         Annuler
                     </button>
-                    <button class="save-btn" @onclick="SaveShift">
+                    <button class="btn-primary" @onclick="SaveShift">
                         Enregistrer
                     </button>
                 </div>
@@ -178,7 +178,7 @@
     @if (ShowConfirmDelete)
     {
         <div class="modal-overlay" @onclick="CancelDelete">
-            <div class="modal-container confirm-delete" @onclick:stopPropagation="true">
+            <div class="modal-container confirm-delete p-3" @onclick:stopPropagation="true">
                 <div class="modal-header">
                     <h3>Supprimer l'horaire</h3>
                     <button class="close-btn" @onclick="CancelDelete">

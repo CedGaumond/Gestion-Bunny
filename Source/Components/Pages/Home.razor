@@ -7,6 +7,7 @@
 @inject INotificationService NotificationService
 @inject AuthenticationState AuthState
 @inject NavigationManager NavigationManager
+@inject PageTitleService TitleService
 
 <PageTitle>Home</PageTitle>
 
@@ -170,6 +171,8 @@
         
         // Load low stock ingredients
         LoadLowStockIngredients();
+
+        TitleService.Title = "Page d'accueil";
     }
 
     private void LoadLowStockIngredients()

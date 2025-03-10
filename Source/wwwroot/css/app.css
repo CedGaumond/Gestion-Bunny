@@ -543,47 +543,6 @@ label{
     color: #333;
 }
 
-.nav-btn {
-    background-color: transparent;
-    border: 1px solid #e0e0e0;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #666;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.nav-btn:hover {
-    background-color: #f5f5f5;
-    color: #333;
-}
-
-/* Enhanced week navigation buttons */
-.nav-btn.week-nav {
-    background-color: #f5f5f5;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #4a6fff;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 1rem;
-}
-
-.nav-btn.week-nav:hover {
-    background-color: #4a6fff;
-    color: white;
-    border-color: #4a6fff;
-}
-
 .header-actions {
     display: flex;
     align-items: center;
@@ -609,11 +568,6 @@ label{
     transition: border-color 0.2s;
 }
 
-.employee-select:hover,
-.employee-select:focus {
-    border-color: #4a6fff;
-}
-
 .filter-btn {
     background-color: #f5f5f5;
     color: #555;
@@ -627,13 +581,6 @@ label{
     align-items: center;
     gap: 8px;
 }
-
-.filter-btn:hover {
-    background-color: #4a6fff;
-    color: white;
-    border-color: #4a6fff;
-}
-
 
 .add-btn:hover {
     background-color: #3a5eff;
@@ -683,7 +630,7 @@ label{
     color: #333;
 }
 
-.time-cell {
+/*.time-cell {
     height: 60px;
     padding: 5px;
     border-bottom: 1px solid #f0f0f0;
@@ -695,7 +642,7 @@ label{
     position: relative;
     background-color: white;
     cursor: pointer;
-}
+}*/
 
 .time-cell:hover {
     background-color: #f9f9f9;
@@ -703,25 +650,6 @@ label{
 
 .current-time {
     background-color: rgba(74, 111, 255, 0.05);
-}
-
-/* Event Cards */
-.event-card {
-    background-color: #e3eaff;
-    border-left: 3px solid #4a6fff;
-    border-radius: 4px;
-    padding: 4px 6px;
-    margin-bottom: 2px;
-    font-size: 0.75rem;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-    z-index: 2;
 }
 
 /* Different heights for different shift durations */
@@ -981,10 +909,6 @@ label{
     }
 
 
-.nav-btn:hover {
-    background-color: #444;
-}
-
 .week-nav {
     display: flex;
     align-items: center;
@@ -1079,16 +1003,6 @@ label{
     color: #fff;
 }
 
-/* Modifié: cellules noires avec bordures blanches */
-.time-cell {
-    height: 40px;
-    border-bottom: 1px solid white; /* Changé à blanc */
-    border-right: 1px solid white; /* Ajouté bordure droite blanche */
-    position: relative;
-    transition: background-color 0.2s;
-    background-color: #2a2f36; /* Ajouté fond noir */
-}
-
 .time-cell:hover {
     background-color: #2a2a2a;
 }
@@ -1099,7 +1013,7 @@ label{
 
 
 .event-card {
-    position: absolute;
+    position: relative;
     left: 0;
     right: 0;
     z-index: 5;
@@ -1113,7 +1027,8 @@ label{
     box-shadow: 0 2px 4px color #2a2f36;
     overflow: hidden;
     background-color: #E4DF96 !important;
-    border-left: 3px solid #a8a463 !important;
+    border: 2px solid #a8a463 !important;
+    min-height:fit-content;
 }
 
 
@@ -1429,19 +1344,6 @@ select.form-control {
     font-size: 1rem;
 }
 
-.nav-btn {
-    background-color: #333;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    padding: 5px 10px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-    .nav-btn:hover {
-        background-color: #444;
-    }
 
 .week-nav {
     display: flex;
@@ -1539,12 +1441,17 @@ select.form-control {
 
 /* Modifié: cellules noires avec bordures blanches */
 .time-cell {
-    height: 40px;
-    border-bottom: 1px solid white; /* Changé à blanc */
-    border-right: 1px solid white; /* Ajouté bordure droite blanche */
+    min-height: 30px;
+    border-bottom: none !important;
+    border-right: 0.3px solid white;
+    border-left: 0.3px solid white;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
     transition: background-color 0.2s;
     background-color: #2a2f36; /* Ajouté fond noir */
+    flex-grow: 1;
 }
 
     .time-cell:hover {
@@ -1553,25 +1460,6 @@ select.form-control {
 
 .current-time {
     background-color: #2a2f36 !important;
-}
-
-
-.event-card {
-    position: absolute;
-    left: 0;
-    right: 0;
-    z-index: 5;
-    margin: 0 2px;
-    border-radius: 4px;
-    padding: 4px;
-    font-size: 0.8rem;
-    display: flex;
-    justify-content: space-between;
-    cursor: pointer;
-    box-shadow: 0 2px 4px color #2a2f36;
-    overflow: hidden;
-    background-color: #333;
-    border-left: 3px solid #555;
 }
 
 
@@ -1608,7 +1496,7 @@ select.form-control {
 .delete-event {
     background: none;
     border: none;
-    color: #ccc;
+    color: #333;
     font-size: 0.8rem;
     cursor: pointer;
     visibility: hidden;
