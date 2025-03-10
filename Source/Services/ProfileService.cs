@@ -14,7 +14,7 @@ namespace Gestion_Bunny.Services
 
         public RestaurantProfile GetProfile()
         {
-            return _context.RestaurantProfiles.Find(1);
+            return _context.RestaurantProfiles.FirstOrDefault();
         }
 
         public void AddProfile(RestaurantProfile profileProvider)
