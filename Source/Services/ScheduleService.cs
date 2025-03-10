@@ -75,14 +75,11 @@ public class ScheduleService : IScheduleService
     {
         try
         {
-            var weekEnd = weekStart.AddDays(7); // Calculate the end of the week
+            var weekEnd = weekStart.AddDays(7);
 
-            // Ensure weekStart and weekEnd are in UTC
-            var utcWeekStart = EnsureUtc(weekStart);
-            var utcWeekEnd = EnsureUtc(weekEnd);
 
             return _context.Schedules
-                .Where(s => s.UserId == employeeId && s.ShiftStart >= utcWeekStart && s.ShiftStart < utcWeekEnd)
+                .Where(s => s.UserId == employeeId && s.ShiftStart >= weekStart && s.ShiftStart < weekEnd)
                 .Include(s => s.User)
                 .OrderBy(s => s.ShiftStart)
                 .ToList();
@@ -144,9 +141,6 @@ public class ScheduleService : IScheduleService
     {
         try
         {
-            schedule.ShiftStart = EnsureUtc(schedule.ShiftStart);
-            schedule.ShiftEnd = EnsureUtc(schedule.ShiftEnd);
-
             _context.Schedules.Add(schedule);
             _context.SaveChanges();
         }

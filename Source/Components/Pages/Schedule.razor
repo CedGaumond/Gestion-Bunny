@@ -37,7 +37,7 @@
                     <i class="fas fa-filter"></i> Filtrer
                 </button>
             </div>
-            <button class="btn-primary" @onclick="() => ShowAddDialog = true">
+            <button class="btn-primary" @onclick="() => OpenAddShiftDialog()">
                 <i class="fas fa-plus"></i> Ajouter
             </button>
         </div>
@@ -213,7 +213,7 @@
     private int SelectedUserId = 0;
     private int SelectedShiftId = 0;
 
-    
+
     private DateTime SelectedDate = DateTime.Today;
     private string StartTimeString = "09:00";
     private string EndTimeString = "17:00";
@@ -254,7 +254,7 @@
                 Schedules = ScheduleService.GetSchedulesForWeek(CurrentWeekStart);
             }
 
-            
+
             Console.WriteLine($"Loaded {Schedules.Count} schedules for week starting {CurrentWeekStart.ToShortDateString()}");
         }
         catch (Exception ex)
@@ -281,11 +281,13 @@
         LoadSchedules();
     }
 
-    private void OpenAddShiftDialog(DateTime startTime)
+    private void OpenAddShiftDialog()
     {
+        DateTime startTime = DateTime.Now;
         SelectedDate = startTime.Date;
-        StartTimeString = startTime.ToString("HH:mm");
-        EndTimeString = startTime.AddHours(8).ToString("HH:mm");
+        DateTime startHour = new DateTime(2025, 3, 11, 11, 0, 0); 
+        StartTimeString = startHour.ToString("HH:mm");
+        EndTimeString = startHour.AddHours(8).ToString("HH:mm");
 
         NewShift = new ScheduleModel
         {
@@ -345,22 +347,22 @@
             0,
             DateTimeKind.Local);
 
-            
+
             if (endTime < startTime)
             {
                 shiftEndLocal = shiftEndLocal.AddDays(1);
             }
 
-           
+
             if (HasScheduleConflict(NewShift.UserId, shiftStartLocal, shiftEndLocal))
             {
                 ShowConflictError = true;
                 return;
             }
 
-            
-            var shiftStartUtc = shiftStartLocal.ToUniversalTime();
-            var shiftEndUtc = shiftEndLocal.ToUniversalTime();
+
+            var shiftStartUtc = shiftStartLocal;
+            var shiftEndUtc = shiftEndLocal;
 
             var scheduleToSave = new ScheduleModel
             {
