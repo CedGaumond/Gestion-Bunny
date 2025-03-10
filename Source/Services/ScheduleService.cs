@@ -83,13 +83,36 @@ public class ScheduleService : IScheduleService
 
             return _context.Schedules
                 .Where(s => s.UserId == employeeId && s.ShiftStart >= utcWeekStart && s.ShiftStart < utcWeekEnd)
-                .Include(s => s.User) 
-                .OrderBy(s => s.ShiftStart) 
+                .Include(s => s.User)
+                .OrderBy(s => s.ShiftStart)
                 .ToList();
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error retrieving schedules for employee {employeeId} and week starting {weekStart}: {ex.Message}");
+            throw;
+        }
+    }
+
+
+    /// <summary>
+    /// Retrieves schedules for a specific day, including related employee data.
+    /// </summary>
+    public List<Schedule> GetEmployeeSchedulesForDay(DateTime day)
+    {
+        try
+        {
+            var utcDay = EnsureUtc(day);
+
+            return _context.Schedules
+                .Where(s => s.ShiftStart >= utcDay)
+                .Include(s => s.User)
+                .OrderBy(s => s.ShiftStart)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error retrieving schedules for and week starting {day}: {ex.Message}");
             throw;
         }
     }

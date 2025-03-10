@@ -20,6 +20,8 @@ public interface IScheduleService
     /// </summary>
     List<Schedule> GetEmployeeSchedulesForWeek(int employeeId, DateTime weekStart);
 
+    List<Schedule> GetEmployeeSchedulesForDay(DateTime day);
+
     /// <summary>
     /// Retrieves a specific schedule by its ID.
     /// </summary>

@@ -5,9 +5,11 @@
 @inject IUserService EmployeeService
 @inject IIngredientService IngredientService
 @inject INotificationService NotificationService
+@inject IScheduleService ScheduleService
 @inject AuthenticationState AuthState
 @inject NavigationManager NavigationManager
 @inject PageTitleService TitleService
+
 
 <PageTitle>Home</PageTitle>
 
@@ -46,14 +48,41 @@
         </div>
     }
 
+    @if (todayShifts.Any())
+    {
+        <div class="shift-panel">
+            <div class="shift-header">
+                <div class="shift-title">Quarts de travail d'aujourd'hui</div>
+            </div>
+
+            <div class="shift-body">
+
+
+                @foreach (var shift in todayShifts)
+                {
+
+                    <div class="shift-item">
+                        <div class="shift-employee">@shift.User.GetFullName()</div>
+                        <div class="shift-time">@shift.ShiftEnd.ToString("HH:mm") - @shift.ShiftStart.ToString("HH:mm")</div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
     <!-- Le reste du contenu de la page d'accueil ici -->
 </div>
 
 <style>
     .home-container {
-        max-width: 30%;
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
         padding: 20px;
-        background-color: #212529;
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        justify-content: center;
         color: #e0e0e0;
     }
 
@@ -64,26 +93,93 @@
         margin-bottom: 30px;
     }
 
-    .notification-panel {
+    .notification-panel,
+    .shift-panel {
+        flex: 1;
+        min-width: 350px;
         background-color: #333333;
-        border-radius: 6px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        margin-bottom: 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         overflow: hidden;
+        transition: transform 0.2s ease-in-out;
     }
 
-    .notification-header {
+        .notification-panel:hover,
+        .shift-panel:hover {
+            transform: translateY(-3px);
+        }
+
+    .notification-header,
+    .shift-header {
         display: flex;
         align-items: center;
-        background-color: #2a2f36;
+        justify-content: space-between;
         padding: 15px;
-        border-bottom: 1px solid #555555;
+        background-color: #343a40;
+        border-bottom: 2px solid #495057;
+        font-weight: bold;
+        color: #ffffff;
     }
 
-    .notification-title {
+    .notification-body,
+    .shift-body {
+        max-height: 350px;
+        overflow-y: auto;
+        padding: 10px;
+    }
+
+    .notification-item,
+    .shift-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px;
+        border-bottom: 1px solid #444444;
+        background-color: #3a3a3a;
+        transition: background-color 0.3s ease-in-out;
+    }
+
+        .notification-item:hover,
+        .shift-item:hover {
+            background-color: #454545;
+        }
+
+        .notification-item.critical {
+            background-color: #2a2f36 !important;
+            color: #ffffff;
+        }
+
+            .notification-item.critical:hover {
+                background-color: #505050 !important;
+            }
+
+    .ingredient-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ingredient-name,
+    .shift-employee {
         font-weight: 600;
         color: #ffffff;
-        flex-grow: 1;
+    }
+
+    .ingredient-details,
+    .shift-time {
+        font-size: 0.85rem;
+        color: #cccccc;
+    }
+
+    /* Ajout d'une scrollbar stylisée pour les panels */
+    .notification-body::-webkit-scrollbar,
+    .shift-body::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .notification-body::-webkit-scrollbar-thumb,
+    .shift-body::-webkit-scrollbar-thumb {
+        background-color: #555;
+        border-radius: 4px;
     }
 
     .notification-count {
@@ -95,74 +191,12 @@
         font-weight: 600;
     }
 
-    .notification-body {
-        max-height: 300px;
-        overflow-y: auto;
-    }
-
-    .notification-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 15px;
-        border-bottom: 1px solid #444444;
-        transition: background-color 0.2s;
-        background-color: #3a3a3a;
-    }
-
-    .notification-item:last-child {
-        border-bottom: none;
-    }
-
-    .notification-item:hover {
-        background-color: #454545;
-    }
-
-    .notification-item.critical {
-        background-color: #2a2f36;
-    }
-
-    .notification-item.critical:hover {
-        background-color: #505050;
-    }
-
-    .ingredient-info {
-        flex-grow: 1;
-    }
-
-    .ingredient-name {
-        font-weight: 600;
-        margin-bottom: 4px;
-        color: #ffffff;
-    }
-
-    .ingredient-details {
-        display: flex;
-        font-size: 0.85rem;
-        color: #cccccc;
-    }
-
-    .quantity {
-        margin-right: 12px;
-        color: #e0e0e0;
-    }
-
-    .threshold {
-        color: #aaaaaa;
-    }
-
-    .notification-footer {
-        padding: 10px 15px;
-        background-color: #2a2f36;
-        text-align: center;
-        color: #aaaaaa;
-        font-size: 14px;
-    }
 </style>
 
 @code {
     private string platform => DeviceInfo.Platform.ToString();
     private List<Ingredient> lowStockIngredients = new List<Ingredient>();
+    private List<Gestion_Bunny.Modeles.Schedule> todayShifts = new List<Gestion_Bunny.Modeles.Schedule>();
 
     protected override void OnInitialized()
     {
@@ -172,7 +206,14 @@
         // Load low stock ingredients
         LoadLowStockIngredients();
 
+        LoadTodayShifts();
+
         TitleService.Title = "Page d'accueil";
+    }
+
+    private void LoadTodayShifts()
+    {
+        todayShifts = ScheduleService.GetEmployeeSchedulesForDay(DateTime.UtcNow);
     }
 
     private void LoadLowStockIngredients()
