@@ -56,8 +56,7 @@
                     var currentSlot = new DateTime(day.Year, day.Month, day.Day, time.Hour, time.Minute, 0);
                     var isCurrentTimeSlot = IsCurrentTime(currentSlot);
 
-                    <div class="time-cell @(isCurrentTimeSlot ? "current-time" : "")"
-                        @onclick="() => OpenAddShiftDialog(currentSlot)">
+                    <div class="time-cell @(isCurrentTimeSlot ? "current-time" : "")">
                         @{
                             // Find shifts that START in this time slot
                             var shiftsStartingInSlot = Schedules.Where(s =>
