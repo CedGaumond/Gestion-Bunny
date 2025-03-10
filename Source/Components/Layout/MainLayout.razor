@@ -3,6 +3,7 @@
 @inject AuthenticationState AuthState
 @inject PageTitleService TitleService
 @inject NavigationManager Navigation
+@inject INotificationService NotificationService
 
 @if (AuthState.IsAuthenticated && !AuthState.CurrentUser.TempPassword)
 {
@@ -50,8 +51,14 @@
                 <div class="icons">
                     @if (AuthState.GetCurrentUserRole().RoleName == "Admin" || AuthState.GetCurrentUserRole().RoleName == "Gérant")
                     {
-                        <a href="#"  @onclick="Profile" ><img src="images/gear.svg" alt="Paramètre" class="img-icon" /></a>
-                        <a href="#"><img src="images/bell.svg" alt="Notifications" class="img-icon" /></a>
+                        <a href="#" @onclick="Profile"><img src="images/gear.svg" alt="Paramètre" class="img-icon" /></a>
+                        <a href="#" @onclick="NavigateToOrder" class="notification-icon-container">
+                            <img src="images/bell.svg" alt="Notifications" class="img-icon" />
+                            @if (lowStockCount > 0)
+                            {
+                                <span class="notification-badge">@lowStockCount</span>
+                            }
+                        </a>
                     }
                     <!-- Logout Button -->
                     <a href="#" @onclick="Logout">
@@ -78,10 +85,46 @@ else
 </div>
 }
 
+<style>
+    .notification-icon-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .notification-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background-color: #ff4d4f;
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        font-size: 11px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+    }
+</style>
+
 @code {
+    private int lowStockCount = 0;
+
     protected override void OnInitialized()
     {
         TitleService.OnTitleChanged += StateHasChanged;
+        LoadLowStockCount();
+    }
+
+    protected override void OnParametersSet()
+    {
+        LoadLowStockCount();
+    }
+
+    private void LoadLowStockCount()
+    {
+        lowStockCount = NotificationService.GetLowStockCount();
     }
 
     public void Dispose()
@@ -107,11 +150,15 @@ else
     {
         AuthState.SetUnauthenticated();
         Navigation.NavigateTo("/");
-
     }
 
     private void Profile()
     {
         Navigation.NavigateTo("/profile");
+    }
+
+    private void NavigateToOrder()
+    {
+        Navigation.NavigateTo("/order");
     }
 }

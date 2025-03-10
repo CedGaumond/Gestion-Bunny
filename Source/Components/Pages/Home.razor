@@ -2,23 +2,189 @@
 @using Gestion_Bunny.Modeles
 @using Gestion_Bunny.Services
 @using Microsoft.EntityFrameworkCore
-@inject Gestion_Bunny.Services.IUserService EmployeeService
+@inject IUserService EmployeeService
+@inject IIngredientService IngredientService
+@inject INotificationService NotificationService
 @inject AuthenticationState AuthState
 @inject NavigationManager NavigationManager
 
 <PageTitle>Home</PageTitle>
 
-<h1>Bienvenue chez Bunny&Co.</h1>
+<div class="home-container">
 
+    @if (lowStockIngredients.Any())
+    {
+        <div class="notification-panel">
+            <div class="notification-header">
+                <div class="notification-title">
+                    Alerte de stock
+                </div>
+                <div class="notification-count">
+                    @lowStockIngredients.Count ingrédient(s)
+                </div>
+            </div>
 
+            <div class="notification-body">
+                @foreach (var ingredient in lowStockIngredients)
+                {
+                    <div class="notification-item @(ingredient.QuantityRemaining <= ingredient.MinimumThresholdNotification * 0.5m ? "critical" : "")">
+                        <div class="ingredient-info">
+                            <div class="ingredient-name">@ingredient.Name</div>
+                            <div class="ingredient-details">
+                                <span class="quantity">Stock: @ingredient.QuantityRemaining</span>
+                                <span class="threshold">Seuil: @ingredient.MinimumThresholdNotification</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="notification-footer">
+                
+            </div>
+        </div>
+    }
+
+    <!-- Le reste du contenu de la page d'accueil ici -->
+</div>
+
+<style>
+    .home-container {
+        max-width: 30%;
+        padding: 20px;
+        background-color: #212529;
+        color: #e0e0e0;
+    }
+
+    h1 {
+        color: #ffffff;
+        font-weight: 300;
+        font-size: 32px;
+        margin-bottom: 30px;
+    }
+
+    .notification-panel {
+        background-color: #333333;
+        border-radius: 6px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        margin-bottom: 24px;
+        overflow: hidden;
+    }
+
+    .notification-header {
+        display: flex;
+        align-items: center;
+        background-color: #2a2f36;
+        padding: 15px;
+        border-bottom: 1px solid #555555;
+    }
+
+    .notification-title {
+        font-weight: 600;
+        color: #ffffff;
+        flex-grow: 1;
+    }
+
+    .notification-count {
+        background-color: #666666;
+        color: white;
+        border-radius: 12px;
+        padding: 4px 8px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .notification-body {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .notification-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 15px;
+        border-bottom: 1px solid #444444;
+        transition: background-color 0.2s;
+        background-color: #3a3a3a;
+    }
+
+    .notification-item:last-child {
+        border-bottom: none;
+    }
+
+    .notification-item:hover {
+        background-color: #454545;
+    }
+
+    .notification-item.critical {
+        background-color: #2a2f36;
+    }
+
+    .notification-item.critical:hover {
+        background-color: #505050;
+    }
+
+    .ingredient-info {
+        flex-grow: 1;
+    }
+
+    .ingredient-name {
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: #ffffff;
+    }
+
+    .ingredient-details {
+        display: flex;
+        font-size: 0.85rem;
+        color: #cccccc;
+    }
+
+    .quantity {
+        margin-right: 12px;
+        color: #e0e0e0;
+    }
+
+    .threshold {
+        color: #aaaaaa;
+    }
+
+    .notification-footer {
+        padding: 10px 15px;
+        background-color: #2a2f36;
+        text-align: center;
+        color: #aaaaaa;
+        font-size: 14px;
+    }
+</style>
 
 @code {
     private string platform => DeviceInfo.Platform.ToString();
+    private List<Ingredient> lowStockIngredients = new List<Ingredient>();
 
     protected override void OnInitialized()
     {
         // Subscribe to authentication state changes
         AuthState.OnAuthenticationStateChanged += StateHasChanged;
+        
+        // Load low stock ingredients
+        LoadLowStockIngredients();
+    }
+
+    private void LoadLowStockIngredients()
+    {
+        lowStockIngredients = NotificationService.GetLowStockIngredients();
+    }
+
+    private void NavigateToEditIngredient(int id)
+    {
+        NavigationManager.NavigateTo($"/ingredients/edit/{id}");
+    }
+
+    private void NavigateToIngredients()
+    {
+        NavigationManager.NavigateTo("/ingredients");
     }
 
     public void Dispose()
