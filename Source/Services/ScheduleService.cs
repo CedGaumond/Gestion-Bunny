@@ -102,10 +102,11 @@ public class ScheduleService : IScheduleService
     {
         try
         {
-            var utcDay = EnsureUtc(day);
+            DateTime startOfDay = day.Date;
+            DateTime endOfDay = day.Date.AddDays(1).AddMilliseconds(-1);
 
             return _context.Schedules
-                .Where(s => s.ShiftStart >= utcDay)
+                .Where(s => s.ShiftStart >= startOfDay && s.ShiftStart <= endOfDay)
                 .Include(s => s.User)
                 .OrderBy(s => s.ShiftStart)
                 .ToList();
@@ -116,6 +117,7 @@ public class ScheduleService : IScheduleService
             throw;
         }
     }
+
 
     /// <summary>
     /// Retrieves a specific schedule by its ID, including related employee data.
