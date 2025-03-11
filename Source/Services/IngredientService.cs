@@ -53,7 +53,7 @@ namespace Gestion_Bunny.Services
             };
 
             _context.Ingredients.Add(ingredient);
-            _context.SaveChangesAsync();
+            _context.SaveChanges();
         }
 
         public string GetIngredientNameById(int id)
