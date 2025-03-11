@@ -15,7 +15,7 @@ public class UserService : IUserService
 
     public List<User> GetUsers()
     {
-        return _context.Users.ToList();
+        return _context.Users.Include(s => s.UserRole).ToList();
     }
 
     public User GetUserById(int userId)

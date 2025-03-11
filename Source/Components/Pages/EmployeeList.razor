@@ -39,6 +39,7 @@ else
                 <tr>
                     <th>Actions</th>
                     <th>Nom</th>
+                    <th>Rôle</th>
                     <th>Email</th>
                     <th>Date de naissance</th>
                     <th>Actif/Inactif</th>
@@ -66,6 +67,7 @@ else
                         </td>
 
                         <td>@user.GetFullName()</td>
+                        <td>@user.UserRole.RoleName</td>
                         <td>@user.Email</td>
                         <td>@(user.Employee?.BirthDate.HasValue == true ? user.Employee.BirthDate.Value.ToShortDateString() : "Non renseigné")</td>
                         <td>@(user.IsDeleted ? "❌" : "✅")</td>
