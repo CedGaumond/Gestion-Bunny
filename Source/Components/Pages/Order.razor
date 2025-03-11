@@ -145,12 +145,12 @@
                                         <span class="badge bg-secondary">Non commandé</span>
                                     }
                                 </div>
-                                <div class="action-buttons">
-                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => HandleRemAction(ingredient)" 
+                                <div class="action-buttons d-flex flex-row justify-content-between">
+                                    <button class="btn btn-sm btn-remove-color me-2 fw-bold custom-btn" @onclick="() => HandleRemAction(ingredient)"
                                             disabled="@(!ingredientQuantities.TryGetValue(ingredient.Id, out int q) || q <= 0)">
                                         <i class="bi bi-dash"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-outline-success ms-2" @onclick="() => HandleAddAction(ingredient)">
+                                    <button class="btn btn-sm btn-add-color fw-bold custom-btn" @onclick="() => HandleAddAction(ingredient)">
                                         <i class="bi bi-plus"></i>
                                     </button>
                                 </div>
@@ -432,7 +432,7 @@
             }
 
             OnFilterChanged();
-            StateHasChanged(); // Ensure UI updates after changing quantities
+            StateHasChanged();
         }
         catch (Exception ex)
         {
