@@ -43,6 +43,9 @@
     private async Task HandleLogin()
     {
         loginError = false;
+        if (loginModel.Password == null || loginModel.Password == "")
+            return;
+
         var result = AuthenticationService.Login(loginModel.Email, loginModel.Password);
         if (result)
         {
