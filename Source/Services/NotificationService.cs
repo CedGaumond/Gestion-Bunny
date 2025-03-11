@@ -18,9 +18,9 @@ namespace Gestion_Bunny.Services
         {
             var allIngredients = _ingredientService.GetAllIngredients();
             return allIngredients
-                .Where(i => !i.IsDeleted && i.QuantityRemaining <= i.MinimumThresholdNotification)
-                .OrderBy(i => i.QuantityRemaining / i.MinimumThresholdNotification)
-                .ToList();
+            .Where(i => !i.IsDeleted && i.QuantityRemaining <= i.MinimumThresholdNotification)
+            .OrderBy(i => i.MinimumThresholdNotification == 0 ? int.MaxValue : (decimal)i.QuantityRemaining / i.MinimumThresholdNotification)
+            .ToList();
         }
 
         public int GetLowStockCount()
