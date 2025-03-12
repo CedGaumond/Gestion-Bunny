@@ -201,7 +201,7 @@
 
     private void LoadTodayShifts()
     {
-        todayShifts = ScheduleService.GetEmployeeSchedulesForDay(DateTime.UtcNow);
+        todayShifts = ScheduleService.GetEmployeeSchedulesForDay(DateTime.Now);
     }
 
     private void LoadLowStockIngredients()
