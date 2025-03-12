@@ -6,7 +6,7 @@ public interface IUserService
 {
     List<User> GetUsers();
     User GetUserById(int userId);
-    Task ResetPassword(User user);
+    void ResetPassword(User user);
     void UpdatePassword(User user, string inputPassword);
     void AddUser(User user);
     void UpdateUser(User user);

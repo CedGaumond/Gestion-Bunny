@@ -15,7 +15,7 @@ public class UserService : IUserService
 
     public List<User> GetUsers()
     {
-        return _context.Users.Include(s => s.UserRole).ToList();
+        return _context.Users.Include(s => s.UserRole).Include(e => e.Employee).ToList();
     }
 
     public User GetUserById(int userId)
@@ -28,7 +28,7 @@ public class UserService : IUserService
         return _context.Employees.Find(employeeId);
     }
 
-    public async Task ResetPassword(User user)
+    public void ResetPassword(User user)
     {
         var tempPassword = PasswordGenerator.GenerateTemporaryPassword();
         var salt = CryptographyUtil.CreateSalt();
@@ -39,11 +39,14 @@ public class UserService : IUserService
         _context.Entry(user).State = EntityState.Modified;
         _context.SaveChanges();
 
-        await EmailUtil.SendEmailAsync(
-            user.Email,
-            "Bienvenue chez Bunny & co - Réinitialisation du mot de passe",
-            $"Bonjour {user.FirstName},\n\nVotre mot de passe temporaire est : {tempPassword}\n\nMerci de le changer dès votre première connexion."
-        );
+        Task.Run(async () =>
+        {
+            await EmailUtil.SendEmailAsync(
+                user.Email,
+                "Bienvenue chez Bunny & co - Réinitialisation du mot de passe",
+                $"Bonjour {user.FirstName},\n\nVotre mot de passe temporaire est : {tempPassword}\n\nMerci de le changer dès votre première connexion."
+            );
+        }); 
     }
 
     public void UpdatePassword(User user, string inputPassword)

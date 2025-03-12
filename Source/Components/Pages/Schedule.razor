@@ -67,8 +67,7 @@
                         
                             foreach (var shift in shiftsStartingInSlot)
                             {
-                                var employee = UserService.GetEmployeeById(shift.UserId);
-                                var employeeName = employee != null ? shift.User.GetFullName() : "Employé inconnu";
+                                var employeeName = shift.User.GetFullName() ?? "Employé inconnu";
                                 
                                 // Modified: Use a fixed height for all shifts
                                 var heightClass = "shift-fixed";

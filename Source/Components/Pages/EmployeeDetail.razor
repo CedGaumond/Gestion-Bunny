@@ -65,7 +65,7 @@
                     <button type="button" class="btn btn-light px-4" @onclick="@(() => Navigation.NavigateTo("/employee-list"))">
                         Retour
                     </button>
-                    <button type="button" class="btn btn-secondary px-4" @onclick="ResetPassword">
+                    <button type="button" class="btn btn-secondary px-4" @onclick="ResetPasswordEmployee">
                         Réinitialiser le mot de passe
                     </button>
                 </div>
@@ -102,11 +102,11 @@
         }
     }
 
-    private async Task ResetPassword()
+    private void ResetPasswordEmployee()
     {
         if (user != null)
         {
-            await UserService.ResetPassword(user);
+            UserService.ResetPassword(user);
             Navigation.NavigateTo("/employee-list");
         }
     }
