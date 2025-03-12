@@ -46,7 +46,7 @@
 
                 <div class="card-body">
                     <h5 class="card-title">@recipe.Name</h5>
-                    <p class="card-text">Prix : @recipe.Price.ToString()</p>
+                    <p class="card-text">Prix : @recipe.Price.ToString("F2") $</p>
 
                     <div class="d-flex justify-content-center align-items-center gap-3">
                         <div class="icon-container" @onclick="@(() => Navigation.NavigateTo($"/recipe/{recipe.Id}"))">

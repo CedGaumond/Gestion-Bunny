@@ -14,6 +14,15 @@
             <div class="p-4 shadow-lg rounded bg-custom">
                 <h3 class="text-center">@(Id.HasValue ? "Modifier une recette" : "Ajouter une recette")</h3>
 
+                <div class="mb-3">
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @errorMessage
+                        </div>
+                    }
+                </div>
+
                 <EditForm Model="recipe" OnValidSubmit="Save">
                     <DataAnnotationsValidator />
 
@@ -112,6 +121,7 @@
     private int selectedCategorieId;
     private List<Ingredient> availableIngredients = new();
     private List<RecipeCategory> availableCategorie = new();
+    private string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -160,7 +170,7 @@ private async Task HandleFileSelected(InputFileChangeEventArgs e)
             var maxFileSize = 1024 * 1024 * 5;
             if (file.Size > maxFileSize)
             {
-                await JSRuntime.InvokeVoidAsync("alert", "La taille du fichier doit être inférieure à 5 Mo.");
+                errorMessage = $"La taille du fichier doit être inférieure à 5 Mo.";
                 await ClearFileInput();
                 recipe.Pic = null; 
                 return;
@@ -170,7 +180,7 @@ private async Task HandleFileSelected(InputFileChangeEventArgs e)
             var allowedImageTypes = new[] { "image/jpeg", "image/png", "image/gif" };
             if (!allowedImageTypes.Contains(file.ContentType))
             {
-                await JSRuntime.InvokeVoidAsync("alert", "Veuillez télécharger une image valide (PNG, JPG, GIF).");
+                errorMessage = $"Veuillez télécharger une image valide (PNG, JPG, GIF).";
                 await ClearFileInput(); 
                 recipe.Pic = null; 
                 return;
@@ -184,7 +194,7 @@ private async Task HandleFileSelected(InputFileChangeEventArgs e)
     }
     catch (Exception ex)
     {
-        await JSRuntime.InvokeVoidAsync("alert", $"Erreur lors du téléchargement du fichier : {ex.Message}");
+        errorMessage = $"Erreur lors du téléchargement du fichier : {ex.Message}";
         recipe.Pic = null; 
     }
 }
@@ -221,68 +231,68 @@ private async Task ClearFileInput()
     }
 
    private async Task Save()
-{
-    try
-    {
-        if (!ValidateForm())
+   {
+        try
         {
-            return;
-        }
-
-        recipe.RecipeCategoryId = selectedCategorieId;
-
-        var recipeTosave = new Recipe
-        {
-            Id = recipe.Id,
-            Name = recipe.Name,
-            Price = recipe.Price,
-            Pic = recipe.Pic,
-            RecipeCategoryId = recipe.RecipeCategoryId,
-            IsDeleted = false,
-            DeletedDate = null,
-            RecipeIngredients = recipe.RecipeIngredients.Select(ir => new RecipeIngredient
+            if (!ValidateForm())
             {
-                IngredientId = ir.IngredientId,
-                Quantity = ir.Quantity
-            }).ToList()
-        };
+                return;
+            }
 
-        if (Id.HasValue)
-        {
-            recipeTosave.Id = Id.Value;
-            RecipeService.UpdateRecipe(recipeTosave);
-        }
-        else
-        {
-            RecipeService.AddRecipe(recipeTosave);
-        }
+            recipe.RecipeCategoryId = selectedCategorieId;
 
-        Navigation.NavigateTo("/recipe-list");
-    }
-    catch (Exception ex)
-    {
-        var errorMessage = ex.InnerException?.Message ?? ex.Message;
-        await JSRuntime.InvokeVoidAsync("alert", $"Error saving recipe: {errorMessage}");
-    }
-}
+            var recipeTosave = new Recipe
+            {
+                Id = recipe.Id,
+                Name = recipe.Name,
+                Price = recipe.Price,
+                Pic = recipe.Pic,
+                RecipeCategoryId = recipe.RecipeCategoryId,
+                IsDeleted = false,
+                DeletedDate = null,
+                RecipeIngredients = recipe.RecipeIngredients.Select(ir => new RecipeIngredient
+                {
+                    IngredientId = ir.IngredientId,
+                    Quantity = ir.Quantity
+                }).ToList()
+            };
+
+            if (Id.HasValue)
+            {
+                recipeTosave.Id = Id.Value;
+                RecipeService.UpdateRecipe(recipeTosave);
+            }
+            else
+            {
+                RecipeService.AddRecipe(recipeTosave);
+            }
+
+            Navigation.NavigateTo("/recipe-list");
+        }
+        catch (Exception ex)
+        {
+            var innerErrorMessage = ex.InnerException?.Message ?? ex.Message;
+            errorMessage = $"Erreur lors de la sauvegarde de la recette : {innerErrorMessage}";
+        }
+   }
 
     private bool ValidateForm()
     {
         if (string.IsNullOrWhiteSpace(recipe.Name))
         {
-            JSRuntime.InvokeVoidAsync("alert", "Le nom de la recette est requis.");
+            errorMessage = $"Le nom de la recette est requis.";
             return false;
         }
 
         if (recipe.Price <= 0)
         {
-            JSRuntime.InvokeVoidAsync("alert", "Le prix doit être supérieur à 0.");
+            errorMessage = $"Le prix doit être supérieur à 0.";
             return false;
         }
 
         if (selectedCategorieId <= 0)
         {
-            JSRuntime.InvokeVoidAsync("alert", "Veuillez sélectionner une catégorie.");
+            errorMessage = $"Veuillez sélectionner une catégorie.";
             return false;
         }
 
