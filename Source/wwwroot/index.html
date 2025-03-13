@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
     <title>Gestion-Bunny</title>
     <base href="/" />
     <link rel="stylesheet" href="css/app.css" />
@@ -43,12 +44,12 @@
                     const errorDetails = document.getElementById('error-details');
                     if (errorDetails) {
                         errorDetails.innerHTML = `
-                                                            <p><strong>Message:</strong> ${event.message}</p>
-                                                            <p><strong>Filename:</strong> ${event.filename}</p>
-                                                            <p><strong>Line:</strong> ${event.lineno}</p>
-                                                            <p><strong>Column:</strong> ${event.colno}</p>
-                                                            <pre>${event.error ? event.error.stack : 'No stack trace'}</pre>
-                                                        `;
+                                                                    <p><strong>Message:</strong> ${event.message}</p>
+                                                                    <p><strong>Filename:</strong> ${event.filename}</p>
+                                                                    <p><strong>Line:</strong> ${event.lineno}</p>
+                                                                    <p><strong>Column:</strong> ${event.colno}</p>
+                                                                    <pre>${event.error ? event.error.stack : 'No stack trace'}</pre>
+                                                                `;
                     }
 
                     const errorUI = document.getElementById('blazor-error-ui');
@@ -59,6 +60,29 @@
                     return false; // Prevent default error handling
                 });
             });
+        </script>
+
+        <script>
+            document.addEventListener("dragstart", function (event) {
+                event.preventDefault();
+            });
+            document.addEventListener("drop", function (event) {
+                event.preventDefault();
+            });
+            document.addEventListener("gesturestart", function (event) {
+                event.preventDefault();
+            });
+            document.addEventListener("gesturechange", function (event) {
+                event.preventDefault();
+            });
+            document.addEventListener("gestureend", function (event) {
+                event.preventDefault();
+            });
+            document.addEventListener("wheel", function (event) {
+                if (event.ctrlKey) {
+                    event.preventDefault();
+                }
+            }, { passive: false });
         </script>
 
         <style>
